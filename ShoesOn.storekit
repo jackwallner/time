@@ -1,0 +1,18 @@
+{
+  "identifier" : "ShoesOnStoreKitConfig",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "14.99",
+      "familyShareable" : false,
+      "internalID" : "1001",
+      "localizations" : [{"description":"Every routine and the Apple Watch coach, forever.","displayName":"Shoes On Pro","locale":"en_US"}],
+      "productID" : "com.jackwallner.time.pro.lifetime",
+      "referenceName" : "Shoes On Pro Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {"_applicationInternalID":"0","_developerTeamID":"YXG4MP6W39","_failTransactionsEnabled":false,"_lastSynchronizedDate":0,"_locale":"en_US","_storefront":"USA","_storeKitErrors":[]},
+  "subscriptionGroups" : [],
+  "version" : {"major":4,"minor":0}
+}
