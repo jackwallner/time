@@ -1,0 +1,1 @@
+Beri tahu kapan kamu harus keluar rumah. Aplikasi ini belajar berapa lama kamu sebenarnya butuh dan memberi tahu kapan mulai.

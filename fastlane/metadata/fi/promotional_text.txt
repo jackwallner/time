@@ -1,0 +1,1 @@
+Kerro, milloin sinun pitää lähteä. Sovellus oppii, kauanko todella viivyt, ja kertoo, milloin aloittaa.

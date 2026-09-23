@@ -16,7 +16,7 @@ enum ScreenshotFixtures {
         ("Shoes, keys, out", 5, 7),
     ]
 
-    static func applyIfRequested(now: Date = .now) {
+    static func applyIfRequested(now: Date = AppClock.now) {
         if ScreenshotConfig.has("-DemoPro") { StoreService.shared.setLocalOverride(isPro: true) }
         guard ScreenshotConfig.has("-SeedScreenshotData") else { return }
         AppSettings.shared.hasCompletedSetup = true

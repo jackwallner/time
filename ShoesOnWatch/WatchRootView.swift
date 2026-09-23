@@ -90,9 +90,13 @@ private struct WatchRunView: View {
                     .font(.title3.weight(.bold))
                     .lineLimit(2)
                     .minimumScaleFactor(0.7)
-                Text(clock(run.isLeaving ? run.leaveAt : run.stepEndsAt, now: now))
-                    .font(.system(size: 34, weight: .semibold).monospacedDigit())
-                    .foregroundStyle(clockColor(now: now, status: status))
+                HStack(spacing: 10) {
+                    ring(now: now, status: status)
+                        .frame(width: 30, height: 30)
+                    Text(clock(run.isLeaving ? run.leaveAt : run.stepEndsAt, now: now))
+                        .font(.system(size: 34, weight: .semibold, design: .rounded).monospacedDigit())
+                        .foregroundStyle(clockColor(now: now, status: status))
+                }
                 Text(status.label)
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(Theme.color(for: status))
@@ -117,6 +121,19 @@ private struct WatchRunView: View {
                     .accessibilityLabel("Skip step")
                 }
             }
+        }
+    }
+
+    /// The step's time as a ring that empties, like the phone's dial.
+    private func ring(now: Date, status: RunStatus) -> some View {
+        let total = max(run.stepEndsAt.timeIntervalSince(run.stepStartedAt), 1)
+        let left = run.isLeaving ? 1 : min(max(run.stepEndsAt.timeIntervalSince(now) / total, 0), 1)
+        return ZStack {
+            Circle().stroke(Color.white.opacity(0.15), lineWidth: 4)
+            Circle()
+                .trim(from: 0, to: max(left, 0.001))
+                .stroke(Theme.color(for: status), style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .rotationEffect(.degrees(-90))
         }
     }
 

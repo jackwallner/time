@@ -102,14 +102,15 @@ struct SettingsView: View {
     private var proSection: some View {
         Section {
             if purchases.isPro {
-                Label("Shoes On Pro is unlocked", systemImage: "checkmark.seal")
+                Label("Shoes On Pro is active", systemImage: "checkmark.seal.fill")
+                Link("Manage subscription", destination: URL(string: "https://apps.apple.com/account/subscriptions")!)
             } else {
-                Button("Unlock Shoes On Pro") { showPaywall = true }
+                Button("Try Shoes On Pro") { showPaywall = true }
                 Button("Restore purchase") { Task { await purchases.restore() } }
             }
         } footer: {
             if !purchases.isPro {
-                Text("Every routine, plus the Apple Watch coach. One purchase, no subscription.")
+                Text("Every routine, plus the Apple Watch coach. Free for 7 days if you haven't tried it.")
             }
         }
     }

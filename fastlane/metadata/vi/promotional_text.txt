@@ -1,0 +1,1 @@
+Cho ứng dụng biết lúc nào bạn phải ra khỏi nhà. Ứng dụng học xem bạn thực sự mất bao lâu và báo khi nào nên bắt đầu.

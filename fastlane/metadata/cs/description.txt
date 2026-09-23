@@ -1,0 +1,26 @@
+Z deseti minut je patnáct. Z dvaceti třicet pět. Pokud jsou vaše odhady krátké, plán na nich postavený je pozdě ještě před začátkem. Shoes On plánuje s časem, který opravdu potřebujete.
+
+ZVOLTE ČAS ODCHODU
+Vyberte, kdy musíte vyjít ze dveří, a kroky před tím: sprcha, oblékání, snídaně, taška, boty a klíče. Shoes On počítá zpětně od dveří a řekne, kdy začít.
+
+PŘIZPŮSOBENO VÁM
+Řekněte, o kolik se vaše odhady obvykle mýlí. Pokud se chystání zdá na hodinu, ale trvá hodinu a půl, plán začne dřív už od prvního dne. Když pak u každého kroku klepnete na Hotovo, naučí se váš skutečný čas každého kroku, vaše tempo a jak dlouho vám trvá začít po upozornění.
+
+VĚZTE, KDY SE ZPOŽĎUJETE
+Zatímco se chystáte, jedna obrazovka ukazuje aktuální krok, zbývající čas a zda jste v plánu, nebo pár minut pozadu. Totéž je na zamčené obrazovce a v Dynamic Islandu s tlačítkem Hotovo.
+
+UPOZORNĚNÍ, NA KTERÝCH ZÁLEŽÍ
+Čas se chystat. Dokončete tento krok. Pořád ve sprše? Odchod za 10 minut. Čas vyrazit. Upozornění jsou časově citlivá a mohou projít režimem soustředění, pokud to povolíte.
+
+ZDARMA A TAK TO ZŮSTANE
+Vaše první rutina se všemi upozorněními, zobrazením na zamčené obrazovce a veškerým učením.
+
+SHOES ON PRO
+Všechny rutiny (pracovní dny, škola, posilovna, víkendy) a trenér na Apple Watch, který ukazuje krok a tempo na zápěstí a umožní klepnout na Hotovo odtud.
+
+Shoes On Pro je měsíční nebo roční předplatné. Noví předplatitelé získají týdenní bezplatnou zkušební dobu. Platba se strhne z vašeho účtu Apple po skončení zkušební doby, pokud nezrušíte alespoň 24 hodin předem. Předplatné se automaticky obnovuje na stejné období a za stejnou cenu, pokud není zrušeno alespoň 24 hodin před koncem aktuálního období. Spravujte nebo zrušte v Nastavení u svého účtu Apple a pak Předplatné. Ceny se zobrazují v aplikaci před nákupem a liší se podle regionu.
+
+Bez účtu: rutiny a časy zůstávají ve vašem iPhonu a Apple Watch. Shoes On je pomůcka pro plánování. Nestanovuje diagnózy ani neléčí ADHD či jiné stavy. Samotná aplikace je v angličtině.
+
+Podmínky použití (standardní EULA společnosti Apple): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Zásady ochrany osobních údajů: https://jackwallner.github.io/time/privacy-policy.html

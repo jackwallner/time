@@ -68,53 +68,60 @@ private struct LockScreenRun: View {
     let isStale: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(state.isLeaving ? "Out the door" : "Step \(state.stepIndex + 1) of \(state.stepCount)")
+        HStack(alignment: .center, spacing: 14) {
+            ring
+                .frame(width: 64, height: 64)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(state.isLeaving ? "Out the door \(Format.time(state.leaveAt))" : "Step \(state.stepIndex + 1) of \(state.stepCount) · out \(Format.time(state.leaveAt))")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.6))
-                Spacer()
-                Text("Leave \(Format.time(state.leaveAt))")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.6))
-            }
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title(state))
-                        .font(.title3.weight(.bold))
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                    statusText(state, isStale: isStale)
-                        .font(.subheadline.weight(.semibold))
-                }
-                Spacer(minLength: 8)
-                countdown(state)
-                    .font(.system(size: 34, weight: .semibold).monospacedDigit())
+                    .foregroundStyle(.white.opacity(0.55))
+                    .lineLimit(1)
+                Text(title(state))
+                    .font(.system(.title3, design: .rounded).weight(.heavy))
                     .foregroundStyle(.white)
-                    .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: 120, alignment: .trailing)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                statusText(state, isStale: isStale)
+                    .font(.system(.subheadline, design: .rounded).weight(.bold))
+                if let next = state.nextStepName, !state.isLeaving {
+                    Text("Then \(next)")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.55))
+                        .lineLimit(1)
+                }
             }
-            if !state.isLeaving {
-                ProgressView(timerInterval: state.stepStartedAt...max(state.stepEndsAt, state.stepStartedAt.addingTimeInterval(1)), countsDown: false) {
+            Spacer(minLength: 4)
+            doneButton(state)
+        }
+        .padding(16)
+    }
+
+    /// The step's clock as a ring that empties, with the countdown inside.
+    private var ring: some View {
+        ZStack {
+            if state.isLeaving {
+                Circle().stroke(Theme.onTrack, lineWidth: 6)
+                Image(systemName: "door.left.hand.open")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(.white)
+            } else {
+                ProgressView(
+                    timerInterval: state.stepStartedAt...max(state.stepEndsAt, state.stepStartedAt.addingTimeInterval(1)),
+                    countsDown: true
+                ) {
                     EmptyView()
                 } currentValueLabel: {
                     EmptyView()
                 }
+                .progressViewStyle(.circular)
                 .tint(statusColor(state, isStale: isStale))
-            }
-            HStack {
-                if let next = state.nextStepName, !state.isLeaving {
-                    Text("Then: \(next)")
-                        .font(.footnote)
-                        .foregroundStyle(.white.opacity(0.6))
-                        .lineLimit(1)
-                }
-                Spacer()
-                doneButton(state)
+                countdown(state)
+                    .font(.system(size: 14, weight: .bold, design: .rounded).monospacedDigit())
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .frame(width: 50)
             }
         }
-        .padding(16)
     }
 }
 

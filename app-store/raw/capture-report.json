@@ -1,0 +1,129 @@
+{
+  "status": "ok",
+  "manifest": "/Users/jackwallner/time/app-store/screenshots.json",
+  "app": "shoeson",
+  "mode": "generic",
+  "lease": "time",
+  "output": "/Users/jackwallner/time/app-store/raw",
+  "proof_only": false,
+  "checkout_options": [],
+  "lease_checked_in": true,
+  "screenshots": [
+    "01_home.png",
+    "02_reveal.png",
+    "03_run.png",
+    "04_summary.png",
+    "05_leaving.png",
+    "06_pace.png"
+  ],
+  "screenshot_records": [
+    {
+      "name": "01_home.png",
+      "path": "/Users/jackwallner/time/app-store/raw/01_home.png",
+      "size": [
+        1206,
+        2622
+      ],
+      "mode": "RGBA",
+      "sha256": "444797f14c4d85fc93e2d5f172261098af8e2742ba6876aaf6e1259566e11387"
+    },
+    {
+      "name": "02_reveal.png",
+      "path": "/Users/jackwallner/time/app-store/raw/02_reveal.png",
+      "size": [
+        1206,
+        2622
+      ],
+      "mode": "RGBA",
+      "sha256": "04fddcd7477735fcd61fc690ad75ed55ea2a5a8a69449b3d1618b2b835815b16"
+    },
+    {
+      "name": "03_run.png",
+      "path": "/Users/jackwallner/time/app-store/raw/03_run.png",
+      "size": [
+        1206,
+        2622
+      ],
+      "mode": "RGBA",
+      "sha256": "293029eec04189a304c7d3e30a8984b76000fb07286db9385a7b634605ce66de"
+    },
+    {
+      "name": "04_summary.png",
+      "path": "/Users/jackwallner/time/app-store/raw/04_summary.png",
+      "size": [
+        1206,
+        2622
+      ],
+      "mode": "RGBA",
+      "sha256": "e7700c8397c18f74d603ff2a7213bc41e859b08fe2f91f82fb59488e5c4bad8b"
+    },
+    {
+      "name": "05_leaving.png",
+      "path": "/Users/jackwallner/time/app-store/raw/05_leaving.png",
+      "size": [
+        1206,
+        2622
+      ],
+      "mode": "RGBA",
+      "sha256": "bc11b469fbdde80912e6b982c8c42f0037cd75f85680e8aa97fad9febc709fb7"
+    },
+    {
+      "name": "06_pace.png",
+      "path": "/Users/jackwallner/time/app-store/raw/06_pace.png",
+      "size": [
+        1206,
+        2622
+      ],
+      "mode": "RGBA",
+      "sha256": "b30590ecbf3c52bca9a837e25af85051baadf6741a74b66cfc24f6aa55bef80d"
+    }
+  ],
+  "flows": [
+    {
+      "id": "home",
+      "screenshots": [
+        "01_home.png"
+      ]
+    },
+    {
+      "id": "reveal",
+      "screenshots": [
+        "02_reveal.png"
+      ]
+    },
+    {
+      "id": "run",
+      "screenshots": [
+        "03_run.png"
+      ]
+    },
+    {
+      "id": "summary",
+      "screenshots": [
+        "04_summary.png"
+      ]
+    },
+    {
+      "id": "leaving",
+      "screenshots": [
+        "05_leaving.png"
+      ]
+    },
+    {
+      "id": "pace",
+      "screenshots": [
+        "06_pace.png"
+      ]
+    }
+  ],
+  "app_repo": {
+    "path": "~/time",
+    "git_commit": "b3948f578616e0c47695bc8f560e09161d69cc7a"
+  },
+  "device": {
+    "udid": "2C7A80C1-1228-411A-B9AD-A7DEED683F79",
+    "name": "agent-sim-1",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+    "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro"
+  }
+}

@@ -1,0 +1,1 @@
+routine mattutina,ritardo,timer,sveglia,promemoria,agenda,conto alla rovescia,prepararsi,abitudine

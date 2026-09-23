@@ -1,0 +1,395 @@
+{
+ "app": "shoeson",
+ "display_name": "Shoes On",
+ "target": "iphone_69",
+ "copy_contract": "single-header-benefit-story-v3",
+ "health_app": false,
+ "market": {
+  "category": "routine timers and time-blindness planners",
+  "audience": "adults who run late because their time guesses run short, often with ADHD",
+  "problem": "Routine timers count down the minutes you guessed, so a morning built on short guesses is late before it starts",
+  "advantage": "Plans backward from the leave time with the time each step really takes this person, learned from Done taps, plus a live on-track status",
+  "competitive_context": "Routine apps are checklists with timers; time-blindness apps visualise time. Few learn the gap between guessed and real time and move the start time for it",
+  "search_intent": [
+   "time blindness",
+   "leave on time",
+   "adhd routine",
+   "morning routine"
+  ],
+  "proof_points": [
+   {
+    "claim": "Home shows Start 7:00 AM for an 8:15 leave, with a 30 min gap the guess leaves out",
+    "source": "raw/01_home.png"
+   },
+   {
+    "claim": "The run screen shows Breakfast, a countdown dial and 3 min behind",
+    "source": "raw/03_run.png"
+   },
+   {
+    "claim": "The summary shows each step's guess against the time it took",
+    "source": "raw/04_summary.png"
+   }
+  ]
+ },
+ "capture_report": "raw/capture-report.json",
+ "theme": {
+  "background": "#f6f5f1",
+  "background_2": "#e9e6de",
+  "icon_source": "../ShoesOn/Assets.xcassets/AppIcon.appiconset/icon_1024.png",
+  "ink": "#121417",
+  "muted": "#6d7075",
+  "accent": "#28c785",
+  "accent_2": "#ff9e33",
+  "headline_font": "rounded",
+  "body_font": "sans"
+ },
+ "capture": {
+  "mode": "generic",
+  "lease": "time",
+  "project_root": "~/time",
+  "project": "ShoesOn.xcodeproj",
+  "scheme": "ShoesOn",
+  "configuration": "Debug",
+  "generate_project": true,
+  "app_name": "ShoesOn",
+  "bundle_id": "com.jackwallner.time",
+  "launch_args": [
+   "-SeedScreenshotData"
+  ],
+  "flows": [
+   {
+    "id": "home",
+    "launch_args": [
+     "-FixedNow",
+     "06:20"
+    ],
+    "ready_labels": [
+     "Start now"
+    ],
+    "ready_timeout": 60,
+    "launch_wait": 6,
+    "screenshots": [
+     {
+      "name": "01_home.png"
+     }
+    ]
+   },
+   {
+    "id": "reveal",
+    "launch_args": [
+     "-OnboardingPage",
+     "4"
+    ],
+    "ready_labels": [
+     "Continue"
+    ],
+    "ready_timeout": 60,
+    "launch_wait": 6,
+    "screenshots": [
+     {
+      "name": "02_reveal.png"
+     }
+    ]
+   },
+   {
+    "id": "run",
+    "launch_args": [
+     "-Screen",
+     "run",
+     "-FixedNow",
+     "07:48"
+    ],
+    "ready_labels": [
+     "Done"
+    ],
+    "ready_timeout": 60,
+    "launch_wait": 6,
+    "screenshots": [
+     {
+      "name": "03_run.png"
+     }
+    ]
+   },
+   {
+    "id": "summary",
+    "launch_args": [
+     "-Screen",
+     "summary",
+     "-FixedNow",
+     "08:14"
+    ],
+    "ready_labels": [
+     "Done"
+    ],
+    "ready_timeout": 60,
+    "launch_wait": 7,
+    "screenshots": [
+     {
+      "name": "04_summary.png"
+     }
+    ]
+   },
+   {
+    "id": "leaving",
+    "launch_args": [
+     "-Screen",
+     "leaving",
+     "-FixedNow",
+     "08:09"
+    ],
+    "ready_labels": [
+     "I'm out the door"
+    ],
+    "ready_timeout": 60,
+    "launch_wait": 6,
+    "screenshots": [
+     {
+      "name": "05_leaving.png"
+     }
+    ]
+   },
+   {
+    "id": "pace",
+    "launch_args": [
+     "-OnboardingPage",
+     "1"
+    ],
+    "ready_labels": [
+     "Continue"
+    ],
+    "ready_timeout": 60,
+    "launch_wait": 6,
+    "screenshots": [
+     {
+      "name": "06_pace.png"
+     }
+    ]
+   }
+  ]
+ },
+ "sets": [
+  {
+   "id": "real-pace",
+   "submission": true,
+   "style": "paper-ink",
+   "story": {
+    "throughline": "Know when to start, plan with your real pace, and see the moment you slip",
+    "sequence": [
+     "problem",
+     "mechanism",
+     "proof"
+    ]
+   },
+   "frames": [
+    {
+     "filename": "01-know-when-to-start.png",
+     "header": "Know exactly when to start",
+     "story_role": "problem",
+     "story_focus": "when to start",
+     "device": "iphone",
+     "source": "raw/01_home.png",
+     "source_evidence": "raw/01_home.png",
+     "capture_flow": "home",
+     "evidence_status": "canonical",
+     "pitch": {
+      "benefit": "One number tells you when to start getting ready, based on how long you really take",
+      "problem": "People with time blindness plan with guesses that run short, so they start too late",
+      "advantage": "The plan starts from the leave time and uses real, learned step times",
+      "proof": "Home shows Start 7:00 AM for an 8:15 leave, with the guess bar against the real-time bar",
+      "header_problem": "starting too late",
+      "header_advantage": "an exact start time",
+      "search_terms": [
+       "time blindness",
+       "leave on time",
+       "adhd routine"
+      ]
+     },
+     "layout": {
+      "header_top": 112,
+      "header_size": 170,
+      "header_min_size": 140,
+      "header_max_lines": 2,
+      "header_margin": 42,
+      "header_bottom_padding": 28,
+      "phone_top": 500,
+      "bottom_margin": 24,
+      "phone_width": 1170
+     }
+    },
+    {
+     "filename": "02-plan-with-your-real-pace.png",
+     "header": "Plan with your real pace",
+     "story_role": "mechanism",
+     "story_focus": "your real pace",
+     "device": "iphone",
+     "source": "raw/02_reveal.png",
+     "source_evidence": "raw/02_reveal.png",
+     "capture_flow": "reveal",
+     "evidence_status": "canonical",
+     "pitch": {
+      "benefit": "Your plan uses how long things really take you, not how long they feel",
+      "problem": "A plan built on a guess is late before it starts",
+      "advantage": "Onboarding turns your honest answer into a pace, then real timings replace it",
+      "proof": "The reveal shows It really takes 1 hr 39 min against a 1 hr 5 min guess, start 6:36 AM",
+      "header_problem": "guesses that run short",
+      "header_advantage": "your real pace",
+      "search_terms": [
+       "time blindness",
+       "morning routine",
+       "get ready"
+      ]
+     },
+     "layout": {
+      "header_top": 112,
+      "header_size": 170,
+      "header_min_size": 140,
+      "header_max_lines": 2,
+      "header_margin": 42,
+      "header_bottom_padding": 28,
+      "phone_top": 500,
+      "bottom_margin": 24,
+      "phone_width": 1170
+     }
+    },
+    {
+     "filename": "03-see-when-you-are-slipping.png",
+     "header": "See the moment you slip",
+     "story_role": "proof",
+     "story_focus": "the moment you slip",
+     "device": "iphone",
+     "source": "raw/03_run.png",
+     "source_evidence": "raw/03_run.png",
+     "capture_flow": "run",
+     "evidence_status": "canonical",
+     "pitch": {
+      "benefit": "You see the step you are on, its time left, and whether you are behind, while you get ready",
+      "problem": "You only notice you are late when it is too late to fix",
+      "advantage": "A live dial per step and an on-track status against the leave time",
+      "proof": "The run screen shows Breakfast, 12 minutes left, 3 min behind",
+      "header_problem": "noticing too late",
+      "header_advantage": "a live status",
+      "search_terms": [
+       "adhd timer",
+       "routine timer",
+       "visual timer"
+      ]
+     },
+     "layout": {
+      "header_top": 112,
+      "header_size": 170,
+      "header_min_size": 140,
+      "header_max_lines": 2,
+      "header_margin": 42,
+      "header_bottom_padding": 28,
+      "phone_top": 500,
+      "bottom_margin": 24,
+      "phone_width": 1170
+     }
+    },
+    {
+     "filename": "04-learn-what-each-step-takes.png",
+     "header": "Learn what each step takes",
+     "story_role": "support",
+     "story_focus": "what each step takes",
+     "device": "iphone",
+     "source": "raw/04_summary.png",
+     "source_evidence": "raw/04_summary.png",
+     "capture_flow": "summary",
+     "evidence_status": "canonical",
+     "pitch": {
+      "benefit": "After each morning you see your guess against the real time for every step",
+      "problem": "You never find out which step eats the time",
+      "advantage": "Done taps time every step and the next plan uses them",
+      "proof": "The summary lists Shower guess 10, took 14, and the rest",
+      "header_problem": "not knowing where time goes",
+      "header_advantage": "per-step real times",
+      "search_terms": [
+       "routine tracker",
+       "time tracker"
+      ]
+     },
+     "layout": {
+      "header_top": 112,
+      "header_size": 170,
+      "header_min_size": 140,
+      "header_max_lines": 2,
+      "header_margin": 42,
+      "header_bottom_padding": 28,
+      "phone_top": 500,
+      "bottom_margin": 24,
+      "phone_width": 1170
+     }
+    },
+    {
+     "filename": "05-walk-out-on-time.png",
+     "header": "Walk out the door on time",
+     "story_role": "support",
+     "story_focus": "out the door on time",
+     "device": "iphone",
+     "source": "raw/05_leaving.png",
+     "source_evidence": "raw/05_leaving.png",
+     "capture_flow": "leaving",
+     "evidence_status": "canonical",
+     "pitch": {
+      "benefit": "You know when every step is done and exactly how much time is left before you leave",
+      "problem": "The last few minutes are where lateness hides",
+      "advantage": "A final shoes-on screen counts down to the leave time",
+      "proof": "The leaving screen shows Shoes on with 4:17 to spare",
+      "header_problem": "late at the door",
+      "header_advantage": "time to spare",
+      "search_terms": [
+       "punctual",
+       "late",
+       "leave on time"
+      ]
+     },
+     "layout": {
+      "header_top": 112,
+      "header_size": 170,
+      "header_min_size": 140,
+      "header_max_lines": 2,
+      "header_margin": 42,
+      "header_bottom_padding": 28,
+      "phone_top": 500,
+      "bottom_margin": 24,
+      "phone_width": 1170
+     }
+    },
+    {
+     "filename": "06-tuned-to-how-late-you-run.png",
+     "header": "Tuned to how late you run",
+     "story_role": "support",
+     "story_focus": "how late you run",
+     "device": "iphone",
+     "source": "raw/06_pace.png",
+     "source_evidence": "raw/06_pace.png",
+     "capture_flow": "pace",
+     "evidence_status": "canonical",
+     "pitch": {
+      "benefit": "The app starts from how far your estimates usually miss",
+      "problem": "Generic timers assume your guesses are right",
+      "advantage": "A one-question pace setting seeds the plan until real times take over",
+      "proof": "The pace question offers About an hour to Closer to two hours with a stretch bar",
+      "header_problem": "generic timers",
+      "header_advantage": "a personal pace",
+      "search_terms": [
+       "adhd routine",
+       "time blindness"
+      ]
+     },
+     "layout": {
+      "header_top": 112,
+      "header_size": 170,
+      "header_min_size": 140,
+      "header_max_lines": 2,
+      "header_margin": 42,
+      "header_bottom_padding": 28,
+      "phone_top": 500,
+      "bottom_margin": 24,
+      "phone_width": 1170
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -32,8 +32,8 @@ the home screen, the reveal page and the summary show.
   tests `.tests`, UI tests `.uitests`. App Group `group.com.jackwallner.time`.
 - App Store Connect app `6814953557`, name "Shoes On: Time Blindness Coach".
 - RevenueCat project `proj457863e6`, app `app06b21534c0`, entitlement lookup
-  key `pro`, offering `default` with `$rc_lifetime`. Public key is in
-  `StoreService.swift`; no secret key is stored anywhere.
+  key `pro`, offering `default` with `$rc_annual` and `$rc_monthly`. Public key
+  is in `StoreService.swift`; no secret key is stored anywhere.
 
 ## Architecture
 
@@ -57,9 +57,12 @@ the home screen, the reveal page and the summary show.
 ## Access model
 
 Free forever: one routine with every alert, the Live Activity and all the
-learning. **Shoes On Pro** ($14.99 lifetime, non-consumable
-`com.jackwallner.time.pro.lifetime`, no subscriptions): more than one routine,
-and the Apple Watch app. Never move learning or alerts behind Pro.
+learning. **Shoes On Pro** is a subscription, `com.jackwallner.time.yearly`
+($9.99, default) and `com.jackwallner.time.monthly` ($1.99), both with a
+one-week free trial and the fleet PPP ladder: more than one routine, and the
+Apple Watch app. No lifetime (it was dropped before launch, 2026-09-22). Never
+move learning or alerts behind Pro. The trial page promises a day-5 reminder;
+`NotificationService.scheduleTrialReminder` is what keeps that promise.
 
 ## Rules that hold everywhere
 
@@ -68,8 +71,13 @@ and the Apple Watch app. Never move learning or alerts behind Pro.
 - Notifications are a rolling ~10-day window of one-shot requests (iOS keeps
   64). `store.propagate()` on every foreground rebuilds it.
 - Not a medical app: never claim it treats or manages ADHD.
-- Simulator never configures RevenueCat; `StoreService` hydrates the product
+- Simulator never configures RevenueCat; `StoreService` hydrates the products
   from StoreKit Testing or a fixture instead.
+- Design: paper and ink at rest, colour only for status, SF Rounded, Liquid
+  Glass controls on iOS 26 behind `#available`. The run screen is always dark
+  with a status-tinted mesh glow. Keep it that restrained.
+- Store copy for 50 locales lives in `scripts/locale_copy/`; regenerate with
+  `scripts/build-locale-metadata.py`, never edit `fastlane/metadata/*` by hand.
 
 ## Deep notes (load on demand)
 

@@ -30,7 +30,6 @@ struct HomeView: View {
                     .accessibilityLabel("Settings")
                 }
             }
-            .toolbarBackground(Theme.background, for: .navigationBar)
             .tint(Theme.ink)
         }
         .sheet(item: $editing) { routine in
@@ -57,15 +56,15 @@ struct HomeView: View {
             Button {
                 newRoutine()
             } label: {
-                Label("New routine", systemImage: "plus")
+                Label(purchases.isPro || store.routines.isEmpty ? "New routine" : "New routine (Pro)", systemImage: "plus")
             }
         } label: {
-            HStack(spacing: 4) {
+            HStack(spacing: 5) {
                 Text(store.selectedRoutine?.name ?? "Shoes On")
                     .font(.headline)
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
-                    .font(.caption.weight(.bold))
+                    .font(.caption.weight(.heavy))
             }
             .foregroundStyle(Theme.ink)
         }
@@ -105,19 +104,30 @@ private struct RoutineDashboard: View {
 
     var body: some View {
         TimelineView(.everyMinute) { context in
-            let now = context.date
+            let now = AppClock.adjust(context.date)
             let plan = store.nextPlan(for: routine, now: now)
                 ?? store.plan(for: routine, leaveAt: routine.leaveTimeForRunStarted(at: now))
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: 14) {
                     NextDepartureCard(routine: routine, plan: plan, isScheduled: !routine.weekdays.isEmpty, now: now) {
-                        store.startRun(routineID: routine.id)
+                        withAnimation(.smooth) { store.startRun(routineID: routine.id) }
                     }
-                    PlanCard(plan: plan, onEdit: onEdit)
+                    Card {
+                        HStack {
+                            SectionLabel("The real plan")
+                            Spacer()
+                            Button("Edit", action: onEdit)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(Theme.ink)
+                        }
+                        .padding(.bottom, 16)
+                        PlanTimeline(plan: plan)
+                    }
                     RecordCard(departures: store.departures(for: routine.id), calibration: store.calibration)
                 }
-                .padding(.horizontal, Theme.margin)
-                .padding(.bottom, 24)
+                .padding(.horizontal, 16)
+                .padding(.top, 4)
+                .padding(.bottom, 32)
             }
         }
     }
@@ -131,105 +141,41 @@ private struct NextDepartureCard: View {
     let onStart: () -> Void
 
     var body: some View {
-        Card {
-            VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 6) {
+        let total = plan.realMinutes + plan.headStartMinutes
+        Card(padding: 22) {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 4) {
                     SectionLabel(isScheduled ? "\(Format.day(plan.leaveAt, now: now)) · \(Format.weekdays(routine.weekdays))" : "Any day")
-                    Text("Start at \(Format.time(plan.alertAt))")
-                        .font(.system(.largeTitle, design: .default).weight(.bold))
+                    Text("Start \(Format.time(plan.alertAt))")
+                        .font(.system(size: 44, weight: .heavy, design: .rounded))
                         .foregroundStyle(Theme.ink)
-                        .minimumScaleFactor(0.7)
+                        .minimumScaleFactor(0.6)
                         .lineLimit(1)
                     Text(subtitle)
-                        .font(.body)
+                        .font(.subheadline.weight(.medium))
                         .foregroundStyle(Theme.secondary)
                 }
-                Button("Start now", action: onStart)
-                    .buttonStyle(.primary)
+                GapBars(guess: plan.guessMinutes, real: total)
+                if total > plan.guessMinutes {
+                    HStack(spacing: 8) {
+                        Circle().fill(Theme.gap).frame(width: 8, height: 8)
+                        Text("\(Format.duration(minutes: total - plan.guessMinutes)) your guess leaves out")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Theme.ink)
+                    }
+                }
+                Button(action: onStart) {
+                    Label("Start now", systemImage: "play.fill")
+                }
+                .buttonStyle(.primary)
             }
-            .padding(20)
         }
     }
 
     private var subtitle: String {
-        let leave = "Leave at \(Format.time(plan.leaveAt))"
-        guard plan.alertAt > now else { return "\(leave). You're already on the clock." }
+        let leave = "Out the door \(Format.time(plan.leaveAt))"
+        guard plan.alertAt > now else { return "\(leave) · already on the clock" }
         return "\(leave) · starts \(Format.relative(to: plan.alertAt, now: now))"
-    }
-}
-
-private struct PlanCard: View {
-    let plan: DeparturePlan
-    let onEdit: () -> Void
-
-    var body: some View {
-        Card {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    SectionLabel("The real plan")
-                    Spacer()
-                    Button("Edit", action: onEdit)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.ink)
-                }
-                .padding(.bottom, 4)
-                if plan.headStartMinutes > 0 {
-                    headStartRow
-                    Divider().overlay(Theme.hairline)
-                }
-                ForEach(plan.steps) { planned in
-                    PlanStepRow(planned: planned)
-                    Divider().overlay(Theme.hairline)
-                }
-                HStack(alignment: .firstTextBaseline) {
-                    Text(Format.time(plan.leaveAt))
-                        .font(.subheadline.monospacedDigit())
-                        .foregroundStyle(Theme.secondary)
-                        .frame(minWidth: 64, alignment: .leading)
-                    Text("Out the door")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(Theme.ink)
-                    Spacer()
-                }
-                .padding(.vertical, 12)
-                summary
-                    .padding(.top, 4)
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
-        }
-    }
-
-    private var headStartRow: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Text(Format.time(plan.alertAt))
-                .font(.subheadline.monospacedDigit())
-                .foregroundStyle(Theme.secondary)
-                .frame(minWidth: 64, alignment: .leading)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Get going")
-                    .foregroundStyle(Theme.ink)
-                Text("You usually start a few minutes after the alert")
-                    .font(.footnote)
-                    .foregroundStyle(Theme.secondary)
-            }
-            Spacer(minLength: 8)
-            Text(Format.duration(minutes: plan.headStartMinutes))
-                .font(.body.monospacedDigit().weight(.semibold))
-                .foregroundStyle(Theme.ink)
-        }
-        .padding(.vertical, 12)
-    }
-
-    private var summary: some View {
-        let total = plan.realMinutes + plan.headStartMinutes
-        let hidden = plan.hiddenMinutes
-        return Text(hidden > 0
-            ? "You'd guess \(Format.duration(minutes: plan.guessMinutes)). It really takes \(Format.duration(minutes: total)), so trusting the guess would make you \(Format.duration(minutes: hidden)) late."
-            : "You'd guess \(Format.duration(minutes: plan.guessMinutes)), and it really takes \(Format.duration(minutes: total)).")
-            .font(.footnote)
-            .foregroundStyle(Theme.secondary)
-            .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -239,61 +185,85 @@ private struct RecordCard: View {
 
     var body: some View {
         Card {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 16) {
                 SectionLabel("How it's going")
                 if departures.isEmpty {
-                    Text("Your first run starts the learning. Tap Done as you finish each step, and Shoes On times them for you.")
+                    Text("Your first run starts the learning. Tap Done as you finish each step and Shoes On times it for you.")
                         .font(.subheadline)
                         .foregroundStyle(Theme.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
                     let recent = Array(departures.prefix(7))
                     let onTime = recent.filter(\.wasOnTime).count
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("On time \(onTime) of \(recent.count)")
-                            .font(.title3.bold())
+                    HStack(alignment: .lastTextBaseline, spacing: 6) {
+                        Text("\(onTime)")
+                            .font(.system(size: 44, weight: .heavy, design: .rounded))
                             .foregroundStyle(Theme.ink)
+                        Text("of \(recent.count) on time")
+                            .font(.headline)
+                            .foregroundStyle(Theme.secondary)
                         Spacer()
-                        HStack(spacing: 5) {
-                            ForEach(recent.reversed()) { record in
-                                Circle()
-                                    .fill(record.wasOnTime ? Theme.onTrack : Theme.behind)
-                                    .frame(width: 10, height: 10)
-                            }
-                        }
-                        .accessibilityHidden(true)
                     }
-                    VStack(spacing: 0) {
-                        ForEach(recent.prefix(3)) { record in
-                            HStack {
-                                Text(record.left.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
-                                    .foregroundStyle(Theme.secondary)
-                                Spacer()
-                                Text("Left \(Format.time(record.left))")
-                                    .foregroundStyle(Theme.ink)
-                                Text(Format.lateness(seconds: record.lateSeconds))
-                                    .foregroundStyle(record.wasOnTime ? Theme.onTrack : Theme.behind)
-                                    .frame(minWidth: 88, alignment: .trailing)
-                            }
-                            .font(.subheadline.monospacedDigit())
-                            .padding(.vertical, 6)
-                        }
-                    }
+                    LatenessStrip(records: recent.reversed())
                 }
                 Divider().overlay(Theme.hairline)
-                Text(paceText)
-                    .font(.subheadline)
-                    .foregroundStyle(Theme.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Your pace")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Theme.ink)
+                        Text(paceText)
+                            .font(.footnote)
+                            .foregroundStyle(Theme.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 12)
+                    Text(Format.multiplier(calibration.pace))
+                        .font(.system(.title2, design: .rounded).weight(.heavy))
+                        .foregroundStyle(Theme.ink)
+                }
             }
-            .padding(20)
         }
     }
 
     private var paceText: String {
         let count = calibration.pacedStepCount
         let sentence = Format.paceSentence(calibration.pace)
-        if count == 0 { return "Until it has your real times, Shoes On assumes steps take \(sentence)." }
-        return "From \(count) timed \(count == 1 ? "step" : "steps"), things take you \(sentence)."
+        if count == 0 { return "Until it has your real times, steps take \(sentence)." }
+        return "From \(count) timed \(count == 1 ? "step" : "steps"): things take \(sentence)."
+    }
+}
+
+/// Recent departures as bars around the leave-time line: up for late, down
+/// for early.
+private struct LatenessStrip: View {
+    let records: [DepartureRecord]
+
+    var body: some View {
+        let maxMinutes = max(5, records.map { abs($0.lateSeconds) / 60 }.max() ?? 5)
+        HStack(alignment: .center, spacing: 8) {
+            ForEach(records) { record in
+                let minutes = record.lateSeconds / 60
+                let height = max(4, CGFloat(abs(minutes) / maxMinutes) * 26)
+                VStack(spacing: 4) {
+                    ZStack {
+                        Color.clear.frame(height: 56)
+                        Capsule()
+                            .fill(record.wasOnTime ? Theme.onTrack : Theme.behind)
+                            .frame(width: 10, height: height)
+                            .offset(y: minutes > 0 ? -height / 2 : height / 2)
+                    }
+                    Text(record.left.formatted(.dateTime.weekday(.narrow)))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(Theme.secondary)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .overlay(alignment: .top) {
+            Rectangle().fill(Theme.hairline).frame(height: 1).offset(y: 28)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(records.map { Format.lateness(seconds: $0.lateSeconds) }.joined(separator: ", "))
     }
 }

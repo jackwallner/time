@@ -1,0 +1,26 @@
+On dakika on beş olur. Yirmi dakika otuz beş. Tahminlerin kısa kalıyorsa, onlara dayanan bir plan başlamadan geç kalır. Shoes On, gerçekten ihtiyacın olan süreyle plan yapar.
+
+ÇIKIŞ SAATİNİ BELİRLE
+Kapıdan ne zaman çıkman gerektiğini ve öncesindeki adımları seç: duş, giyinme, kahvaltı, çanta, ayakkabı ve anahtarlar. Shoes On kapıdan geriye doğru hesaplar ve ne zaman başlaman gerektiğini söyler.
+
+SANA GÖRE AYARLANIR
+Tahminlerinin genelde ne kadar şaştığını söyle. Hazırlanmak bir saat gibi gelip bir buçuk saat sürüyorsa, planın ilk günden daha erken başlar. Sonra her adımda Bitti'ye dokundukça, her adımdaki gerçek süreni, temponu ve uyarıdan sonra başlaman için geçen süreyi öğrenir.
+
+GERİDE KALDIĞINI GÖR
+Hazırlanırken tek ekran bulunduğun adımı, kalan süreyi ve planda mı yoksa birkaç dakika geride mi olduğunu gösterir. Aynısı Kilitli Ekran'da ve Dynamic Island'da Bitti düğmesiyle görünür.
+
+ÖNEMLİ UYARILAR
+Hazırlanma zamanı. Bu adımı bitir. Hâlâ duşta mısın? 10 dakika sonra çık. Çıkma zamanı. Uyarılar zamana duyarlıdır ve izin verirsen bir odak modundan geçebilir.
+
+ÜCRETSİZ VE ÖYLE KALACAK
+İlk rutinin; tüm uyarılar, Kilitli Ekran görünümü ve tüm öğrenmeyle.
+
+SHOES ON PRO
+Tüm rutinler (iş günleri, okul, spor salonu, hafta sonu) ve adımını ve temponu bileğinde gösteren, Bitti'ye oradan dokunmanı sağlayan Apple Watch koçu.
+
+Shoes On Pro aylık veya yıllık bir aboneliktir. Yeni aboneler bir haftalık ücretsiz deneme alır. Ödeme, deneme bitiminden en az 24 saat önce iptal etmezsen deneme sonunda Apple Hesabından tahsil edilir. Abonelikler, mevcut dönemin bitiminden en az 24 saat önce iptal edilmedikçe aynı süre ve fiyatla otomatik olarak yenilenir. Ayarlar'da Apple Hesabın altında, ardından Abonelikler'de yönet veya iptal et. Fiyatlar satın almadan önce uygulamada gösterilir ve bölgeye göre değişir.
+
+Hesap yok: rutinlerin ve sürelerin iPhone ve Apple Watch'unda kalır. Shoes On bir planlama yardımcısıdır. DEHB'yi veya başka bir durumu teşhis etmez ya da tedavi etmez. Uygulamanın kendisi İngilizcedir.
+
+Kullanım Koşulları (Apple Standart EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Gizlilik Politikası: https://jackwallner.github.io/time/privacy-policy.html

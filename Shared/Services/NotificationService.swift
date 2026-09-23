@@ -43,6 +43,21 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         await center.notificationSettings().authorizationStatus
     }
 
+    static let trialReminderID = "trial.reminder"
+
+    /// The reminder the trial page promises: two days before the trial ends.
+    func scheduleTrialReminder(trialDays: Int, billed: String, now: Date = .now) {
+        let days = max(trialDays - 2, 1)
+        guard let fireAt = Calendar.current.date(byAdding: .day, value: days, to: now) else { return }
+        let content = UNMutableNotificationContent()
+        content.title = "Your free trial ends in 2 days"
+        content.body = "Shoes On Pro renews at \(billed) unless you cancel in Settings before then."
+        content.sound = .default
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: fireAt)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        center.add(UNNotificationRequest(identifier: Self.trialReminderID, content: content, trigger: trigger))
+    }
+
     func reschedule(store: RoutineStore, now: Date = .now) {
         let settings = AppSettings.shared
         let preferences = AlertPreferences(
@@ -63,7 +78,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     }
 
     private func apply(_ alerts: [PlannedAlert]) async {
-        let wanted = Set(alerts.map(\.id))
+        let wanted = Set(alerts.map(\.id)).union([Self.trialReminderID])
         let pending = await center.pendingNotificationRequests().map(\.identifier)
         center.removePendingNotificationRequests(withIdentifiers: pending.filter { !wanted.contains($0) })
         guard !Task.isCancelled else { return }

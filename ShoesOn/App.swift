@@ -42,6 +42,9 @@ private struct RootView: View {
     var body: some View {
         content
             .tint(Theme.ink)
+            .fontDesign(.rounded)
+            .animation(.smooth, value: store.activeRun == nil)
+            .animation(.smooth, value: settings.hasCompletedSetup)
             .sheet(isPresented: $review.isPresented) { ReviewPromptView() }
     }
 

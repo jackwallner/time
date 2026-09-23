@@ -3,8 +3,9 @@ import SwiftUI
 import UIKit
 #endif
 
-/// Every colour and radius in one place. The app is deliberately quiet: paper
-/// and ink, with colour reserved for whether the morning is on schedule.
+/// Every colour and radius in one place. Paper and ink at rest; colour only
+/// where it carries meaning (on track, behind, late), and a dark, immersive
+/// surface while a routine runs.
 enum Theme {
     #if os(watchOS)
     static let background = Color.black
@@ -13,20 +14,25 @@ enum Theme {
     static let secondary = Color(white: 0.68)
     static let inkInverse = Color.black
     #else
-    static let background = Color(light: .init(0.972, 0.965, 0.945), dark: .init(0.055, 0.058, 0.062))
-    static let surface = Color(light: .init(1, 1, 1), dark: .init(0.105, 0.110, 0.118))
-    static let ink = Color(light: .init(0.090, 0.098, 0.110), dark: .init(0.960, 0.955, 0.940))
-    static let secondary = Color(light: .init(0.42, 0.43, 0.45), dark: .init(0.62, 0.63, 0.65))
-    static let hairline = Color(light: .init(0.88, 0.87, 0.84), dark: .init(0.20, 0.21, 0.22))
-    /// Text and glyphs drawn on an ink-filled button.
-    static let inkInverse = Color(light: .init(0.980, 0.975, 0.960), dark: .init(0.070, 0.074, 0.080))
+    static let background = Color(light: .init(0.965, 0.961, 0.945), dark: .init(0.043, 0.047, 0.055))
+    static let surface = Color(light: .init(1, 1, 1), dark: .init(0.098, 0.106, 0.118))
+    static let raised = Color(light: .init(0.935, 0.930, 0.912), dark: .init(0.150, 0.158, 0.172))
+    static let ink = Color(light: .init(0.071, 0.078, 0.090), dark: .init(0.965, 0.961, 0.945))
+    static let secondary = Color(light: .init(0.43, 0.44, 0.46), dark: .init(0.60, 0.62, 0.65))
+    static let hairline = Color(light: .init(0.878, 0.870, 0.847), dark: .init(0.190, 0.200, 0.215))
+    /// Text and glyphs drawn on an ink-filled control.
+    static let inkInverse = Color(light: .init(0.980, 0.975, 0.960), dark: .init(0.060, 0.065, 0.075))
+    /// The run screen's canvas, always dark.
+    static let night = Color(red: 0.035, green: 0.040, blue: 0.050)
     #endif
 
-    static let onTrack = Color(red: 0.13, green: 0.62, blue: 0.43)
-    static let behind = Color(red: 0.93, green: 0.55, blue: 0.13)
-    static let late = Color(red: 0.86, green: 0.27, blue: 0.22)
+    static let onTrack = Color(red: 0.16, green: 0.78, blue: 0.52)
+    static let behind = Color(red: 1.00, green: 0.62, blue: 0.20)
+    static let late = Color(red: 1.00, green: 0.36, blue: 0.33)
+    /// The time your guesses leave out.
+    static let gap = Color(red: 1.00, green: 0.62, blue: 0.20)
 
-    static let radius: CGFloat = 20
+    static let radius: CGFloat = 28
     static let margin: CGFloat = 20
 
     static func color(for status: RunStatus) -> Color {

@@ -1,0 +1,26 @@
+Kymmenestä minuutista tulee viisitoista. Kahdestakymmenestä kolmekymmentäviisi. Jos arviosi ovat liian lyhyitä, niihin perustuva suunnitelma myöhästyy jo ennen alkua. Shoes On suunnittelee sen ajan mukaan, jonka todella tarvitset.
+
+VALITSE LÄHTÖAIKA
+Valitse, milloin sinun on lähdettävä ovesta, ja sitä edeltävät vaiheet: suihku, pukeutuminen, aamiainen, laukku, kengät ja avaimet. Shoes On laskee taaksepäin ovelta ja kertoo, milloin aloittaa.
+
+SINULLE RÄÄTÄLÖITY
+Kerro, kuinka paljon arviosi yleensä venyvät. Jos valmistautuminen tuntuu tunnilta mutta vie puolitoista, suunnitelmasi alkaa aiemmin ensimmäisestä päivästä. Kun napautat Valmis jokaisen vaiheen kohdalla, sovellus oppii todellisen aikasi vaiheittain, tahtisi ja sen, kauanko sinulla menee aloittaa muistutuksen jälkeen.
+
+HUOMAA, KUN JÄÄT JÄLKEEN
+Valmistautuessasi yksi näkymä näyttää nykyisen vaiheen, jäljellä olevan ajan ja sen, oletko aikataulussa vai minuutteja jäljessä. Sama näkyy lukitusnäytöllä ja Dynamic Islandissa Valmis-painikkeen kanssa.
+
+MUISTUTUKSET JOILLA ON MERKITYSTÄ
+Aika valmistautua. Lopeta tämä vaihe. Vieläkö suihkussa? Lähde 10 minuutin päästä. Aika lähteä. Muistutukset ovat aikasidonnaisia ja voivat tulla keskittymistilan läpi, jos sallit sen.
+
+ILMAINEN, JA SELLAISENA PYSYY
+Ensimmäinen rutiinisi kaikkine muistutuksineen, lukitusnäytön näkymä ja kaikki oppiminen.
+
+SHOES ON PRO
+Kaikki rutiinit (työpäivät, koulumatkat, sali, viikonloput) ja Apple Watch -valmentaja, joka näyttää vaiheen ja tahdin ranteessa ja antaa napauttaa Valmis sieltä.
+
+Shoes On Pro on kuukausi- tai vuositilaus. Uudet tilaajat saavat viikon ilmaisen kokeilun. Maksu veloitetaan Apple-tililtäsi kokeilun päättyessä, ellet peru vähintään 24 tuntia ennen. Tilaukset uusiutuvat automaattisesti samalla jaksolla ja hinnalla, ellei niitä peruta vähintään 24 tuntia ennen nykyisen jakson loppua. Hallitse tai peru Asetuksissa Apple-tilisi kohdasta ja valitse Tilaukset. Hinnat näytetään sovelluksessa ennen ostoa ja vaihtelevat alueittain.
+
+Ei tiliä: rutiinisi ja aikasi pysyvät iPhonessa ja Apple Watchissa. Shoes On on suunnittelun apuväline. Se ei diagnosoi eikä hoida ADHD:ta tai muita tiloja. Itse sovellus on englanniksi.
+
+Käyttöehdot (Applen vakio-EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Tietosuojakäytäntö: https://jackwallner.github.io/time/privacy-policy.html

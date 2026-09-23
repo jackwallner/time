@@ -1,7 +1,7 @@
 import XCTest
 
 /// Renders each surface from seeded data under StoreKit Testing, so the real
-/// paywall price shows, and attaches a screenshot per surface. Also walks the
+/// paywall prices show, and attaches a screenshot per surface. Also walks the
 /// run: Done advances the step.
 final class ScreenshotUITests: XCTestCase {
     override func setUp() {
@@ -22,22 +22,42 @@ final class ScreenshotUITests: XCTestCase {
         add(attachment)
     }
 
-    func testPaywallShowsTheLocalizedPrice() {
-        let app = launch(["-PaywallSnapshot"])
-        XCTAssertTrue(app.staticTexts["$14.99 once. No subscription."].waitForExistence(timeout: 10))
-        capture(app, "paywall")
+    /// One render per product for the App Review screenshots: each has to show
+    /// its own billed amount.
+    func testPaywallShowsEachPlanPrice() {
+        for (plan, billed) in [("yearly", "Free for 7 days, then $9.99 per year"), ("monthly", "Free for 7 days, then $1.99 per month")] {
+            let app = launch(["-PaywallSnapshot", plan])
+            XCTAssertTrue(app.staticTexts[billed].waitForExistence(timeout: 10), plan)
+            XCTAssertTrue(app.buttons["Start 7-day free trial"].exists)
+            capture(app, "paywall-\(plan)")
+            app.terminate()
+        }
     }
 
     func testOnboardingPages() {
         for page in 0...5 {
             let app = launch(["-OnboardingPage", "\(page)"])
-            XCTAssertTrue(app.buttons[page == 5 ? "Unlock Pro" : "Continue"].waitForExistence(timeout: 10))
+            XCTAssertTrue(app.buttons[page == 5 ? "Start 7-day free trial" : "Continue"].waitForExistence(timeout: 10))
             if page == 5 {
-                XCTAssertTrue(app.staticTexts["$14.99, one-time purchase. No subscription."].waitForExistence(timeout: 10))
+                XCTAssertTrue(app.buttons["Get Started"].exists)
             }
             capture(app, "onboarding-\(page)")
             app.terminate()
         }
+    }
+
+    /// The fleet contract: the primary button sits in the same frame on every
+    /// onboarding page, trial page included.
+    func testOnboardingButtonNeverMoves() {
+        var frames: [CGRect] = []
+        for page in [0, 4, 5] {
+            let app = launch(["-OnboardingPage", "\(page)"])
+            let button = app.buttons[page == 5 ? "Start 7-day free trial" : "Continue"]
+            XCTAssertTrue(button.waitForExistence(timeout: 10))
+            frames.append(button.frame)
+            app.terminate()
+        }
+        XCTAssertEqual(Set(frames.map { "\($0)" }).count, 1, "\(frames)")
     }
 
     func testHome() {
@@ -54,7 +74,8 @@ final class ScreenshotUITests: XCTestCase {
         capture(app, "run")
         app.buttons["Done"].tap()
         XCTAssertTrue(app.staticTexts["Pack bag and lunch"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["Step 4 of 5"].exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label ==[c] %@", "Step 4 of 5")).firstMatch.exists)
+        capture(app, "run-next")
     }
 
     func testLeavingAndSummary() {
@@ -63,10 +84,10 @@ final class ScreenshotUITests: XCTestCase {
         capture(app, "leaving")
         app.buttons["I'm out the door"].tap()
         XCTAssertTrue(app.buttons["Done"].waitForExistence(timeout: 5))
-        capture(app, "summary-live")
         app.terminate()
         let summary = launch(["-SeedScreenshotData", "-Screen", "summary"])
         XCTAssertTrue(summary.staticTexts["2 min early."].waitForExistence(timeout: 10))
+        sleep(2)
         capture(summary, "summary")
     }
 

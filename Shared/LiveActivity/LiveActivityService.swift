@@ -20,6 +20,14 @@ final class LiveActivityService {
     func sync(run: ActiveRun?) {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
         let existing = Activity<RunActivityAttributes>.activities
+        #if DEBUG
+        // Captures must not leave an activity in the Dynamic Island that shows
+        // up in the next capture.
+        if ScreenshotConfig.isEnabled || ScreenshotConfig.has("-OnboardingPage") {
+            for activity in existing { end(activity) }
+            return
+        }
+        #endif
         guard let run else {
             for activity in existing { end(activity) }
             return

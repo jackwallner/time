@@ -1,0 +1,26 @@
+Dziesięć minut zmienia się w piętnaście. Dwadzieścia w trzydzieści pięć. Jeśli Twoje szacunki są za krótkie, plan na nich oparty spóźnia się, zanim się zacznie. Shoes On planuje według czasu, którego naprawdę potrzebujesz.
+
+USTAW GODZINĘ WYJŚCIA
+Wybierz, kiedy musisz wyjść, i kroki przed tym: prysznic, ubieranie, śniadanie, plecak, buty i klucze. Shoes On liczy wstecz od drzwi i mówi, kiedy zacząć.
+
+DOPASOWANE DO CIEBIE
+Powiedz, o ile zwykle mylą się Twoje szacunki. Jeśli szykowanie się wydaje się trwać godzinę, a trwa półtorej, plan zaczyna się wcześniej od pierwszego dnia. Potem, gdy dotykasz Gotowe przy każdym kroku, aplikacja uczy się Twojego rzeczywistego czasu każdego kroku, tempa i tego, ile zajmuje Ci start po przypomnieniu.
+
+WIEDZ, KIEDY SIĘ SPÓŹNIASZ
+Gdy się szykujesz, jeden ekran pokazuje bieżący krok, pozostały czas i to, czy jesteś na czas, czy kilka minut w plecy. To samo widać na ekranie blokady i w Dynamic Island, z przyciskiem Gotowe.
+
+PRZYPOMNIENIA, KTÓRE SIĘ LICZĄ
+Pora się szykować. Zakończ ten krok. Wciąż pod prysznicem? Wyjście za 10 minut. Pora wychodzić. Przypomnienia są pilne i mogą przejść przez tryb skupienia, jeśli na to pozwolisz.
+
+ZA DARMO I TAK ZOSTANIE
+Twoja pierwsza rutyna ze wszystkimi przypomnieniami, widokiem na ekranie blokady i całą nauką.
+
+SHOES ON PRO
+Wszystkie rutyny (praca, szkoła, siłownia, weekend) i trener na Apple Watch, który pokazuje krok i tempo na nadgarstku i pozwala dotknąć Gotowe z zegarka.
+
+Shoes On Pro to subskrypcja miesięczna lub roczna. Nowi subskrybenci otrzymują tygodniowy bezpłatny okres próbny. Płatność zostanie pobrana z konta Apple po zakończeniu okresu próbnego, chyba że anulujesz co najmniej 24 godziny wcześniej. Subskrypcje odnawiają się automatycznie na ten sam okres i w tej samej cenie, chyba że zostaną anulowane co najmniej 24 godziny przed końcem bieżącego okresu. Zarządzaj lub anuluj w Ustawieniach, w koncie Apple, a następnie Subskrypcje. Ceny są wyświetlane w aplikacji przed zakupem i różnią się w zależności od regionu.
+
+Bez konta: rutyny i czasy zostają na Twoim iPhonie i Apple Watch. Shoes On to pomoc w planowaniu. Nie diagnozuje ani nie leczy ADHD ani innych schorzeń. Sama aplikacja jest po angielsku.
+
+Warunki użytkowania (standardowa umowa EULA Apple): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Polityka prywatności: https://jackwallner.github.io/time/privacy-policy.html

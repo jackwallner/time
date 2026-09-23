@@ -1,0 +1,1 @@
+Sag der App, wann du aus der Tür musst. Sie lernt, wie lange du wirklich brauchst, und sagt dir, wann du anfangen solltest.

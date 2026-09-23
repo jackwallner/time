@@ -1,0 +1,26 @@
+Mười phút thành mười lăm. Hai mươi phút thành ba mươi lăm. Nếu bạn luôn ước tính quá ngắn, kế hoạch dựa trên đó đã trễ ngay từ đầu. Shoes On lập kế hoạch theo thời gian bạn thực sự cần.
+
+ĐẶT GIỜ RA KHỎI NHÀ
+Chọn lúc bạn phải bước ra cửa và các bước trước đó: tắm, thay đồ, ăn sáng, xếp túi, giày và chìa khóa. Shoes On tính ngược từ cánh cửa và báo khi nào bắt đầu.
+
+DÀNH RIÊNG CHO BẠN
+Cho biết ước tính của bạn thường lệch bao nhiêu. Nếu chuẩn bị tưởng mất một giờ nhưng thật ra mất một tiếng rưỡi, kế hoạch sẽ bắt đầu sớm hơn ngay từ ngày đầu. Sau đó, mỗi lần chạm Xong ở từng bước, ứng dụng học thời gian thật của từng bước, nhịp độ của bạn và bạn mất bao lâu để bắt đầu sau lời nhắc.
+
+BIẾT NGAY KHI BỊ TRỄ
+Khi chuẩn bị, một màn hình hiển thị bước hiện tại, thời gian còn lại và bạn đang đúng kế hoạch hay trễ vài phút. Màn hình khóa và Dynamic Island cũng hiển thị như vậy, kèm nút Xong.
+
+NHẮC NHỞ ĐÁNG GIÁ
+Đến giờ chuẩn bị. Kết thúc bước này. Vẫn đang tắm? Đi sau 10 phút. Đến giờ đi. Lời nhắc là thông báo nhạy cảm thời gian và có thể vượt qua chế độ Tập trung nếu bạn cho phép.
+
+MIỄN PHÍ, VÀ LUÔN MIỄN PHÍ
+Thói quen đầu tiên của bạn, với mọi lời nhắc, hiển thị màn hình khóa và toàn bộ việc học.
+
+SHOES ON PRO
+Mọi thói quen (ngày làm việc, đưa con đi học, phòng gym, cuối tuần) và huấn luyện viên trên Apple Watch, hiển thị bước và nhịp độ trên cổ tay và cho phép chạm Xong từ đó.
+
+Shoes On Pro là gói đăng ký theo tháng hoặc theo năm. Người đăng ký mới được dùng thử miễn phí một tuần. Tiền được tính vào Tài khoản Apple khi hết thời gian dùng thử, trừ khi bạn hủy ít nhất 24 giờ trước đó. Gói đăng ký tự động gia hạn với cùng thời hạn và mức giá, trừ khi được hủy ít nhất 24 giờ trước khi kỳ hiện tại kết thúc. Quản lý hoặc hủy trong Cài đặt, mục Tài khoản Apple, rồi Đăng ký. Giá được hiển thị trong ứng dụng trước khi mua và khác nhau theo khu vực.
+
+Không cần tài khoản: thói quen và thời gian của bạn chỉ ở trên iPhone và Apple Watch. Shoes On là công cụ hỗ trợ lập kế hoạch. Ứng dụng không chẩn đoán hay điều trị ADHD hoặc bất kỳ tình trạng nào. Bản thân ứng dụng bằng tiếng Anh.
+
+Điều khoản sử dụng (EULA tiêu chuẩn của Apple): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Chính sách quyền riêng tư: https://jackwallner.github.io/time/privacy-policy.html

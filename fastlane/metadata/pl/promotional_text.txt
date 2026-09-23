@@ -1,0 +1,1 @@
+Powiedz, kiedy musisz wyjść z domu. Aplikacja uczy się, ile naprawdę Ci to zajmuje, i mówi, kiedy zacząć.
