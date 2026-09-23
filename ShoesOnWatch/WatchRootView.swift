@@ -87,7 +87,7 @@ private struct WatchRunView: View {
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
                 Text(run.isLeaving ? "Shoes on" : (run.stepName ?? ""))
-                    .font(.title3.weight(.bold))
+                    .font(.system(size: 22, weight: .heavy, design: .rounded))
                     .lineLimit(2)
                     .minimumScaleFactor(0.7)
                 HStack(spacing: 10) {

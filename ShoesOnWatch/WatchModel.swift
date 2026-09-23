@@ -48,8 +48,8 @@ final class WatchModel: ObservableObject {
             run: run,
             next: NextDepartureSnapshot(
                 routineName: "Weekday mornings",
-                alertAt: now.addingTimeInterval(3 * 3600),
-                leaveAt: now.addingTimeInterval(3 * 3600 + 78 * 60)
+                alertAt: Calendar.current.date(bySettingHour: 7, minute: 0, second: 0, of: now) ?? now,
+                leaveAt: Calendar.current.date(bySettingHour: 8, minute: 15, second: 0, of: now) ?? now
             ),
             sentAt: now
         )
