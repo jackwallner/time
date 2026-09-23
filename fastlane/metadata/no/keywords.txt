@@ -1,1 +1,1 @@
-morgenrutine,for sent,punktlighet,timer,alarm,timeplan,påminnelse,planlegger,nedtelling,vane,fokus
+nedtelling,påminnelse,timer,kalender,planlegger,morgenrutine,struktur,vaner,dagsplan,for sent,app

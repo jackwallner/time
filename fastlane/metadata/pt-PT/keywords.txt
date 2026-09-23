@@ -1,1 +1,1 @@
-rotina matinal,atraso,temporizador,alarme,horário,lembrete,planeador,contagem decrescente,hábito
+agenda,temporizador,lembrete,planeador,matinal,hábitos,organização,gestão,contagem,visual,atraso

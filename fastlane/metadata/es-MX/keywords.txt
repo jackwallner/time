@@ -1,1 +1,1 @@
-rutina de mañana,llegar tarde,temporizador,alarma,horario,recordatorio,planificador,cuenta regresiva
+temporizador,cuenta regresiva,agenda,recordatorio,organizador,rutina,mañana,planificador,hábitos

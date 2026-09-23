@@ -1,1 +1,1 @@
-reggeli rutin,késés,pontosság,időzítő,ébresztő,napirend,emlékeztető,tervező,visszaszámlálás,szokás
+naptár,tervező,időzítő,visszaszámlálás,emlékeztető,szokások,reggeli,szervezés,késés,ébresztő,timer

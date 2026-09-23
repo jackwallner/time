@@ -3,6 +3,7 @@ paths:
   - "scripts/**/*"
   - "fastlane/**/*"
   - "app-store/**/*"
+  - "research/**/*"
   - "Shared/Services/StoreService.swift"
   - "Shared/Utilities/ScreenshotFixtures.swift"
   - "ShoesOnUITests/**/*"
@@ -29,6 +30,12 @@ paths:
   `scripts/asc-configure-listing.py` sets rights, categories (Productivity,
   Lifestyle), age rating, review contact (phone from `~/.time_credentials`,
   never the repo) and notes.
+
+## Keywords
+
+Research and decisions: `research/keywords-2026-09-22.md`. Keyword fields
+per locale live in `scripts/keyword_research.py`. Astro temporary app `133`;
+migrate to `6814953557` at launch.
 
 ## Screenshots
 

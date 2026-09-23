@@ -1,1 +1,1 @@
-rutina de dimineata,intarziere,cronometru,alarma,program,memento,planificator,numaratoare,pregatire
+calendar,planificator,cronometru,numărătoare,memento,obiceiuri,dimineața,organizare,întârziere,timer

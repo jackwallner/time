@@ -1,1 +1,1 @@
-aamurutiini,myöhässä,täsmällisyys,ajastin,herätys,aikataulu,muistutus,suunnittelija,lähtölaskenta
+kalenteri,ajastin,muistutus,suunnittelija,aamurutiini,aikataulu,lähtölaskenta,tavat,myöhässä,herätys

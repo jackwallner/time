@@ -1,1 +1,1 @@
-routine matinale,retard,ponctualité,minuteur,alarme,planning,rappel,agenda,compte à rebours,habitude
+minuteur,rappel,compte à rebours,planning,organisation,gestion,matin,planificateur,visuel,retard,app

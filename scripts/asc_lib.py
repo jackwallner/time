@@ -25,6 +25,7 @@ STATE_FILE = Path(__file__).parent / ".asc-state.json"
 EDITABLE_STATES = frozenset(
     {
         "PREPARE_FOR_SUBMISSION",
+        "READY_FOR_REVIEW",
         "DEVELOPER_REJECTED",
         "REJECTED",
         "METADATA_REJECTED",

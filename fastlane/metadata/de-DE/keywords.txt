@@ -1,1 +1,1 @@
-morgenroutine,zu spät,pünktlichkeit,timer,wecker,zeitplan,erinnerung,planer,countdown,fertig machen
+timer,planer,erinnerung,countdown,zeitmanagement,morgenroutine,tagesablauf,tagesplaner,gewohnheiten

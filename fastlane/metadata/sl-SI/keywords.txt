@@ -1,1 +1,1 @@
-jutranja rutina,zamujanje,točnost,časovnik,budilka,urnik,opomnik,načrtovalnik,odštevanje,navada
+koledar,načrtovalnik,časovnik,odštevanje,opomnik,navade,jutranja,organizacija,zamujanje,budilka

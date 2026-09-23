@@ -1,1 +1,1 @@
-ochtendroutine,te laat,stiptheid,timer,wekker,planning,herinnering,planner,aftellen,klaarmaken,focus
+planner,timer,aftellen,planning,agenda,herinnering,ochtendroutine,dagritme,gewoontes,structuur

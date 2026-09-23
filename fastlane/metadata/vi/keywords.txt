@@ -1,1 +1,1 @@
-đi muộn,thói quen buổi sáng,quản lý thời gian,hẹn giờ,báo thức,lịch trình,nhắc nhở,lập kế hoạch
+hẹn giờ,đếm ngược,nhắc nhở,lập kế hoạch,lịch trình,thời gian,buổi sáng,đi muộn,báo thức,timer,lịch

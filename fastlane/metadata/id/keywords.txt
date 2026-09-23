@@ -1,1 +1,1 @@
-rutinitas pagi,terlambat,manajemen waktu,pengatur waktu,alarm,jadwal,pengingat,perencana,bersiap
+timer,pengingat,jadwal,harian,perencana,hitung mundur,kebiasaan,pagi,manajemen,terlambat,alarm

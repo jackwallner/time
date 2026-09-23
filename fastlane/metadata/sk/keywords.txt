@@ -1,1 +1,1 @@
-ranná rutina,meškanie,dochvíľnosť,časovač,budík,rozvrh,pripomienka,plánovač,odpočítavanie,chystanie
+kalendár,plánovač,timer,časovač,odpočítavanie,pripomienka,návyky,ranná,organizácia,neskoro,budík

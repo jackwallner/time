@@ -1,1 +1,1 @@
-rutina matinal,arribar tard,temporitzador,alarma,horari,recordatori,planificador,compte enrere,hàbit
+temporitzador,agenda,recordatori,planificador,compte enrere,matí,hàbits,organització,rutines,visual

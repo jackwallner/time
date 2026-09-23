@@ -1,1 +1,1 @@
-sabah rutini,geç kalma,dakiklik,zamanlayıcı,alarm,program,hatırlatıcı,planlayıcı,geri sayım,düzen
+sayaç,geri sayım,hatırlatıcı,planlayıcı,zamanlayıcı,alışkanlık,sabah,günlük,plan,takvim,alarm,adhd

@@ -1,1 +1,1 @@
-jutarnja rutina,kašnjenje,točnost,mjerač vremena,alarm,raspored,podsjetnik,planer,odbrojavanje,fokus
+kalendar,planer,timer,odbrojavanje,podsjetnik,navike,jutarnja,organizacija,kašnjenje,budilica,plan

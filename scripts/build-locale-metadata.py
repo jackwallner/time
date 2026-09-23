@@ -24,6 +24,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 META = ROOT / "fastlane" / "metadata"
 COPY = Path(__file__).resolve().parent / "locale_copy"
 EULA = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
@@ -39,12 +40,15 @@ SEPARATOR = {"ja": "、", "zh-Hans": "，", "zh-Hant": "，"}
 
 
 def load() -> dict[str, dict]:
+    from keyword_research import KEYWORDS
     copy: dict[str, dict] = {}
     for path in sorted(COPY.glob("*.py")):
         spec = importlib.util.spec_from_file_location(path.stem, path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         copy.update(module.COPY)
+    for locale, words in KEYWORDS.items():
+        copy[locale]["keywords"] = words
     return copy
 
 
