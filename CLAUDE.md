@@ -79,6 +79,14 @@ move learning or alerts behind Pro. The trial page promises a day-5 reminder;
 - Store copy for 50 locales lives in `scripts/locale_copy/`; regenerate with
   `scripts/build-locale-metadata.py`, never edit `fastlane/metadata/*` by hand.
 
+## Site
+
+`docs/` is the marketing site, privacy policy, terms and support page, served
+at `jackwallner.github.io/time/` (the URLs in ASC) and mirrored to
+`jackwallner.com/ios/time/` by `.github/workflows/sync-landing-page.yml`
+(`PORTFOLIO_DEPLOY_KEY`, its own deploy key on the portfolio repo). The
+portfolio entry lives in `~/portfolio/docs/projects.json`, slug `time`.
+
 ## Deep notes (load on demand)
 
 | File | Covers | Read when |
