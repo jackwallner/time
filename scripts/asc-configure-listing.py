@@ -27,6 +27,12 @@ WHAT A FRESH INSTALL SHOWS
 3. Home shows the next departure (when to start, when to leave), the plan as a timeline, and how recent departures went.
 4. Tap Start now to run the routine: one step at a time with a countdown dial, whether the user is on track or behind, and a Done button. The same run appears as a Live Activity on the Lock Screen with a Done button. After the last step, "I'm out the door" records the departure and shows each step's guess against its real time.
 
+COACHING FOR LATE MORNINGS (all free)
+- If the get-ready alert goes unanswered, two follow-ups say when starting right then gets the user out the door. Once the start time has passed, Home reads "Start now" with the cost.
+- Just this once: the "..." menu on the Home card skips the next departure or gives one day a different leave time. The get-ready alert also has a "Skip this time" action.
+- During a run that is 2 or more minutes behind, the run screen offers to drop one later step to catch up.
+- A "Next start" widget (Home Screen small, Lock Screen, StandBy) shows when to start and counts down in the last hour.
+
 HOW IT LEARNS
 Each Done tap times the step. The plan blends those timings into each step's estimate, learns an overall pace for untimed steps, and learns the delay between the get-ready alert and actually starting. Settings > Forget my real times resets it.
 
