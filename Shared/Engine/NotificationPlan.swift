@@ -4,6 +4,8 @@ import Foundation
 struct PlannedAlert: Hashable, Sendable {
     enum Kind: String, Sendable {
         case getReady
+        /// The get-ready alert went unanswered: here is what starting now costs.
+        case startNudge
         case leaveSoon
         case leaveNow
         case wrapUp
@@ -17,6 +19,9 @@ struct PlannedAlert: Hashable, Sendable {
     var body: String
     /// The routine a get-ready alert starts when tapped.
     var routineID: UUID?
+    /// The departure a get-ready alert is for, so it can be skipped from the
+    /// notification itself.
+    var leaveAt: Date?
 }
 
 struct AlertPreferences: Sendable {
@@ -33,6 +38,13 @@ enum NotificationPlan {
     static let horizonDays = 10
     static let leaveSoonMinutes = 10
     static let overrunGraceMinutes = 5
+    /// Minutes after an unanswered get-ready alert to follow up. Time
+    /// blindness means one alert is easy to swipe away and forget.
+    static let startNudgeMinutes = [5, 12]
+    /// Steps at least this long get a heads-up before their time is up
+    /// instead of a notice when it already is.
+    static let headsUpStepMinutes = 6
+    static let headsUpMinutes = 2
 
     static func alerts(
         routines: [Routine],
@@ -73,7 +85,7 @@ enum NotificationPlan {
         for routine in routines {
             for offset in 0...horizonDays {
                 guard let day = calendar.date(byAdding: .day, value: offset, to: today),
-                      routine.weekdays.contains(calendar.component(.weekday, from: day)) else { continue }
+                      routine.departs(on: day, calendar: calendar) else { continue }
                 let leaveAt = routine.leaveTime(on: day, calendar: calendar)
                 guard leaveAt > now else { continue }
                 if let run = activeRun, run.routineID == routine.id, run.leaveAt == leaveAt { continue }
@@ -83,6 +95,11 @@ enum NotificationPlan {
                 if alreadyLeft { continue }
                 let plan = Planner.plan(routine, leaveAt: leaveAt, calibration: calibration)
                 let key = "\(routine.id.uuidString).\(Int(leaveAt.timeIntervalSince1970))"
+                if preferences.startAlerts {
+                    // Nudges are kept even after the alert itself has fired,
+                    // so opening the app then does not cancel them.
+                    alerts += startNudges(key: key, routine: routine, plan: plan, now: now)
+                }
                 if preferences.startAlerts, plan.alertAt > now {
                     alerts.append(PlannedAlert(
                         id: "ready.\(key)",
@@ -90,7 +107,8 @@ enum NotificationPlan {
                         fireAt: plan.alertAt,
                         title: "Time to get ready",
                         body: "Start now to leave at \(Format.time(leaveAt)). \(routine.name) really takes \(Format.duration(minutes: plan.realMinutes)).",
-                        routineID: routine.id
+                        routineID: routine.id,
+                        leaveAt: leaveAt
                     ))
                 }
                 if preferences.leaveAlerts {
@@ -101,21 +119,48 @@ enum NotificationPlan {
         return Array(alerts.sorted { $0.fireAt < $1.fireAt }.prefix(scheduledLimit))
     }
 
-    /// Alerts for the run in progress: wrap up the current step when its time
-    /// is up, a nudge if it is still going a few minutes later, and the leave
-    /// alerts for this departure.
+    /// Follow-ups to an unanswered get-ready alert, each saying honestly when
+    /// starting right then gets them out the door. None once it is time to
+    /// think about leaving rather than starting.
+    static func startNudges(key: String, routine: Routine, plan: DeparturePlan, now: Date) -> [PlannedAlert] {
+        let cutoff = plan.leaveAt.addingTimeInterval(TimeInterval(-leaveSoonMinutes * 60))
+        return startNudgeMinutes.enumerated().compactMap { index, minutes in
+            let fireAt = plan.alertAt.addingTimeInterval(TimeInterval(minutes * 60))
+            guard fireAt > now, fireAt < cutoff else { return nil }
+            let out = fireAt.addingTimeInterval(TimeInterval(plan.realMinutes * 60))
+            let lateMinutes = Int((out.timeIntervalSince(plan.leaveAt) / 60).rounded(.up))
+            let body = lateMinutes <= 1
+                ? "Start now and you still leave on time at \(Format.time(plan.leaveAt))."
+                : "Starting now puts you out the door at \(Format.time(out)), \(lateMinutes) min late."
+            return PlannedAlert(
+                id: "nudge\(index).\(key)",
+                kind: .startNudge,
+                fireAt: fireAt,
+                title: "Not started yet?",
+                body: body,
+                routineID: routine.id,
+                leaveAt: plan.leaveAt
+            )
+        }
+    }
+
+    /// Alerts for the run in progress: a heads-up before a long step's time is
+    /// up (transitions are the hard part), a nudge if it is still going a few
+    /// minutes after, and the leave alerts for this departure.
     static func runAlerts(_ run: ActiveRun?, preferences: AlertPreferences, now: Date) -> [PlannedAlert] {
         guard let run else { return [] }
         var alerts: [PlannedAlert] = []
         let leave = Format.time(run.leaveAt)
         if preferences.stepNudges, let step = run.currentStep {
             let next = run.nextStep?.name ?? "shoes on and out the door"
-            if run.stepEndsAt > now {
+            let headsUp = step.plannedMinutes >= headsUpStepMinutes
+            let wrapAt = run.stepEndsAt.addingTimeInterval(headsUp ? TimeInterval(-headsUpMinutes * 60) : 0)
+            if wrapAt > now {
                 alerts.append(PlannedAlert(
                     id: "run.wrap.\(run.stepIndex)",
                     kind: .wrapUp,
-                    fireAt: run.stepEndsAt,
-                    title: "Wrap up: \(step.name)",
+                    fireAt: wrapAt,
+                    title: headsUp ? "\(headsUpMinutes) min left: \(step.name)" : "Wrap up: \(step.name)",
                     body: "Next: \(next). Leave at \(leave)."
                 ))
             }

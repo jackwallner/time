@@ -107,7 +107,7 @@ private struct ActiveRunScreen: View {
             HStack(spacing: 5) {
                 ForEach(run.steps.indices, id: \.self) { index in
                     Capsule()
-                        .fill(index < run.stepIndex ? Color.white : index == run.stepIndex ? Color.white.opacity(0.45) : Color.white.opacity(0.14))
+                        .fill(progressFill(index))
                         .frame(height: 4)
                 }
             }
@@ -117,13 +117,19 @@ private struct ActiveRunScreen: View {
         .padding(.top, 8)
     }
 
+    private func progressFill(_ index: Int) -> Color {
+        if run.steps[index].skipped { return .white.opacity(0.05) }
+        if index < run.stepIndex { return .white }
+        return index == run.stepIndex ? .white.opacity(0.45) : .white.opacity(0.14)
+    }
+
     private func stepFace(now: Date, status: RunStatus) -> some View {
         let remaining = run.stepEndsAt.timeIntervalSince(now)
         let planned = max(run.currentStep?.plannedSeconds ?? 1, 1)
         let clockColor = remaining >= 0 ? Color.white : Theme.color(for: status)
         return VStack(spacing: 26) {
             VStack(spacing: 6) {
-                Text("Step \(run.stepIndex + 1) of \(run.steps.count)")
+                Text("Step \(run.planStepNumber) of \(run.planStepCount)")
                     .font(.footnote.weight(.bold))
                     .foregroundStyle(.white.opacity(0.55))
                     .textCase(.uppercase)
@@ -155,12 +161,44 @@ private struct ActiveRunScreen: View {
             .frame(width: 260, height: 260)
             VStack(spacing: 12) {
                 StatusPill(status: status)
-                Text("Then \(run.nextStep?.name ?? "shoes on and out the door")")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.white.opacity(0.6))
+                if let drop = run.catchUpSuggestion(now: now) {
+                    catchUp(drop, status: status)
+                } else {
+                    Text("Then \(run.nextStep?.name ?? "shoes on and out the door")")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.white.opacity(0.6))
+                }
             }
+            .animation(.smooth, value: run.catchUpSuggestion(now: now)?.id)
         }
         .animation(.smooth(duration: 0.4), value: run.stepIndex)
+    }
+
+    /// Behind, with a way back: the one later step whose time would cover it.
+    private func catchUp(_ step: RunStep, status: RunStatus) -> some View {
+        let color = Theme.color(for: status)
+        return Button {
+            withAnimation(.smooth) { store.dropUpcomingStep(id: step.id) }
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "scissors")
+                    .font(.footnote.weight(.bold))
+                Text("Skip \(step.name) today, win back \(step.plannedMinutes) min")
+                    .font(.subheadline.weight(.semibold))
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 10)
+            .frame(minHeight: 44)
+            .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(color.opacity(0.6), lineWidth: 1))
+            .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.impact(weight: .light), trigger: run.upcomingSteps.count)
+        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+        .accessibilityHint("Takes \(step.name) off this morning's plan")
     }
 
     private func leaving(now: Date) -> some View {

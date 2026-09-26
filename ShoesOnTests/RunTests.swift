@@ -56,6 +56,42 @@ final class RunTests: XCTestCase {
         XCTAssertNil(unrelated.startDelaySeconds)
     }
 
+    func testWhenBehindItSuggestsTheStepThatCoversTheSlip() {
+        // Planned 12 + 12 + 6 = 30 min for a 30 min window, twenty minutes into the shower.
+        let run = makeRun(leaveIn: 30)
+        let late = t0.addingTimeInterval(20 * 60)
+        XCTAssertEqual(run.catchUpSuggestion(now: late)?.name, "Dress")
+        // Never the last step, and nothing to suggest when on track.
+        XCTAssertNil(run.catchUpSuggestion(now: t0))
+    }
+
+    func testDroppingAStepWinsItsTimeBackAndIsPassedOver() {
+        var run = makeRun(leaveIn: 30)
+        let late = t0.addingTimeInterval(20 * 60)
+        run.dropUpcomingStep(id: run.steps[1].id)
+        // Ready at 20 + 6 = 26 min for a 30 min window.
+        XCTAssertEqual(run.status(now: late), .ahead(minutes: 4))
+        XCTAssertEqual(run.nextStep?.name, "Shoes")
+        XCTAssertEqual(run.planStepCount, 2)
+        _ = run.completeCurrentStep(at: late)
+        XCTAssertEqual(run.currentStep?.name, "Shoes")
+        XCTAssertEqual(run.planStepNumber, 2)
+        XCTAssertNil(run.steps[1].actualSeconds)
+        XCTAssertTrue(run.steps[1].skipped)
+    }
+
+    func testTheCurrentStepCannotBeDropped() {
+        var run = makeRun()
+        run.dropUpcomingStep(id: run.steps[0].id)
+        XCTAssertFalse(run.steps[0].skipped)
+    }
+
+    func testARunLeftOpenForHoursIsAbandoned() {
+        let run = makeRun(leaveIn: 30)
+        XCTAssertFalse(run.isAbandoned(now: t0.addingTimeInterval(2 * 3600)))
+        XCTAssertTrue(run.isAbandoned(now: t0.addingTimeInterval(4 * 3600)))
+    }
+
     func testSnapshotProjectsTheSameStatusAsTheRun() {
         let run = makeRun(leaveIn: 30)
         let snapshot = RunSnapshot(run: run)

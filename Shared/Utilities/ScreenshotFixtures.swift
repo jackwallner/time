@@ -74,6 +74,17 @@ enum ScreenshotFixtures {
             ))
         }
 
+        if ScreenshotConfig.has("-SeedDayChanges") {
+            // The next routine day skipped, and a one-off on the coming Saturday.
+            let upcoming = (1...7).compactMap { calendar.date(byAdding: .day, value: $0, to: now) }
+            if let skip = upcoming.first(where: { routine.weekdays.contains(calendar.component(.weekday, from: $0)) }) {
+                state.routines[0].setChange(DayChange(day: skip, leaveMinuteOfDay: nil), on: skip)
+            }
+            if let saturday = upcoming.first(where: { calendar.component(.weekday, from: $0) == 7 }) {
+                state.routines[0].setChange(DayChange(day: saturday, leaveMinuteOfDay: 10 * 60 + 40), on: saturday)
+            }
+        }
+
         let calibration = Calibration(basePace: state.pace.multiplier, stepHistory: state.stepHistory, departures: state.departures)
         switch screen {
         case "run":

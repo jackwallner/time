@@ -19,6 +19,19 @@ prior so one odd morning cannot swing the plan (`Shared/Engine/Calibration.swift
 3. **Start delay**: how long after the get-ready alert they actually start.
    Becomes a head start (max 20 min) that moves the alert earlier.
 
+Coaching around the learning, for time-blind mornings:
+
+- **Missed starts**: two follow-ups after an unanswered get-ready alert, each
+  saying when starting right then gets them out (`NotificationPlan.startNudges`).
+  Home flips to "Start now" with the cost once the start time has passed.
+- **Just this once**: skip a day or give it a one-off time
+  (`Routine.changes`), from Home or the "Skip this time" notification action.
+- **Catch up**: when a run is 2+ min behind, it offers to drop the one later
+  step that covers the slip (`ActiveRun.catchUpSuggestion`).
+- Long steps get a 2-minute heads-up; runs left open 3 h expire on foreground.
+- Next-start widget (Home, Lock Screen, StandBy) counts down the last hour,
+  fed by `WidgetSnapshot` in the App Group.
+
 The guess is never overwritten. The gap between guess and real time is what
 the home screen, the reveal page and the summary show.
 

@@ -101,16 +101,31 @@ private struct RoutineDashboard: View {
     @EnvironmentObject private var store: RoutineStore
     let routine: Routine
     let onEdit: () -> Void
+    @State private var changingDay: ChangeDay?
 
     var body: some View {
         TimelineView(.everyMinute) { context in
             let now = AppClock.adjust(context.date)
-            let plan = store.nextPlan(for: routine, now: now)
-                ?? store.plan(for: routine, leaveAt: routine.leaveTimeForRunStarted(at: now))
+            let next = store.nextPlan(for: routine, now: now)
+            let plan = next ?? store.plan(for: routine, leaveAt: routine.leaveTimeForRunStarted(at: now))
+            let changes = routine.upcomingChanges(from: now)
             ScrollView {
                 VStack(spacing: 14) {
-                    NextDepartureCard(routine: routine, plan: plan, isScheduled: !routine.weekdays.isEmpty, now: now) {
-                        withAnimation(.smooth) { store.startRun(routineID: routine.id) }
+                    NextDepartureCard(
+                        routine: routine,
+                        plan: plan,
+                        isScheduled: next != nil,
+                        now: now,
+                        onStart: { withAnimation(.smooth) { store.startRun(routineID: routine.id) } },
+                        onSkip: {
+                            withAnimation(.smooth) {
+                                store.setChange(DayChange(day: plan.leaveAt, leaveMinuteOfDay: nil), on: plan.leaveAt, routineID: routine.id)
+                            }
+                        },
+                        onChange: { changingDay = ChangeDay(date: $0) }
+                    )
+                    if !changes.isEmpty {
+                        ChangesCard(routine: routine, changes: changes, now: now)
                     }
                     Card {
                         HStack {
@@ -130,7 +145,21 @@ private struct RoutineDashboard: View {
                 .padding(.bottom, 32)
             }
         }
+        .sheet(item: $changingDay) { day in
+            DayChangeSheet(routine: routine, day: day.date)
+        }
+        #if DEBUG
+        .onAppear {
+            guard ScreenshotConfig.has("-OpenDayChange") else { return }
+            changingDay = ChangeDay(date: Calendar.current.date(byAdding: .day, value: 1, to: AppClock.now) ?? AppClock.now)
+        }
+        #endif
     }
+}
+
+private struct ChangeDay: Identifiable {
+    let date: Date
+    var id: Date { date }
 }
 
 private struct NextDepartureCard: View {
@@ -139,21 +168,31 @@ private struct NextDepartureCard: View {
     let isScheduled: Bool
     let now: Date
     let onStart: () -> Void
+    let onSkip: () -> Void
+    let onChange: (Date) -> Void
+
+    /// Past the start time and not started: the card stops quoting a time and
+    /// says what starting right now costs.
+    private var isOverdue: Bool { isScheduled && plan.alertAt <= now && now < plan.leaveAt }
 
     var body: some View {
         let total = plan.realMinutes + plan.headStartMinutes
         Card(padding: 22) {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
-                    SectionLabel(isScheduled ? "\(Format.day(plan.leaveAt, now: now)) · \(Format.weekdays(routine.weekdays))" : "Any day")
-                    Text("Start \(Format.time(plan.alertAt))")
+                    HStack(alignment: .center) {
+                        SectionLabel(label)
+                        Spacer()
+                        changeMenu
+                    }
+                    Text(isOverdue ? "Start now" : "Start \(Format.time(plan.alertAt))")
                         .font(.system(size: 44, weight: .heavy, design: .rounded))
                         .foregroundStyle(Theme.ink)
                         .minimumScaleFactor(0.6)
                         .lineLimit(1)
-                    Text(subtitle)
+                        .contentTransition(.numericText())
+                    subtitle
                         .font(.subheadline.weight(.medium))
-                        .foregroundStyle(Theme.secondary)
                 }
                 GapBars(guess: plan.guessMinutes, real: total)
                 if total > plan.guessMinutes {
@@ -172,10 +211,94 @@ private struct NextDepartureCard: View {
         }
     }
 
-    private var subtitle: String {
+    private var label: String {
+        guard isScheduled else { return "Any day" }
+        let day = Format.day(plan.leaveAt, now: now)
+        if routine.change(on: plan.leaveAt) != nil { return "\(day) · one-off time" }
+        return "\(day) · \(Format.weekdays(routine.weekdays))"
+    }
+
+    @ViewBuilder private var subtitle: some View {
         let leave = "Out the door \(Format.time(plan.leaveAt))"
-        guard plan.alertAt > now else { return "\(leave) · already on the clock" }
-        return "\(leave) · starts \(Format.relative(to: plan.alertAt, now: now))"
+        if isOverdue {
+            let out = now.addingTimeInterval(TimeInterval(plan.realMinutes * 60))
+            let late = Int((out.timeIntervalSince(plan.leaveAt) / 60).rounded(.up))
+            if late <= 1 {
+                Text("\(leave) · still on time if you start now").foregroundStyle(Theme.onTrack)
+            } else {
+                Text("Starting now: out \(Format.time(out)), \(late) min late").foregroundStyle(Theme.late)
+            }
+        } else if plan.alertAt.timeIntervalSince(now) > 12 * 3600 {
+            Text(leave).foregroundStyle(Theme.secondary)
+        } else {
+            Text("\(leave) · starts \(Format.relative(to: plan.alertAt, now: now))").foregroundStyle(Theme.secondary)
+        }
+    }
+
+    private var changeMenu: some View {
+        Menu {
+            if isScheduled {
+                let day = Format.dayPhrase(plan.leaveAt, now: now)
+                Button {
+                    onSkip()
+                } label: {
+                    Label("Skip \(day)", systemImage: "moon.zzz")
+                }
+                Button {
+                    onChange(plan.leaveAt)
+                } label: {
+                    Label("Leave at another time \(day)", systemImage: "clock.arrow.circlepath")
+                }
+            }
+            Button {
+                onChange(now)
+            } label: {
+                Label("Change another day", systemImage: "calendar")
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.body.weight(.bold))
+                .foregroundStyle(Theme.secondary)
+                .frame(width: 36, height: 28)
+                .contentShape(Rectangle())
+        }
+        .accessibilityLabel("Change a day")
+    }
+}
+
+/// Upcoming one-off days, each with a way back to normal.
+private struct ChangesCard: View {
+    @EnvironmentObject private var store: RoutineStore
+    let routine: Routine
+    let changes: [DayChange]
+    let now: Date
+
+    var body: some View {
+        Card {
+            SectionLabel("Just this once")
+                .padding(.bottom, 6)
+            ForEach(changes, id: \.day) { change in
+                HStack(spacing: 10) {
+                    Image(systemName: change.isSkip ? "moon.zzz.fill" : "clock.fill")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Theme.secondary)
+                        .frame(width: 20)
+                    Text(Format.day(change.day, now: now))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.ink)
+                    Text(change.isSkip ? "Skipped" : "Leave \(Format.time(routine.leaveTime(on: change.day)))")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.secondary)
+                    Spacer()
+                    Button("Undo") {
+                        withAnimation(.smooth) { store.setChange(nil, on: change.day, routineID: routine.id) }
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.ink)
+                }
+                .frame(minHeight: 40)
+            }
+        }
     }
 }
 

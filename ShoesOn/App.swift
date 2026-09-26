@@ -28,7 +28,7 @@ struct ShoesOnApp: App {
                 .onChange(of: scenePhase) { _, phase in
                     // Plans move as timings arrive and days pass, so the
                     // rolling alert window is rebuilt whenever the app is seen.
-                    if phase == .active { store.propagate() }
+                    if phase == .active { store.refresh() }
                 }
         }
     }

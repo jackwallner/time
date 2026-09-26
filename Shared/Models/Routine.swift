@@ -15,6 +15,18 @@ struct RoutineStep: Codable, Identifiable, Hashable, Sendable {
     }
 }
 
+/// A one-off change to a single day: leave at another time, or not at all.
+/// Holidays, sick days and the early dentist appointment are where a fixed
+/// schedule fails; this is how the routine bends without being edited.
+struct DayChange: Codable, Hashable, Sendable {
+    /// The start of the changed day.
+    var day: Date
+    /// Minutes after midnight to leave at, or nil when the day is skipped.
+    var leaveMinuteOfDay: Int?
+
+    var isSkip: Bool { leaveMinuteOfDay == nil }
+}
+
 /// A departure the user makes on a schedule: when they walk out the door, on
 /// which days, and the steps that come before it.
 struct Routine: Codable, Identifiable, Hashable, Sendable {
@@ -25,6 +37,8 @@ struct Routine: Codable, Identifiable, Hashable, Sendable {
     /// `Calendar` weekdays, 1 = Sunday through 7 = Saturday.
     var weekdays: Set<Int>
     var steps: [RoutineStep]
+    /// One-off changes to single days, at most one per day.
+    var changes: [DayChange]
 
     init(
         id: UUID = UUID(),
@@ -32,7 +46,8 @@ struct Routine: Codable, Identifiable, Hashable, Sendable {
         leaveHour: Int,
         leaveMinute: Int,
         weekdays: Set<Int>,
-        steps: [RoutineStep]
+        steps: [RoutineStep],
+        changes: [DayChange] = []
     ) {
         self.id = id
         self.name = name
@@ -40,22 +55,56 @@ struct Routine: Codable, Identifiable, Hashable, Sendable {
         self.leaveMinute = leaveMinute
         self.weekdays = weekdays
         self.steps = steps
+        self.changes = changes
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, leaveHour, leaveMinute, weekdays, steps, changes
+    }
+
+    /// `changes` arrived after the first builds; older files decode without it.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        leaveHour = try container.decode(Int.self, forKey: .leaveHour)
+        leaveMinute = try container.decode(Int.self, forKey: .leaveMinute)
+        weekdays = try container.decode(Set<Int>.self, forKey: .weekdays)
+        steps = try container.decode([RoutineStep].self, forKey: .steps)
+        changes = try container.decodeIfPresent([DayChange].self, forKey: .changes) ?? []
     }
 
     var guessTotalMinutes: Int { steps.reduce(0) { $0 + $1.guessMinutes } }
 
-    /// The leave time on the given day, in the calendar's time zone.
-    func leaveTime(on day: Date, calendar: Calendar = .current) -> Date {
-        calendar.date(bySettingHour: leaveHour, minute: leaveMinute, second: 0, of: day) ?? day
+    func change(on day: Date, calendar: Calendar = .current) -> DayChange? {
+        changes.first { calendar.isDate($0.day, inSameDayAs: day) }
     }
 
-    /// The next scheduled departure strictly after `now`, on an enabled weekday.
+    /// Whether there is a departure on this day: a scheduled weekday that was
+    /// not skipped, or any day given a one-off time.
+    func departs(on day: Date, calendar: Calendar = .current) -> Bool {
+        if let change = change(on: day, calendar: calendar) { return !change.isSkip }
+        return weekdays.contains(calendar.component(.weekday, from: day))
+    }
+
+    /// The leave time on the given day, in the calendar's time zone, with any
+    /// one-off time for that day applied.
+    func leaveTime(on day: Date, calendar: Calendar = .current) -> Date {
+        var hour = leaveHour
+        var minute = leaveMinute
+        if let override = change(on: day, calendar: calendar)?.leaveMinuteOfDay {
+            hour = override / 60
+            minute = override % 60
+        }
+        return calendar.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
+    }
+
+    /// The next departure strictly after `now`, honouring skips and one-offs.
     func nextScheduledLeave(after now: Date, calendar: Calendar = .current) -> Date? {
-        guard !weekdays.isEmpty else { return nil }
         let today = calendar.startOfDay(for: now)
-        for offset in 0...7 {
-            guard let day = calendar.date(byAdding: .day, value: offset, to: today) else { continue }
-            guard weekdays.contains(calendar.component(.weekday, from: day)) else { continue }
+        for offset in 0...14 {
+            guard let day = calendar.date(byAdding: .day, value: offset, to: today),
+                  departs(on: day, calendar: calendar) else { continue }
             let leave = leaveTime(on: day, calendar: calendar)
             if leave > now { return leave }
         }
@@ -70,6 +119,32 @@ struct Routine: Codable, Identifiable, Hashable, Sendable {
         if today > now { return today }
         let tomorrow = calendar.date(byAdding: .day, value: 1, to: now) ?? now
         return leaveTime(on: tomorrow, calendar: calendar)
+    }
+
+    /// Replaces any change on that day. A time equal to the usual one on a
+    /// scheduled day is no change at all, so it is dropped.
+    mutating func setChange(_ change: DayChange?, on day: Date, calendar: Calendar = .current) {
+        changes.removeAll { calendar.isDate($0.day, inSameDayAs: day) }
+        guard var change else { return }
+        change.day = calendar.startOfDay(for: day)
+        let usual = leaveHour * 60 + leaveMinute
+        let scheduled = weekdays.contains(calendar.component(.weekday, from: day))
+        if scheduled && change.leaveMinuteOfDay == usual { return }
+        if !scheduled && change.isSkip { return }
+        changes.append(change)
+        changes.sort { $0.day < $1.day }
+    }
+
+    /// Forgets changes for days already gone.
+    mutating func pruneChanges(before now: Date, calendar: Calendar = .current) {
+        let today = calendar.startOfDay(for: now)
+        changes.removeAll { $0.day < today }
+    }
+
+    /// Changes from today on, soonest first.
+    func upcomingChanges(from now: Date, calendar: Calendar = .current) -> [DayChange] {
+        let today = calendar.startOfDay(for: now)
+        return changes.filter { $0.day >= today }.sorted { $0.day < $1.day }
     }
 }
 

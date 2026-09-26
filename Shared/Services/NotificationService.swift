@@ -13,6 +13,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     static let stepCategory = "STEP"
     static let startAction = "START"
     static let doneAction = "DONE"
+    static let skipAction = "SKIP"
 
     private let center = UNUserNotificationCenter.current()
     private let logger = Logger(subsystem: AppGroup.subsystem, category: "Notifications")
@@ -22,8 +23,9 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         center.delegate = self
         let start = UNNotificationAction(identifier: Self.startAction, title: "Start now", options: [.foreground])
         let done = UNNotificationAction(identifier: Self.doneAction, title: "Done, next step", options: [])
+        let skip = UNNotificationAction(identifier: Self.skipAction, title: "Skip this time", options: [])
         center.setNotificationCategories([
-            UNNotificationCategory(identifier: Self.readyCategory, actions: [start], intentIdentifiers: []),
+            UNNotificationCategory(identifier: Self.readyCategory, actions: [start, skip], intentIdentifiers: []),
             UNNotificationCategory(identifier: Self.stepCategory, actions: [done], intentIdentifiers: []),
         ])
     }
@@ -98,9 +100,12 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         content.sound = .default
         content.interruptionLevel = .timeSensitive
         switch alert.kind {
-        case .getReady:
+        case .getReady, .startNudge:
             content.categoryIdentifier = Self.readyCategory
-            if let routineID = alert.routineID { content.userInfo = ["routineID": routineID.uuidString] }
+            var info: [String: Any] = [:]
+            if let routineID = alert.routineID { info["routineID"] = routineID.uuidString }
+            if let leaveAt = alert.leaveAt { info["leaveAt"] = leaveAt.timeIntervalSince1970 }
+            content.userInfo = info
         case .wrapUp, .overrun:
             content.categoryIdentifier = Self.stepCategory
         case .leaveSoon, .leaveNow:
@@ -128,7 +133,9 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse
     ) async {
         let action = response.actionIdentifier
-        let routineID = (response.notification.request.content.userInfo["routineID"] as? String).flatMap(UUID.init)
+        let info = response.notification.request.content.userInfo
+        let routineID = (info["routineID"] as? String).flatMap(UUID.init)
+        let leaveAt = (info["leaveAt"] as? TimeInterval).map(Date.init(timeIntervalSince1970:))
         await MainActor.run {
             let store = RoutineStore.shared
             switch action {
@@ -136,6 +143,9 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
                 if let routineID { store.startRun(routineID: routineID) } else { store.startNextRun() }
             case Self.doneAction:
                 store.completeStep()
+            case Self.skipAction:
+                guard let routineID, let leaveAt else { return }
+                store.setChange(DayChange(day: leaveAt, leaveMinuteOfDay: nil), on: leaveAt, routineID: routineID)
             default:
                 break
             }

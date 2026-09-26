@@ -6,6 +6,7 @@ import WidgetKit
 @main
 struct ShoesOnWidgetBundle: WidgetBundle {
     var body: some Widget {
+        NextDepartureWidget()
         RunLiveActivity()
     }
 }

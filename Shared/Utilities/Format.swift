@@ -30,6 +30,17 @@ enum Format {
         return date.formatted(.dateTime.weekday(.wide))
     }
 
+    /// "today", "tomorrow" or "Wednesday", for the middle of a sentence.
+    static func dayPhrase(_ date: Date, now: Date = .now, calendar: Calendar = .current) -> String {
+        let name = day(date, now: now, calendar: calendar)
+        if calendar.isDate(date, inSameDayAs: now) { return name.lowercased() }
+        if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now),
+           calendar.isDate(date, inSameDayAs: tomorrow) {
+            return name.lowercased()
+        }
+        return name
+    }
+
     /// "in 42 min", "in 3 hr 5 min", "now".
     static func relative(to date: Date, now: Date = .now) -> String {
         let minutes = Int((date.timeIntervalSince(now) / 60).rounded(.up))

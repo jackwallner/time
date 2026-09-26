@@ -79,7 +79,19 @@ struct ActiveRun: Codable, Hashable, Sendable {
     var isLeaving: Bool { stepIndex >= steps.count }
 
     var currentStep: RunStep? { steps.indices.contains(stepIndex) ? steps[stepIndex] : nil }
-    var nextStep: RunStep? { steps.indices.contains(stepIndex + 1) ? steps[stepIndex + 1] : nil }
+
+    /// The next step still to do, passing over any dropped to catch up.
+    var nextStep: RunStep? { upcomingSteps.first }
+
+    /// "Step 2 of 4", counting only steps done or still on the plan.
+    var planStepNumber: Int { steps.prefix(stepIndex + 1).filter { !$0.skipped }.count }
+    var planStepCount: Int { steps.filter { !$0.skipped }.count }
+
+    /// Steps after the current one that are still on the plan.
+    var upcomingSteps: [RunStep] {
+        guard stepIndex + 1 < steps.count else { return [] }
+        return steps[(stepIndex + 1)...].filter { !$0.skipped }
+    }
 
     /// When the current step should wrap up to stay on plan.
     var stepEndsAt: Date {
@@ -89,8 +101,7 @@ struct ActiveRun: Codable, Hashable, Sendable {
 
     /// Planned seconds still to come after the current step.
     var remainingAfterCurrentSeconds: TimeInterval {
-        guard stepIndex + 1 < steps.count else { return 0 }
-        return steps[(stepIndex + 1)...].reduce(0) { $0 + $1.plannedSeconds }
+        upcomingSteps.reduce(0) { $0 + $1.plannedSeconds }
     }
 
     /// When the user will be ready to leave if every remaining step takes its
@@ -118,8 +129,7 @@ struct ActiveRun: Codable, Hashable, Sendable {
         guard steps.indices.contains(stepIndex) else { return nil }
         steps[stepIndex].actualSeconds = max(0, now.timeIntervalSince(stepStartedAt))
         let finished = steps[stepIndex]
-        stepIndex += 1
-        stepStartedAt = now
+        advance(from: now)
         return finished
     }
 
@@ -128,8 +138,41 @@ struct ActiveRun: Codable, Hashable, Sendable {
     mutating func skipCurrentStep(at now: Date) {
         guard steps.indices.contains(stepIndex) else { return }
         steps[stepIndex].skipped = true
+        advance(from: now)
+    }
+
+    /// Takes a step that has not started off today's plan, to win its time
+    /// back. Like a skip, it teaches nothing about how long the step takes.
+    mutating func dropUpcomingStep(id: UUID) {
+        guard let index = steps.firstIndex(where: { $0.id == id }), index > stepIndex else { return }
+        steps[index].skipped = true
+    }
+
+    /// Moves to the next step still on the plan, or to leaving.
+    private mutating func advance(from now: Date) {
         stepIndex += 1
+        while stepIndex < steps.count, steps[stepIndex].skipped { stepIndex += 1 }
         stepStartedAt = now
+    }
+
+    /// When the run is behind, the one step to drop that best wins the time
+    /// back: the shortest that covers the slip, else the longest. Never the
+    /// last step, which is usually the walk out itself.
+    func catchUpSuggestion(now: Date) -> RunStep? {
+        guard case .behind(let minutes) = status(now: now), minutes >= 2 else { return nil }
+        let candidates = upcomingSteps.dropLast()
+        guard !candidates.isEmpty else { return nil }
+        let covering = candidates.filter { $0.plannedMinutes >= minutes }
+        return covering.min { $0.plannedMinutes < $1.plannedMinutes }
+            ?? candidates.max { $0.plannedMinutes < $1.plannedMinutes }
+    }
+
+    /// A run nobody closed: hours past its leave time, the user long gone.
+    /// Kept this long so a late morning can still be finished honestly.
+    static let abandonAfter: TimeInterval = 3 * 3600
+
+    func isAbandoned(now: Date) -> Bool {
+        now.timeIntervalSince(leaveAt) > Self.abandonAfter
     }
 
     /// Seconds between the alert and the start, when the start answered it.

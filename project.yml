@@ -80,6 +80,7 @@ targets:
       - path: Shared/LiveActivity/RunIntents.swift
       - path: Shared/Engine
       - path: Shared/Models
+      - path: Shared/Utilities/AppGroup.swift
       - path: Shared/Utilities/Format.swift
       - path: Shared/Utilities/Theme.swift
     settings:

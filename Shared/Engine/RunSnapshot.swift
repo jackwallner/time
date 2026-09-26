@@ -20,8 +20,9 @@ struct RunSnapshot: Codable, Hashable, Sendable {
         leaveAt = run.leaveAt
         stepName = run.currentStep?.name
         nextStepName = run.nextStep?.name
-        stepIndex = run.stepIndex
-        stepCount = run.steps.count
+        // Positions among the steps still on the plan, for "Step 2 of 4".
+        stepIndex = run.planStepNumber - 1
+        stepCount = run.planStepCount
         stepStartedAt = run.stepStartedAt
         stepEndsAt = run.stepEndsAt
         remainingAfterCurrentSeconds = run.remainingAfterCurrentSeconds
@@ -44,6 +45,16 @@ struct NextDepartureSnapshot: Codable, Hashable, Sendable {
     var routineName: String
     var alertAt: Date
     var leaveAt: Date
+}
+
+/// What the Home Screen and Lock Screen widgets draw between launches: the
+/// next few departures, soonest first, and the run if one is going.
+struct WidgetSnapshot: Codable, Hashable, Sendable {
+    var departures: [NextDepartureSnapshot]
+    var run: RunSnapshot?
+
+    static let defaultsKey = "widget.snapshot"
+    static let kind = "NextDeparture"
 }
 
 /// Everything the phone sends the Watch.
