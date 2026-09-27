@@ -108,4 +108,4 @@ portfolio entry lives in `~/portfolio/docs/projects.json`, slug `time`.
 
 ---
 Shared iOS conventions (build, simulator, release/TestFlight, ASC key, signing,
-review funnel, gotchas): always-loaded global CLAUDE.md + the `ios-dev` skill.
+review funnel, gotchas): the global agent rules + the `ios-dev` skill.
