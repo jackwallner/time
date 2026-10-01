@@ -99,9 +99,12 @@ struct HomeView: View {
 
 private struct RoutineDashboard: View {
     @EnvironmentObject private var store: RoutineStore
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.openURL) private var openURL
     let routine: Routine
     let onEdit: () -> Void
     @State private var changingDay: ChangeDay?
+    @State private var alertsOff = false
 
     var body: some View {
         TimelineView(.everyMinute) { context in
@@ -111,10 +114,16 @@ private struct RoutineDashboard: View {
             let changes = routine.upcomingChanges(from: now)
             ScrollView {
                 VStack(spacing: 14) {
+                    if alertsOff {
+                        AlertsOffCard {
+                            if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
+                        }
+                    }
                     NextDepartureCard(
                         routine: routine,
                         plan: plan,
                         isScheduled: next != nil,
+                        startTitle: startTitle(now: now),
                         now: now,
                         onStart: { withAnimation(.smooth) { store.startRun(routineID: routine.id) } },
                         onSkip: {
@@ -148,12 +157,60 @@ private struct RoutineDashboard: View {
         .sheet(item: $changingDay) { day in
             DayChangeSheet(routine: routine, day: day.date)
         }
+        // Without alerts the plan is only a screen nobody looks at in the
+        // morning. Checked again on return from Settings.
+        .task(id: scenePhase) {
+            guard scenePhase == .active else { return }
+            let denied = await NotificationService.shared.authorizationStatus() == .denied
+            withAnimation(.smooth) { alertsOff = denied }
+        }
         #if DEBUG
         .onAppear {
             guard ScreenshotConfig.has("-OpenDayChange") else { return }
             changingDay = ChangeDay(date: Calendar.current.date(byAdding: .day, value: 1, to: AppClock.now) ?? AppClock.now)
         }
         #endif
+    }
+}
+
+extension RoutineDashboard {
+    /// "Start now" when the start is close or passed, "Start early" ahead of
+    /// it, and a practice run when no departure is due for hours.
+    fileprivate func startTitle(now: Date) -> String {
+        let target = store.runTarget(for: routine, now: now)
+        if target.isPractice { return "Practice run" }
+        let alertAt = store.plan(for: routine, leaveAt: target.leaveAt).alertAt
+        return alertAt.timeIntervalSince(now) > 5 * 60 ? "Start early" : "Start now"
+    }
+}
+
+/// Shown while notifications are denied, since every alert depends on them.
+private struct AlertsOffCard: View {
+    let onTurnOn: () -> Void
+
+    var body: some View {
+        Card {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "bell.slash.fill")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Theme.late)
+                    .padding(.top, 2)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Alerts are off")
+                        .font(.headline)
+                        .foregroundStyle(Theme.ink)
+                    Text("Shoes On can't tell you when to start. Turn on notifications so the plan reaches you in the morning.")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button("Turn on", action: onTurnOn)
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(Theme.ink)
+                        .padding(.top, 6)
+                }
+            }
+        }
+        .transition(.opacity.combined(with: .move(edge: .top)))
     }
 }
 
@@ -166,6 +223,7 @@ private struct NextDepartureCard: View {
     let routine: Routine
     let plan: DeparturePlan
     let isScheduled: Bool
+    let startTitle: String
     let now: Date
     let onStart: () -> Void
     let onSkip: () -> Void
@@ -204,7 +262,7 @@ private struct NextDepartureCard: View {
                     }
                 }
                 Button(action: onStart) {
-                    Label("Start now", systemImage: "play.fill")
+                    Label(startTitle, systemImage: "play.fill")
                 }
                 .buttonStyle(.primary)
             }

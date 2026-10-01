@@ -46,7 +46,10 @@ struct PaywallView: View {
                                 selection = .monthly
                             }
                         }
-                        if purchases.packages.isEmpty {
+                        if purchases.plansUnavailable {
+                            Button("Try again") { purchases.reloadProducts() }
+                                .buttonStyle(.secondary(Theme.ink))
+                        } else if purchases.packages.isEmpty {
                             ProgressView().frame(maxWidth: .infinity).padding()
                         }
                     }
@@ -59,7 +62,10 @@ struct PaywallView: View {
         }
         .background(Theme.background.ignoresSafeArea())
         .safeAreaInset(edge: .bottom, spacing: 0) { purchaseBar }
-        .onAppear { purchases.trackPaywallImpression(id: surface) }
+        .onAppear {
+            purchases.trackPaywallImpression(id: surface)
+            purchases.reloadProducts()
+        }
         .onChange(of: purchases.isPro) { _, isPro in
             if isPro { dismiss() }
         }

@@ -75,7 +75,7 @@ struct OnboardingView: View {
     private var bottomBar: some View {
         OnboardingBottomBar(
             primaryTitle: primaryTitle,
-            isBusy: isAdvancing || (isTrialPage && purchases.isPurchasing),
+            isBusy: isAdvancing || (isTrialPage && (purchases.isPurchasing || (purchases.isLoadingProducts && purchases.yearly == nil))),
             isDisabled: !canContinue,
             primaryAction: advance,
             footer: OnboardingLegalFooter(isPlaceholder: !isTrialPage, isRestoring: purchases.isPurchasing) {
@@ -93,11 +93,13 @@ struct OnboardingView: View {
                             .foregroundStyle(Theme.late)
                             .multilineTextAlignment(.center)
                     }
-                    Text(trialDisclosure)
-                        .font(.footnote)
-                        .foregroundStyle(Theme.secondary)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
+                    if let trialDisclosure {
+                        Text(trialDisclosure)
+                            .font(.footnote)
+                            .foregroundStyle(Theme.secondary)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                     Button("Get Started", action: finish)
                         .buttonStyle(.secondary)
                 } else {
@@ -118,11 +120,16 @@ struct OnboardingView: View {
 
     private var primaryTitle: String {
         guard isTrialPage else { return "Continue" }
+        if purchases.plansUnavailable { return "Try again" }
         return trialEligible ? "Start 7-day free trial" : "Continue with Pro"
     }
 
-    private var trialDisclosure: String {
-        guard let yearly = purchases.yearly else { return "Loading plans…" }
+    /// Nil when the plans failed and the error above already says so.
+    private var trialDisclosure: String? {
+        guard let yearly = purchases.yearly else {
+            guard purchases.plansUnavailable else { return "Loading plans…" }
+            return purchases.errorMessage == nil ? "Plans couldn't load. Check your connection and try again." : nil
+        }
         if trialEligible {
             return "Free for 7 days, then \(yearly.billedLabel). Cancel anytime in Settings at least 24 hours before the trial ends."
         }
@@ -134,7 +141,7 @@ struct OnboardingView: View {
         case 1: pace != nil
         case 2: !weekdays.isEmpty
         case 3: drafts.contains { $0.isOn }
-        case Self.pageCount - 1: purchases.yearly != nil
+        case Self.pageCount - 1: purchases.yearly != nil || purchases.plansUnavailable
         default: true
         }
     }
@@ -350,7 +357,10 @@ struct OnboardingView: View {
                 if purchases.isPro { finish() } else { withAnimation(.smooth) { page += 1 } }
             }
         case Self.pageCount - 1:
-            guard let yearly = purchases.yearly else { return }
+            guard let yearly = purchases.yearly else {
+                purchases.reloadProducts()
+                return
+            }
             Task {
                 if await purchases.purchase(yearly) == .purchased { finish() }
             }

@@ -56,9 +56,14 @@ struct ActiveRun: Codable, Hashable, Sendable {
     var steps: [RunStep]
     var stepIndex: Int
     var stepStartedAt: Date
+    /// Started long before any departure, to try the routine out: planned
+    /// from the moment it began, its step times still teach, and it records
+    /// no departure. Optional so files from before it decode.
+    var isPractice: Bool?
 
-    init(plan: DeparturePlan, routineName: String, startedAt: Date, alertAt: Date?) {
+    init(plan: DeparturePlan, routineName: String, startedAt: Date, alertAt: Date?, isPractice: Bool = false) {
         routineID = plan.routineID
+        self.isPractice = isPractice ? true : nil
         self.routineName = routineName
         leaveAt = plan.leaveAt
         self.startedAt = startedAt
@@ -74,6 +79,8 @@ struct ActiveRun: Codable, Hashable, Sendable {
         stepIndex = 0
         stepStartedAt = startedAt
     }
+
+    var isPracticeRun: Bool { isPractice == true }
 
     /// All steps are done; the only thing left is walking out.
     var isLeaving: Bool { stepIndex >= steps.count }

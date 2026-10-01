@@ -176,7 +176,7 @@ enum NotificationPlan {
                 ))
             }
         }
-        if preferences.leaveAlerts {
+        if preferences.leaveAlerts, !run.isPracticeRun {
             alerts += leaveAlerts(key: "run", routineName: run.routineName, leaveAt: run.leaveAt, now: now)
         }
         return alerts

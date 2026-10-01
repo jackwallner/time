@@ -17,6 +17,18 @@ struct PersistedState: Codable, Sendable {
     var lastFinished: FinishedRun?
 }
 
+/// The run as it stood before the last Done or Skip, so a mis-tap on a busy
+/// morning can be taken back. Held in memory only: it is for the next few
+/// seconds, not for a relaunch.
+struct StepUndo: Sendable {
+    var before: ActiveRun
+    var after: ActiveRun
+    /// The timing that Done added to the history, removed again on undo.
+    var recordedStepID: UUID?
+    var wasSkip: Bool
+    var stepName: String
+}
+
 /// A run after the user walked out, for the summary screen.
 struct FinishedRun: Codable, Hashable, Sendable {
     var run: ActiveRun
@@ -31,6 +43,7 @@ final class RoutineStore: ObservableObject {
     static let shared = RoutineStore()
 
     @Published private(set) var state: PersistedState
+    @Published private(set) var lastStepUndo: StepUndo?
 
     private let logger = Logger(subsystem: AppGroup.subsystem, category: "Store")
     private let fileURL: URL
@@ -168,16 +181,52 @@ final class RoutineStore: ObservableObject {
 
     // MARK: - Runs
 
+    /// Starting more than this before a departure's start time is not getting
+    /// ready for it; it is trying the routine out.
+    static let practiceLeadSeconds: TimeInterval = 3600
+
+    /// What a run started now aims for: the routine's next leave time, or,
+    /// well before that departure is due to start, a practice run planned
+    /// from now. A practice run at 10 PM must not count as tomorrow's
+    /// departure, or it would cancel tomorrow's alerts.
+    func runTarget(for routine: Routine, now: Date = .now) -> (leaveAt: Date, isPractice: Bool) {
+        let leave = routine.leaveTimeForRunStarted(at: now)
+        let due = plan(for: routine, leaveAt: leave)
+        guard due.alertAt.timeIntervalSince(now) > Self.practiceLeadSeconds else { return (leave, false) }
+        let ready = now.addingTimeInterval(TimeInterval(due.realMinutes * 60))
+        let minute = (ready.timeIntervalSinceReferenceDate / 60).rounded(.up) * 60
+        return (Date(timeIntervalSinceReferenceDate: minute), true)
+    }
+
     func startRun(routineID: UUID, now: Date = .now) {
         guard state.activeRun == nil, let routine = routine(id: routineID) else { return }
-        let leaveAt = routine.leaveTimeForRunStarted(at: now)
-        let plan = plan(for: routine, leaveAt: leaveAt)
-        let alertAt = routine.departs(on: leaveAt) && AppSettings.shared.startAlerts ? plan.alertAt : nil
+        let target = runTarget(for: routine, now: now)
+        let plan = plan(for: routine, leaveAt: target.leaveAt)
+        let answersAlert = !target.isPractice && routine.departs(on: target.leaveAt) && AppSettings.shared.startAlerts
+        lastStepUndo = nil
         mutate { state in
-            state.activeRun = ActiveRun(plan: plan, routineName: routine.name, startedAt: now, alertAt: alertAt)
+            state.activeRun = ActiveRun(
+                plan: plan,
+                routineName: routine.name,
+                startedAt: now,
+                alertAt: answersAlert ? plan.alertAt : nil,
+                isPractice: target.isPractice
+            )
             state.selectedRoutineID = routineID
             state.lastFinished = nil
         }
+    }
+
+    /// A tap on a get-ready alert or its follow-up: the tap is the start. Does
+    /// nothing once that departure is under way, made or gone, so an old alert
+    /// opened from Notification Centre at noon only opens the app.
+    func startRunFromAlert(routineID: UUID, leaveAt: Date, now: Date = .now) {
+        guard state.activeRun == nil, leaveAt > now,
+              let routine = routine(id: routineID),
+              routine.leaveTimeForRunStarted(at: now) == leaveAt,
+              !state.departures.contains(where: { $0.routineID == routineID && $0.target == leaveAt })
+        else { return }
+        startRun(routineID: routineID, now: now)
     }
 
     /// Starts the soonest routine, for the notification and the Watch.
@@ -187,8 +236,10 @@ final class RoutineStore: ObservableObject {
     }
 
     func completeStep(now: Date = .now) {
-        guard var run = state.activeRun, !run.isLeaving else { return }
+        guard let before = state.activeRun, !before.isLeaving else { return }
+        var run = before
         let finished = run.completeCurrentStep(at: now)
+        var recorded: UUID?
         mutate { state in
             state.activeRun = run
             if let finished, let seconds = finished.actualSeconds, seconds >= Self.minimumTimedSeconds {
@@ -200,20 +251,41 @@ final class RoutineStore: ObservableObject {
                     date: now
                 ))
                 state.stepHistory = Array(state.stepHistory.suffix(Self.historyLimit))
+                recorded = finished.id
             }
         }
+        lastStepUndo = StepUndo(before: before, after: run, recordedStepID: recorded, wasSkip: false, stepName: finished?.name ?? "")
     }
 
     func skipStep(now: Date = .now) {
-        guard var run = state.activeRun, !run.isLeaving else { return }
+        guard let before = state.activeRun, !before.isLeaving else { return }
+        var run = before
         run.skipCurrentStep(at: now)
         mutate { $0.activeRun = run }
+        lastStepUndo = StepUndo(before: before, after: run, recordedStepID: nil, wasSkip: true, stepName: before.currentStep?.name ?? "")
+    }
+
+    /// Puts the last Done or Skip back, as long as nothing has moved since.
+    /// The step picks up its clock where it was, as if it never ended.
+    func undoLastStep() {
+        guard let undo = lastStepUndo, state.activeRun == undo.after else {
+            lastStepUndo = nil
+            return
+        }
+        lastStepUndo = nil
+        mutate { state in
+            state.activeRun = undo.before
+            if let id = undo.recordedStepID, let index = state.stepHistory.lastIndex(where: { $0.stepID == id }) {
+                state.stepHistory.remove(at: index)
+            }
+        }
     }
 
     /// Takes a later step off today's plan to catch up.
     func dropUpcomingStep(id: UUID) {
         guard var run = state.activeRun else { return }
         run.dropUpcomingStep(id: id)
+        lastStepUndo = nil
         mutate { $0.activeRun = run }
     }
 
@@ -228,9 +300,10 @@ final class RoutineStore: ObservableObject {
             startDelaySeconds: run.startDelaySeconds
         )
         let finished = FinishedRun(run: run, departure: departure)
+        lastStepUndo = nil
         mutate { state in
             state.activeRun = nil
-            state.departures.append(departure)
+            if !run.isPracticeRun { state.departures.append(departure) }
             state.departures = Array(state.departures.suffix(Self.departureLimit))
             state.lastFinished = finished
         }
@@ -238,6 +311,7 @@ final class RoutineStore: ObservableObject {
     }
 
     func cancelRun() {
+        lastStepUndo = nil
         mutate { $0.activeRun = nil }
     }
 

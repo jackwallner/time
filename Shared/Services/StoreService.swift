@@ -100,6 +100,7 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
     }
     @Published private(set) var packages: [Package] = []
     @Published private(set) var isLoadingProducts = false
+    @Published private(set) var hasTriedLoading = false
     @Published private(set) var isPurchasing = false
     @Published private(set) var errorMessage: String?
     /// Per-product trial eligibility. Trial copy stays hidden until resolved, so
@@ -143,6 +144,25 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
         }
         Task {
             await refreshStatus()
+            await loadOffering()
+        }
+    }
+
+    /// True once loading has finished without any plans, so a paywall can
+    /// offer a retry instead of a spinner that never ends.
+    var plansUnavailable: Bool { packages.isEmpty && !isLoadingProducts && hasTriedLoading }
+
+    /// Tries the plans again after a failed load, from a paywall's retry.
+    func reloadProducts() {
+        guard packages.isEmpty, !isLoadingProducts else { return }
+        errorMessage = nil
+        Task {
+            guard isConfigured else {
+                #if targetEnvironment(simulator)
+                await loadSimulatorProducts()
+                #endif
+                return
+            }
             await loadOffering()
         }
     }
@@ -259,7 +279,10 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
 
     private func loadOffering() async {
         isLoadingProducts = true
-        defer { isLoadingProducts = false }
+        defer {
+            isLoadingProducts = false
+            hasTriedLoading = true
+        }
         do {
             let offerings = try await Purchases.shared.offerings()
             let offering = offerings.offering(identifier: "default") ?? offerings.current
@@ -297,7 +320,10 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
     /// layout verifiable, not to fake a sale.
     private func loadSimulatorProducts() async {
         isLoadingProducts = true
-        defer { isLoadingProducts = false }
+        defer {
+            isLoadingProducts = false
+            hasTriedLoading = true
+        }
         var products: [StoreProduct] = []
         if let live = try? await StoreKit.Product.products(for: ShoesOnProduct.all), !live.isEmpty {
             products = live.map { StoreProduct(sk2Product: $0) }

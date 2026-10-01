@@ -62,7 +62,9 @@ final class ScreenshotUITests: XCTestCase {
 
     func testHome() {
         let app = launch(["-SeedScreenshotData"])
-        XCTAssertTrue(app.buttons["Start now"].waitForExistence(timeout: 10))
+        // The label follows the clock: now, early, or a practice run.
+        let start = app.buttons.matching(NSPredicate(format: "label IN %@", ["Start now", "Start early", "Practice run"])).firstMatch
+        XCTAssertTrue(start.waitForExistence(timeout: 10))
         capture(app, "home")
         app.swipeUp()
         capture(app, "home-scrolled")

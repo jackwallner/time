@@ -29,6 +29,13 @@ Coaching around the learning, for time-blind mornings:
 - **Catch up**: when a run is 2+ min behind, it offers to drop the one later
   step that covers the slip (`ActiveRun.catchUpSuggestion`).
 - Long steps get a 2-minute heads-up; runs left open 3 h expire on foreground.
+- **Practice runs**: a run started more than an hour before its departure's
+  start is planned from now and records no departure, so an evening try-out
+  never cancels tomorrow's alerts (`RoutineStore.runTarget`). Step times
+  still teach.
+- Opening a get-ready alert starts that run (`startRunFromAlert`). The run
+  screen keeps the display awake, buzzes when time runs out, and offers Undo
+  for 5 s after Done or Skip (`RoutineStore.undoLastStep`).
 - Next-start widget (Home, Lock Screen, StandBy) counts down the last hour,
   fed by `WidgetSnapshot` in the App Group.
 

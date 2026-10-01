@@ -60,11 +60,14 @@ private struct ActiveRunScreen: View {
     @EnvironmentObject private var store: RoutineStore
     let run: ActiveRun
     @State private var confirmEnd = false
+    /// The step index an Undo is on offer for, while it shows.
+    @State private var undoOffered: Int?
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
             let now = AppClock.adjust(context.date)
             let status = run.status(now: now)
+            let isOverdue = now >= (run.isLeaving ? run.leaveAt : run.stepEndsAt)
             ZStack {
                 StatusGlow(color: Theme.color(for: status))
                 VStack(spacing: 0) {
@@ -81,8 +84,26 @@ private struct ActiveRunScreen: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 8)
             }
+            // A buzz the moment time runs out, for when the phone is
+            // propped on the counter and nobody is looking at it.
+            .sensoryFeedback(trigger: isOverdue) { _, overdue in overdue ? .warning : nil }
         }
         .sensoryFeedback(.success, trigger: run.stepIndex)
+        .onChange(of: run.stepIndex) { _, index in
+            withAnimation(.smooth) {
+                undoOffered = store.lastStepUndo?.after.stepIndex == index ? index : nil
+            }
+        }
+        .task(id: undoOffered) {
+            guard undoOffered != nil else { return }
+            try? await Task.sleep(for: .seconds(5))
+            guard !Task.isCancelled else { return }
+            withAnimation(.smooth) { undoOffered = nil }
+        }
+        // Mornings happen with the phone on the counter: the screen stays on
+        // for as long as a routine runs.
+        .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
+        .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
         .confirmationDialog("End this routine?", isPresented: $confirmEnd, titleVisibility: .visible) {
             Button("End without leaving", role: .destructive) { store.cancelRun() }
         } message: {
@@ -97,7 +118,7 @@ private struct ActiveRunScreen: View {
                     Text(run.routineName)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.white)
-                    Text("Out the door \(Format.time(run.leaveAt))")
+                    Text(run.isPracticeRun ? "Practice run · ready by \(Format.time(run.leaveAt))" : "Out the door \(Format.time(run.leaveAt))")
                         .font(.subheadline)
                         .foregroundStyle(.white.opacity(0.6))
                 }
@@ -224,14 +245,39 @@ private struct ActiveRunScreen: View {
             if run.isLeaving {
                 Button("I'm out the door") { withAnimation(.smooth) { _ = store.finishRun() } }
                     .buttonStyle(.primary(fill: .white, text: .black))
-                Color.clear.frame(height: 44)
             } else {
-                Button("Done") { withAnimation(.smooth) { store.completeStep() } }
+                Button("Done") { advance(store.completeStep) }
                     .buttonStyle(.primary(fill: .white, text: .black))
-                Button("Skip this step") { withAnimation(.smooth) { store.skipStep() } }
-                    .buttonStyle(.secondary(.white.opacity(0.6)))
             }
+            // Right under the thumb that just tapped Done, in the slot the
+            // skip button keeps, so offering it never moves anything.
+            ZStack {
+                if let undo = store.lastStepUndo, undoOffered == run.stepIndex {
+                    Button {
+                        withAnimation(.smooth) {
+                            undoOffered = nil
+                            store.undoLastStep()
+                        }
+                    } label: {
+                        Label("Undo \(undo.stepName) \(undo.wasSkip ? "skip" : "done")", systemImage: "arrow.uturn.backward")
+                            .lineLimit(1)
+                    }
+                    .buttonStyle(.secondary(.white))
+                    .transition(.opacity)
+                } else if !run.isLeaving {
+                    Button("Skip this step") { advance(store.skipStep) }
+                        .buttonStyle(.secondary(.white.opacity(0.6)))
+                        .transition(.opacity)
+                }
+            }
+            .frame(height: 44)
         }
+    }
+
+    /// A second Done from a double tap would skip a step the user never did.
+    private func advance(_ action: (Date) -> Void) {
+        guard Date.now.timeIntervalSince(run.stepStartedAt) > 0.6 else { return }
+        withAnimation(.smooth) { action(.now) }
     }
 
     /// "12:04" counting down, or "+3:10" once over.
@@ -251,7 +297,7 @@ private struct SummaryScreen: View {
     @State private var shown = false
 
     var body: some View {
-        let late = finished.departure.lateSeconds
+        let late = finished.run.isPracticeRun ? 0 : finished.departure.lateSeconds
         let color: Color = late <= 60 ? Theme.onTrack : late < 5 * 60 ? Theme.behind : Theme.late
         let longest = Double(finished.run.steps.map { max($0.guessMinutes, Format.minutes(fromSeconds: $0.actualSeconds ?? 0)) }.max() ?? 1)
         VStack(spacing: 0) {
@@ -265,7 +311,9 @@ private struct SummaryScreen: View {
                         Text(headline)
                             .font(.system(size: 40, weight: .heavy, design: .rounded))
                             .foregroundStyle(Theme.ink)
-                        Text("Out the door at \(Format.time(finished.departure.left)), aiming for \(Format.time(finished.departure.target)).")
+                        Text(finished.run.isPracticeRun
+                            ? "A practice run, so it doesn't count toward your on-time record."
+                            : "Out the door at \(Format.time(finished.departure.left)), aiming for \(Format.time(finished.departure.target)).")
                             .font(.body)
                             .foregroundStyle(Theme.secondary)
                     }
@@ -294,13 +342,14 @@ private struct SummaryScreen: View {
         .sensoryFeedback(.success, trigger: shown)
         .onAppear {
             withAnimation(.spring(duration: 0.9, bounce: 0.2).delay(0.1)) { shown = true }
-            guard finished.departure.wasOnTime else { return }
+            guard finished.departure.wasOnTime, !finished.run.isPracticeRun else { return }
             let onTime = store.state.departures.filter(\.wasOnTime).count
             review.considerAfterOnTimeDeparture(onTimeCount: onTime)
         }
     }
 
     private var headline: String {
+        if finished.run.isPracticeRun { return "Practice done." }
         let late = finished.departure.lateSeconds
         if late <= 60 && late >= -60 { return "Right on time." }
         if late < 0 { return "\(Int((-late / 60).rounded())) min early." }

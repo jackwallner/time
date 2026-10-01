@@ -146,6 +146,11 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             case Self.skipAction:
                 guard let routineID, let leaveAt else { return }
                 store.setChange(DayChange(day: leaveAt, leaveMinuteOfDay: nil), on: leaveAt, routineID: routineID)
+            case UNNotificationDefaultActionIdentifier:
+                // Opening "Time to get ready" means getting ready: go straight
+                // to the first step instead of a home screen with a button.
+                guard let routineID, let leaveAt else { return }
+                store.startRunFromAlert(routineID: routineID, leaveAt: leaveAt)
             default:
                 break
             }

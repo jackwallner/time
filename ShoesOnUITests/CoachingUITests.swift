@@ -33,6 +33,19 @@ final class CoachingUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Shoes, keys, out"].waitForExistence(timeout: 5))
     }
 
+    func testUndoTakesBackAMistakenDone() {
+        let app = launch(["-SeedScreenshotData", "-Screen", "run"])
+        XCTAssertTrue(app.staticTexts["Breakfast"].waitForExistence(timeout: 10))
+        app.buttons["Done"].tap()
+        let undo = app.buttons["Undo Breakfast done"]
+        XCTAssertTrue(undo.waitForExistence(timeout: 5))
+        sleep(1)
+        capture(app, "run-undo")
+        undo.tap()
+        XCTAssertTrue(app.staticTexts["Breakfast"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label ==[c] %@", "Step 3 of 5")).firstMatch.exists)
+    }
+
     func testSkippingTheNextDepartureFromHomeAndUndoing() {
         let app = launch(["-SeedScreenshotData", "-FixedNow", "06:20"])
         let menu = app.buttons["Change a day"]
