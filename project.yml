@@ -28,11 +28,24 @@ schemes:
         ShoesOn: all
         ShoesOnWatch: all
         ShoesOnTests: [test]
-        ShoesOnUITests: [test]
     test:
       config: Debug
       targets:
         - ShoesOnTests
+      storeKitConfiguration: ShoesOn.storekit
+    run:
+      config: Debug
+      storeKitConfiguration: ShoesOn.storekit
+  # UI tests are slow, so they get their own scheme and stay out of the
+  # default `xcodebuild test -scheme ShoesOn` run.
+  ShoesOnUITests:
+    build:
+      targets:
+        ShoesOn: all
+        ShoesOnUITests: [test]
+    test:
+      config: Debug
+      targets:
         - ShoesOnUITests
       storeKitConfiguration: ShoesOn.storekit
     run:
