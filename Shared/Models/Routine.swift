@@ -87,6 +87,12 @@ struct Routine: Codable, Identifiable, Hashable, Sendable {
         return weekdays.contains(calendar.component(.weekday, from: day))
     }
 
+    /// The usual leave time on the given day, ignoring any one-off change, so
+    /// editing the routine on a changed day keeps its normal time.
+    func usualLeaveTime(on day: Date, calendar: Calendar = .current) -> Date {
+        calendar.date(bySettingHour: leaveHour, minute: leaveMinute, second: 0, of: day) ?? day
+    }
+
     /// The leave time on the given day, in the calendar's time zone, with any
     /// one-off time for that day applied.
     func leaveTime(on day: Date, calendar: Calendar = .current) -> Date {

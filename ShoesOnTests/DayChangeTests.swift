@@ -35,6 +35,12 @@ final class DayChangeTests: XCTestCase {
         XCTAssertEqual(changed.leaveTime(on: date(23), calendar: calendar), date(23, 8, 15))
     }
 
+    func testTheUsualLeaveTimeIgnoresAOneOff() {
+        var changed = routine
+        changed.setChange(DayChange(day: date(22), leaveMinuteOfDay: 7 * 60 + 30), on: date(22), calendar: calendar)
+        XCTAssertEqual(changed.usualLeaveTime(on: date(22, 6), calendar: calendar), date(22, 8, 15))
+    }
+
     func testChangesThatChangeNothingAreDropped() {
         var changed = routine
         changed.setChange(DayChange(day: date(22), leaveMinuteOfDay: 8 * 60 + 15), on: date(22), calendar: calendar)

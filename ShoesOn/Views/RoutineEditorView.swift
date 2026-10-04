@@ -13,7 +13,7 @@ struct RoutineEditorView: View {
 
     init(routine: Routine, isNew: Bool) {
         _routine = State(initialValue: routine)
-        _leaveTime = State(initialValue: routine.leaveTime(on: .now))
+        _leaveTime = State(initialValue: routine.usualLeaveTime(on: .now))
         self.isNew = isNew
     }
 
@@ -101,6 +101,8 @@ struct RoutineEditorView: View {
     }
 
     private func save() {
+        // A step typed but not yet added is one the user expects to keep.
+        addStep()
         let parts = Calendar.current.dateComponents([.hour, .minute], from: leaveTime)
         routine.leaveHour = parts.hour ?? routine.leaveHour
         routine.leaveMinute = parts.minute ?? routine.leaveMinute
