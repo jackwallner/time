@@ -17,7 +17,7 @@ storefronts), and App Store autocomplete. Findings that shaped these lists:
 Order is priority: the builder keeps terms in order until 100 characters.
 """
 
-EN = "routine,morning,planner,timer,visual,schedule,management,reminder,countdown,neurodivergent,tracker,app,late,punctual,focus,habit"
+EN = "adhd,routine,morning,planner,timer,leave,schedule,reminder,countdown,late,punctual,neurodivergent,visual,habit,focus,app"
 EN_INDIC = "timer,planner,reminder,countdown,adhd,routine,habit,morning,late,schedule,alarm,app"
 
 KEYWORDS = {

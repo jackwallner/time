@@ -19,7 +19,10 @@ APP_NAME = "Shoes On"
 AGE_TEMPLATE_BUNDLE_ID = os.environ.get(
     "ASC_AGE_TEMPLATE_BUNDLE_ID", "com.jackwallner.vitals"
 )
-REVIEW_NOTES = """Shoes On is a leave-on-time routine coach. There is no account of any kind, so no demo account is needed.
+REVIEW_NOTES = """Shoes On is a leave-on-time coach. There is no account of any kind, so no demo account is needed.
+
+WHAT IS DIFFERENT
+Routine apps are checklists with timers, and they count down the minutes the user guessed. Shoes On starts from a fixed time to walk out the door, plans backward from it, and replaces the user's guesses with how long each step really takes them, learned from their own Done taps. The start time moves earlier on its own as it learns. This developer's other routine app, Next Cue, has no departure time, no backward planning and no learned timing; it is about getting started on a task at any time of day, with a timer that only counts up.
 
 WHAT A FRESH INSTALL SHOWS
 1. Onboarding asks how far the user's time guesses usually run over, when they leave, on which days, and the steps before leaving (with guessed minutes). It then shows the real plan: the guess against the realistic time, and when to start.

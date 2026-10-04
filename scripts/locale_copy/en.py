@@ -2,7 +2,7 @@
 
 _EN = {
     "name": "Shoes On: Time Blindness Coach",
-    "subtitle": "Leave on time, ADHD routines",
+    "subtitle": "Learns how long you truly take",
     "keywords": "morning,get ready,planner,late,punctual,timer,alarm,schedule,reminder,countdown,departure,habit,focus,visual",
     "promo": "Tell it when you walk out the door. It learns how long you really take and tells you when to start.",
     "intro": "Ten minutes turns into fifteen. Twenty turns into thirty-five. If your guesses run short, a plan built on them is late before it starts. Shoes On plans with how long things really take you.",
