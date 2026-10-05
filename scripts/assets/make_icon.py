@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build Shoes On icon derivatives from the approved source artwork."""
+"""Build Shoes On icon derivatives from the source drawn by draw_icon.py."""
 from pathlib import Path
 
 from PIL import Image, ImageDraw
