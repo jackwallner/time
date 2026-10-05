@@ -99,6 +99,7 @@ enum ScreenshotFixtures {
             let took: [Double] = [14, 12, 17, 8, 6]
             for index in run.steps.indices { run.steps[index].actualSeconds = took[index] * 60 }
             run.stepIndex = run.steps.count
+            run.leaveAt = routine.leaveTime(on: now)
             let departure = DepartureRecord(routineID: routine.id, target: run.leaveAt, left: run.leaveAt.addingTimeInterval(-120), startDelaySeconds: 180)
             state.lastFinished = FinishedRun(run: run, departure: departure)
         default:
