@@ -46,6 +46,11 @@ migrate to `6814953557` at launch.
   one per product, under StoreKit Testing.
 - Sync with `~/ios/appstore-screenshots/bin/asc-sync-screenshots`, never a
   repo-local uploader.
+- Screenshots lock while the version sits in the draft submission
+  (`READY_FOR_REVIEW`, "Can't Delete Screenshot"). Delete only the version's
+  `reviewSubmissionItem` (type 6), sync, then POST it back; the subscription
+  group and subscription items stay in the draft. Text metadata and the build
+  attach work without this.
 
 ## First submission
 
