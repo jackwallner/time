@@ -66,6 +66,7 @@ struct OnboardingView: View {
             .accessibilityLabel("Back")
             .opacity(page > 0 && page < Self.pageCount - 1 ? 1 : 0)
             .disabled(page == 0 || page == Self.pageCount - 1)
+            .accessibilityHidden(page == 0 || page == Self.pageCount - 1)
             Spacer()
         }
         .padding(.horizontal, 12)
@@ -100,7 +101,7 @@ struct OnboardingView: View {
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    Button("Get Started", action: finish)
+                    Button("Continue free", action: finish)
                         .buttonStyle(.secondary)
                 } else {
                     PageDots(count: Self.pageCount - 1, current: page)

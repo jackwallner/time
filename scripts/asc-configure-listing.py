@@ -26,9 +26,9 @@ Routine apps are checklists with timers, and they count down the minutes the use
 
 WHAT A FRESH INSTALL SHOWS
 1. Onboarding asks how far the user's time guesses usually run over, when they leave, on which days, and the steps before leaving (with guessed minutes). It then shows the real plan: the guess against the realistic time, and when to start.
-2. After the notification permission prompt, the last onboarding page offers Shoes On Pro with a 7-day free trial. "Get Started" skips it; everything below works without a purchase.
+2. After the notification permission prompt, the last onboarding page offers Shoes On Pro with a 7-day free trial. "Continue free" skips it; everything below works without a purchase.
 3. Home shows the next departure (when to start, when to leave), the plan as a timeline, and how recent departures went.
-4. Tap Start now to run the routine: one step at a time with a countdown dial, whether the user is on track or behind, and a Done button. The same run appears as a Live Activity on the Lock Screen with a Done button. After the last step, "I'm out the door" records the departure and shows each step's guess against its real time.
+4. Tap Start now (it reads Start early before the start time) to run the routine: one step at a time with a countdown dial, whether the user is on track or behind, and a Done button. The same run appears as a Live Activity on the Lock Screen with a Done button. After the last step, "I'm out the door" records the departure and shows each step's guess against its real time.
 
 COACHING FOR LATE MORNINGS (all free)
 - If the get-ready alert goes unanswered, two follow-ups say when starting right then gets the user out the door. Once the start time has passed, Home reads "Start now" with the cost.

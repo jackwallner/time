@@ -271,6 +271,7 @@ struct PlanTimeline: View {
                                 Text("\(guess)")
                                     .strikethrough()
                                     .foregroundStyle(Theme.secondary)
+                                    .accessibilityLabel("guessed \(guess)")
                             }
                             Text("\(minutes) min")
                                 .foregroundStyle(Theme.ink)

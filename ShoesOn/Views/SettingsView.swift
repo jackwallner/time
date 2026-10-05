@@ -11,6 +11,7 @@ struct SettingsView: View {
     @State private var showPaywall = false
     @State private var confirmReset = false
     @State private var notificationsDenied = false
+    @State private var restoreMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -52,6 +53,12 @@ struct SettingsView: View {
                 Text("Plans go back to your guesses adjusted for your pace. Routines stay.")
             }
             .sheet(isPresented: $showPaywall) { PaywallView(surface: "shoeson_settings") }
+            .alert(restoreMessage ?? "", isPresented: Binding(
+                get: { restoreMessage != nil },
+                set: { if !$0 { restoreMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            }
             .task {
                 notificationsDenied = await NotificationService.shared.authorizationStatus() == .denied
             }
@@ -99,6 +106,14 @@ struct SettingsView: View {
         }
     }
 
+    private func restore() {
+        Task {
+            await purchases.restore()
+            restoreMessage = purchases.isPro ? "Shoes On Pro is active again." : (purchases.errorMessage ?? "Nothing to restore.")
+            purchases.clearError()
+        }
+    }
+
     private var proSection: some View {
         Section {
             if purchases.isPro {
@@ -106,7 +121,8 @@ struct SettingsView: View {
                 Link("Manage subscription", destination: URL(string: "https://apps.apple.com/account/subscriptions")!)
             } else {
                 Button("Try Shoes On Pro") { showPaywall = true }
-                Button("Restore purchase") { Task { await purchases.restore() } }
+                Button(purchases.isPurchasing ? "Restoring…" : "Restore purchase", action: restore)
+                    .disabled(purchases.isPurchasing)
             }
         } footer: {
             if !purchases.isPro {

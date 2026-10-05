@@ -375,6 +375,7 @@ private struct StepCompare: View {
                     Text("Skipped").foregroundStyle(Theme.secondary)
                 } else if let took {
                     Text("\(step.guessMinutes)").strikethrough().foregroundStyle(Theme.secondary)
+                        .accessibilityLabel("guessed \(step.guessMinutes)")
                     Text("\(took) min").foregroundStyle(Theme.ink)
                 }
             }
