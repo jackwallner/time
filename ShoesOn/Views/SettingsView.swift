@@ -1,3 +1,4 @@
+import ActivityKit
 import StoreKit
 import SwiftUI
 
@@ -11,6 +12,8 @@ struct SettingsView: View {
     @State private var showPaywall = false
     @State private var confirmReset = false
     @State private var notificationsDenied = false
+    @State private var liveActivitiesOff = false
+    @State private var showManageSubscription = false
     @State private var restoreMessage: String?
 
     var body: some View {
@@ -29,7 +32,7 @@ struct SettingsView: View {
                 Section {
                     Button("Forget my real times", role: .destructive) { confirmReset = true }
                 } footer: {
-                    Text("Shoes On \(Bundle.main.appVersionLabel). Everything stays on this iPhone.")
+                    Text("Shoes On is a planning tool, not medical advice, and does not diagnose or treat any condition.\n\nShoes On \(Bundle.main.appVersionLabel). Everything stays on this iPhone.")
                 }
                 #if DEBUG
                 Section("Debug") {
@@ -59,8 +62,10 @@ struct SettingsView: View {
             )) {
                 Button("OK", role: .cancel) {}
             }
-            .task {
-                notificationsDenied = await NotificationService.shared.authorizationStatus() == .denied
+            .manageSubscriptionsSheet(isPresented: $showManageSubscription)
+            .task { await refreshPermissions() }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                Task { await refreshPermissions() }
             }
         }
         .tint(Theme.ink)
@@ -86,11 +91,22 @@ struct SettingsView: View {
         }
     }
 
+    /// Re-read on return from the Settings app, so the fix shows at once.
+    private func refreshPermissions() async {
+        notificationsDenied = await NotificationService.shared.authorizationStatus() == .denied
+        liveActivitiesOff = !ActivityAuthorizationInfo().areActivitiesEnabled
+    }
+
     private var alertsSection: some View {
         Section {
             if notificationsDenied {
                 Button("Turn on notifications in Settings") {
                     if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
+                }
+            }
+            if liveActivitiesOff {
+                Button("Turn on Live Activities in Settings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
                 }
             }
             Toggle("Time to get ready", isOn: $settings.startAlerts)
@@ -102,7 +118,9 @@ struct SettingsView: View {
         } header: {
             Text("Alerts")
         } footer: {
-            Text("Alerts are Time Sensitive, so they can come through a Focus if you allow it.")
+            Text(liveActivitiesOff
+                 ? "Alerts are Time Sensitive, so they can come through a Focus if you allow it. With Live Activities off, the step and its Done button can't show on the Lock Screen."
+                 : "Alerts are Time Sensitive, so they can come through a Focus if you allow it.")
         }
     }
 
@@ -118,7 +136,7 @@ struct SettingsView: View {
         Section {
             if purchases.isPro {
                 Label("Shoes On Pro is active", systemImage: "checkmark.seal.fill")
-                Link("Manage subscription", destination: URL(string: "https://apps.apple.com/account/subscriptions")!)
+                Button("Manage subscription") { showManageSubscription = true }
             } else {
                 Button("Try Shoes On Pro") { showPaywall = true }
                 Button(purchases.isPurchasing ? "Restoring…" : "Restore purchase", action: restore)

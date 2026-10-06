@@ -4,7 +4,8 @@ import WidgetKit
 /// The next start time where it is seen without opening anything: the Lock
 /// Screen, StandBy and the Home Screen. Within the hour it becomes a live
 /// countdown, because "7:32" means little to someone who cannot feel time
-/// passing and "11:48" going down means a lot.
+/// passing and "11:48" going down means a lot. The Watch complication is the
+/// same widget, fed by the Watch app.
 struct NextDepartureWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: WidgetSnapshot.kind, provider: DepartureProvider()) { entry in
@@ -13,13 +14,21 @@ struct NextDepartureWidget: Widget {
         }
         .configurationDisplayName("Next start")
         .description("When to start getting ready, counting down in the last hour.")
-        .supportedFamilies([.systemSmall, .accessoryRectangular, .accessoryCircular, .accessoryInline])
+        .supportedFamilies(Self.families)
     }
+
+    #if os(watchOS)
+    private static let families: [WidgetFamily] = [.accessoryRectangular, .accessoryCircular, .accessoryInline, .accessoryCorner]
+    #else
+    private static let families: [WidgetFamily] = [.systemSmall, .accessoryRectangular, .accessoryCircular, .accessoryInline]
+    #endif
 }
 
 struct DepartureEntry: TimelineEntry {
     let date: Date
     let snapshot: WidgetSnapshot?
+    /// The Watch without Pro: a lock instead of the plan.
+    var isLocked = false
 
     /// The run in progress, until well after its leave time.
     var run: RunSnapshot? {
@@ -42,11 +51,19 @@ struct DepartureProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (DepartureEntry) -> Void) {
-        completion(DepartureEntry(date: .now, snapshot: context.isPreview ? Self.sample : Self.load() ?? Self.sample))
+        if context.isPreview {
+            completion(DepartureEntry(date: .now, snapshot: Self.sample))
+        } else {
+            completion(DepartureEntry(date: .now, snapshot: Self.load() ?? Self.sample, isLocked: Self.isLocked))
+        }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<DepartureEntry>) -> Void) {
         let now = Date.now
+        if Self.isLocked {
+            completion(Timeline(entries: [DepartureEntry(date: now, snapshot: nil, isLocked: true)], policy: .never))
+            return
+        }
         let snapshot = Self.load()
         var moments: Set<Date> = [now]
         for departure in snapshot?.departures ?? [] {
@@ -61,6 +78,10 @@ struct DepartureProvider: TimelineProvider {
             .prefix(40)
             .map { DepartureEntry(date: $0, snapshot: snapshot) }
         completion(Timeline(entries: Array(entries), policy: .atEnd))
+    }
+
+    static var isLocked: Bool {
+        UserDefaults(suiteName: AppGroup.identifier)?.bool(forKey: WidgetSnapshot.lockedKey) ?? false
     }
 
     static func load() -> WidgetSnapshot? {
@@ -79,6 +100,7 @@ struct DepartureProvider: TimelineProvider {
 
 /// What a moment looks like, shared by every family.
 private enum Phase {
+    case locked
     case running(RunSnapshot)
     case later(NextDepartureSnapshot)
     case countdown(NextDepartureSnapshot)
@@ -86,7 +108,9 @@ private enum Phase {
     case none
 
     init(_ entry: DepartureEntry) {
-        if let run = entry.run {
+        if entry.isLocked {
+            self = .locked
+        } else if let run = entry.run {
             self = .running(run)
         } else if let next = entry.next {
             if next.alertAt <= entry.date {
@@ -112,6 +136,9 @@ struct DepartureWidgetView: View {
         case .accessoryInline: inline(phase)
         case .accessoryCircular: circular(phase)
         case .accessoryRectangular: rectangular(phase)
+        #if os(watchOS)
+        case .accessoryCorner: corner(phase)
+        #endif
         default: small(phase)
         }
     }
@@ -120,6 +147,7 @@ struct DepartureWidgetView: View {
 
     @ViewBuilder private func inline(_ phase: Phase) -> some View {
         switch phase {
+        case .locked: Text("Shoes On Pro")
         case .running(let run): Text("Getting ready · out \(Format.time(run.leaveAt))")
         case .later(let next): Text("Start \(Format.time(next.alertAt)) · out \(Format.time(next.leaveAt))")
         case .countdown(let next): Text("Start in \(Text(timerInterval: entry.date...next.alertAt, countsDown: true))")
@@ -143,7 +171,7 @@ struct DepartureWidgetView: View {
             ZStack {
                 AccessoryWidgetBackground()
                 VStack(spacing: 1) {
-                    Image(systemName: phase.isUrgent ? "figure.walk.departure" : "figure.walk")
+                    Image(systemName: phase.symbol)
                         .font(.caption.weight(.semibold))
                     Text(phase.circularText)
                         .font(.system(.caption2, design: .rounded).weight(.bold))
@@ -172,6 +200,25 @@ struct DepartureWidgetView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .widgetAccentable()
     }
+
+    #if os(watchOS)
+    /// A watch face corner: the glyph, with the start time or countdown
+    /// curving along the edge.
+    private func corner(_ phase: Phase) -> some View {
+        Image(systemName: phase.symbol)
+            .font(.title3.weight(.semibold))
+            .widgetLabel {
+                switch phase {
+                case .countdown(let next): Text("Start in \(Text(timerInterval: entry.date...next.alertAt, countsDown: true))")
+                case .running(let run): Text("Out \(Format.time(run.leaveAt))")
+                case .later(let next): Text("Start \(Format.time(next.alertAt))")
+                case .overdue: Text("Start now")
+                case .locked: Text("Pro")
+                case .none: Text("Shoes On")
+                }
+            }
+    }
+    #endif
 
     // MARK: - Home Screen
 
@@ -204,18 +251,27 @@ struct DepartureWidgetView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
 
+    private var isSmall: Bool {
+        #if os(watchOS)
+        false
+        #else
+        family == .systemSmall
+        #endif
+    }
+
     @ViewBuilder private func headline(_ phase: Phase) -> some View {
         switch phase {
+        case .locked: Text("Watch coach")
         case .running(let run): Text(run.isLeaving ? "Head out" : (run.stepName ?? "Getting ready"))
-        case .later(let next): Text(family == .systemSmall ? Format.time(next.alertAt) : "Start \(Format.time(next.alertAt))")
+        case .later(let next): Text(isSmall ? Format.time(next.alertAt) : "Start \(Format.time(next.alertAt))")
         case .countdown(let next):
-            if family == .systemSmall {
+            if isSmall {
                 Text(timerInterval: entry.date...next.alertAt, countsDown: true)
             } else {
                 Text("Start in \(Text(timerInterval: entry.date...next.alertAt, countsDown: true))")
             }
         case .overdue: Text("Start now")
-        case .none: Text(family == .systemSmall ? "None" : "No departure")
+        case .none: Text(isSmall ? "None" : "No departure")
         }
     }
 }
@@ -225,7 +281,15 @@ private extension Phase {
         switch self {
         case .running(let run): run.routineName
         case .later(let next), .countdown(let next), .overdue(let next): next.routineName
-        case .none: nil
+        case .locked, .none: nil
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .locked: "lock.fill"
+        case .overdue: "figure.walk.departure"
+        default: "figure.walk"
         }
     }
 
@@ -236,6 +300,7 @@ private extension Phase {
 
     var smallLabel: String {
         switch self {
+        case .locked: "Pro"
         case .running: "Now"
         case .later: "Start at"
         case .countdown: "Start in"
@@ -246,6 +311,7 @@ private extension Phase {
 
     var circularText: String {
         switch self {
+        case .locked: "Pro"
         case .running: "Go"
         case .later(let next): Format.time(next.alertAt)
         case .countdown: ""
@@ -256,6 +322,7 @@ private extension Phase {
 
     func footer(now: Date) -> String {
         switch self {
+        case .locked: "Part of Shoes On Pro"
         case .running(let run): "Out the door \(Format.time(run.leaveAt))"
         case .later(let next), .countdown(let next), .overdue(let next):
             Calendar.current.isDate(next.leaveAt, inSameDayAs: now)

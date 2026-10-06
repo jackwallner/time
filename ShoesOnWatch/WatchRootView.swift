@@ -12,7 +12,11 @@ struct WatchRootView: View {
                     } else if let run = payload.run {
                         WatchRunView(run: run)
                     } else {
-                        idle(payload.next)
+                        // The phone may be quiet for days; move on from a
+                        // departure once it has passed.
+                        TimelineView(.everyMinute) { context in
+                            idle(payload.nextDeparture(now: context.date))
+                        }
                     }
                 } else {
                     message("Set up a routine in Shoes On on your iPhone.")
@@ -109,7 +113,10 @@ private struct WatchRunView: View {
                 .disabled(model.isSending)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .sensoryFeedback(trigger: isOverdue(now: now)) { _, overdue in overdue ? .warning : nil }
         }
+        .sensoryFeedback(.success, trigger: run.stepIndex)
+        .sensoryFeedback(.success, trigger: run.isLeaving)
         .toolbar {
             if !run.isLeaving {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -135,6 +142,12 @@ private struct WatchRunView: View {
                 .stroke(Theme.color(for: status), style: StrokeStyle(lineWidth: 4, lineCap: .round))
                 .rotationEffect(.degrees(-90))
         }
+    }
+
+    /// Past the step's time, or past the leave time once leaving. Flipping
+    /// to true taps the wrist, like the phone's buzz.
+    private func isOverdue(now: Date) -> Bool {
+        (run.isLeaving ? run.leaveAt : run.stepEndsAt) < now
     }
 
     private func clock(_ target: Date, now: Date) -> String {

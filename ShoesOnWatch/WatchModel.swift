@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import WidgetKit
 
 /// The Watch's copy of what the phone last sent. The phone stays the only
 /// owner of runs; the Watch shows the snapshot and sends commands.
@@ -11,7 +12,8 @@ final class WatchModel: ObservableObject {
     /// Set while a command is in flight, so a tap shows at once.
     @Published private(set) var isSending = false
 
-    private let defaults = UserDefaults.standard
+    /// The App Group, so the complication reads what the app last heard.
+    private let defaults = AppGroup.defaults
     private static let cacheKey = "watchPayload"
 
     private init() {
@@ -19,7 +21,11 @@ final class WatchModel: ObservableObject {
             payload = try? JSONDecoder().decode(WatchPayload.self, from: data)
         }
         #if DEBUG
-        if ScreenshotConfig.has("-SeedScreenshotData") { payload = Self.fixture(now: .now) }
+        if ScreenshotConfig.has("-SeedScreenshotData") {
+            let fixture = Self.fixture(now: .now)
+            payload = fixture
+            publishComplication(fixture)
+        }
         #endif
     }
 
@@ -28,6 +34,15 @@ final class WatchModel: ObservableObject {
         self.payload = payload
         isSending = false
         if let data = try? JSONEncoder().encode(payload) { defaults.set(data, forKey: Self.cacheKey) }
+        publishComplication(payload)
+    }
+
+    private func publishComplication(_ payload: WatchPayload) {
+        defaults.set(!payload.isPro, forKey: WidgetSnapshot.lockedKey)
+        if let data = try? JSONEncoder().encode(payload.widgetSnapshot) {
+            defaults.set(data, forKey: WidgetSnapshot.defaultsKey)
+        }
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     func send(_ command: WatchCommand) {
@@ -51,6 +66,7 @@ final class WatchModel: ObservableObject {
                 alertAt: Calendar.current.date(bySettingHour: 7, minute: 0, second: 0, of: now) ?? now,
                 leaveAt: Calendar.current.date(bySettingHour: 8, minute: 15, second: 0, of: now) ?? now
             ),
+            upcoming: nil,
             sentAt: now
         )
     }

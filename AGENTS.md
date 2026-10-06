@@ -37,7 +37,11 @@ Coaching around the learning, for time-blind mornings:
   screen keeps the display awake, buzzes when time runs out, and offers Undo
   for 5 s after Done or Skip (`RoutineStore.undoLastStep`).
 - Next-start widget (Home, Lock Screen, StandBy) counts down the last hour,
-  fed by `WidgetSnapshot` in the App Group.
+  fed by `WidgetSnapshot` in the App Group. The same widget file is the Watch
+  complication (Pro; locked phase otherwise).
+- "Start getting ready" control (iOS 18 Lock Screen / Control Center /
+  Action button): `StartRunIntent`, a `LiveActivityIntent`, starts the run
+  without unlocking.
 
 The guess is never overwritten. The gap between guess and real time is what
 the home screen, the reveal page and the summary show.
@@ -49,7 +53,7 @@ the home screen, the reveal page and the summary show.
   No HealthKit, no backend, no account.
 - iOS 17+, watchOS 10+.
 - App `com.jackwallner.time`, Live Activity widget `.widget`, Watch `.watch`,
-  tests `.tests`, UI tests `.uitests`. App Group `group.com.jackwallner.time`.
+  Watch complication `.watch.widget`, tests `.tests`, UI tests `.uitests`. App Group `group.com.jackwallner.time`.
 - App Store Connect app `6814953557`, name "Shoes On: Time Blindness Coach".
 - RevenueCat project `proj457863e6`, app `app06b21534c0`, entitlement lookup
   key `pro`, offering `default` with `$rc_annual` and `$rc_monthly`. Public key
@@ -70,7 +74,9 @@ the home screen, the reveal page and the summary show.
   with the real one; a `LiveActivityIntent` runs in the app process.
 - Watch: the phone owns runs. `WatchSyncService` sends a `WatchPayload`
   through the application context; the Watch sends `WatchCommand`s back
-  (`sendMessage`, falling back to `transferUserInfo`).
+  (`sendMessage`, falling back to `transferUserInfo`). The payload carries
+  `upcoming` departures so the Watch moves on when the phone is quiet;
+  `WatchModel` writes the complication's `WidgetSnapshot` to the App Group.
 - UI: `ShoesOn/Views/`. Onboarding (6 pages) → Home (next departure, the real
   plan, how it's going) → RunView (step, clock, status, Done) → summary.
 

@@ -371,17 +371,18 @@ final class RoutineStore: ObservableObject {
     /// changed.
     private func publishWidgetSnapshot() {
         #if canImport(WidgetKit)
-        let snapshot = WidgetSnapshot(
-            departures: upcomingDepartures().map {
-                NextDepartureSnapshot(routineName: $0.routine.name, alertAt: $0.plan.alertAt, leaveAt: $0.plan.leaveAt)
-            },
-            run: state.activeRun.map(RunSnapshot.init(run:))
-        )
+        let snapshot = WidgetSnapshot(departures: upcomingSnapshots(), run: state.activeRun.map(RunSnapshot.init(run:)))
         guard let data = try? JSONEncoder().encode(snapshot), data != lastWidgetSnapshot else { return }
         lastWidgetSnapshot = data
         AppGroup.defaults.set(data, forKey: WidgetSnapshot.defaultsKey)
         WidgetCenter.shared.reloadTimelines(ofKind: WidgetSnapshot.kind)
         #endif
+    }
+
+    private func upcomingSnapshots() -> [NextDepartureSnapshot] {
+        upcomingDepartures().map {
+            NextDepartureSnapshot(routineName: $0.routine.name, alertAt: $0.plan.alertAt, leaveAt: $0.plan.leaveAt)
+        }
     }
 
     var watchPayload: WatchPayload {
@@ -392,6 +393,7 @@ final class RoutineStore: ObservableObject {
             isPro: StoreService.shared.isPro,
             run: state.activeRun.map(RunSnapshot.init(run:)),
             next: next,
+            upcoming: upcomingSnapshots(),
             sentAt: .now
         )
     }

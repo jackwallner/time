@@ -8,6 +8,9 @@ struct ShoesOnWidgetBundle: WidgetBundle {
     var body: some Widget {
         NextDepartureWidget()
         RunLiveActivity()
+        if #available(iOS 18.0, *) {
+            StartControl()
+        }
     }
 }
 

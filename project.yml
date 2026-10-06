@@ -120,7 +120,29 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.jackwallner.time.watch
         INFOPLIST_FILE: ShoesOnWatch/Info.plist
+        CODE_SIGN_ENTITLEMENTS: ShoesOnWatch/ShoesOnWatch.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        WATCHOS_DEPLOYMENT_TARGET: "10.0"
+    dependencies:
+      - target: ShoesOnWatchWidget
+
+  ShoesOnWatchWidget:
+    type: app-extension
+    platform: watchOS
+    sources:
+      - path: ShoesOnWatchWidget
+        excludes: ["Info.plist", "*.entitlements"]
+      - path: ShoesOnWidget/NextDepartureWidget.swift
+      - path: Shared/Engine
+      - path: Shared/Models
+      - path: Shared/Utilities/AppGroup.swift
+      - path: Shared/Utilities/Format.swift
+      - path: Shared/Utilities/Theme.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jackwallner.time.watch.widget
+        INFOPLIST_FILE: ShoesOnWatchWidget/Info.plist
+        CODE_SIGN_ENTITLEMENTS: ShoesOnWatchWidget/ShoesOnWatchWidget.entitlements
         WATCHOS_DEPLOYMENT_TARGET: "10.0"
 
   ShoesOnTests:

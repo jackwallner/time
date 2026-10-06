@@ -25,6 +25,28 @@ struct CompleteStepIntent: LiveActivityIntent {
     }
 }
 
+/// The Lock Screen and Control Center button. Like Done, it runs in the
+/// app's process without opening it: the run starts and its Live Activity
+/// puts the first step on the Lock Screen.
+struct StartRunIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "Start Getting Ready Now"
+    static let description = IntentDescription("Starts your next routine and shows the first step on the Lock Screen.")
+    static let openAppWhenRun = false
+    static let isDiscoverable = false
+    static let authenticationPolicy: IntentAuthenticationPolicy = .alwaysAllowed
+
+    init() {}
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        #if !WIDGET_EXTENSION
+        let store = RoutineStore.shared
+        if store.activeRun == nil { store.startNextRun() }
+        #endif
+        return .result()
+    }
+}
+
 #if !WIDGET_EXTENSION
 /// "Start my routine" from Siri, Spotlight, or the Action button.
 struct StartRoutineIntent: AppIntent {
