@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shoes On UX audit</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f4f2ec;
+        --card: #fffefa;
+        --ink: #171819;
+        --muted: #666a6d;
+        --line: #dedbd4;
+        --orange: #d97716;
+        --red: #a43b31;
+        --green: #147c59;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: var(--paper);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        line-height: 1.55;
+      }
+      main {
+        width: min(100% - 32px, 1020px);
+        margin: 0 auto;
+        padding: 46px 0 72px;
+      }
+      header {
+        max-width: 780px;
+        margin-bottom: 28px;
+      }
+      .eyebrow {
+        color: var(--orange);
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 9px 0 8px;
+        font-size: clamp(2.2rem, 7vw, 4rem);
+        line-height: 1.04;
+        letter-spacing: -0.045em;
+      }
+      h2 {
+        margin: 0 0 12px;
+        font-size: 1.35rem;
+        line-height: 1.2;
+      }
+      h3 {
+        margin: 0;
+        font-size: 1.08rem;
+        line-height: 1.35;
+      }
+      p {
+        margin: 8px 0;
+      }
+      .meta {
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
+      .summary,
+      .finding,
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: var(--card);
+      }
+      .summary {
+        padding: 22px 24px;
+        border-left: 5px solid var(--orange);
+      }
+      .summary strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+      section {
+        margin-top: 32px;
+      }
+      .findings {
+        display: grid;
+        gap: 14px;
+      }
+      .finding {
+        padding: 20px 22px;
+      }
+      .finding-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .severity {
+        flex: 0 0 auto;
+        padding: 3px 9px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+      }
+      .p1 {
+        color: #fff;
+        background: var(--red);
+      }
+      .p2 {
+        color: #4b2c03;
+        background: #f3d4a4;
+      }
+      .p3 {
+        color: #174c39;
+        background: #c9e6d8;
+      }
+      .field {
+        margin-top: 10px;
+      }
+      .field b {
+        display: block;
+        margin-bottom: 2px;
+        font-size: 0.83rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      code {
+        padding: 1px 5px;
+        border-radius: 5px;
+        background: #eeece5;
+        font-size: 0.88em;
+        overflow-wrap: anywhere;
+      }
+      a {
+        color: #155d48;
+      }
+      .panel {
+        padding: 20px 22px;
+      }
+      .wins {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      .wins article {
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        background: var(--card);
+      }
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        align-items: start;
+      }
+      figure {
+        margin: 0;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        background: var(--card);
+      }
+      figure img {
+        display: block;
+        width: 100%;
+        max-height: 520px;
+        object-fit: contain;
+        border-radius: 9px;
+        background: #111;
+      }
+      figcaption {
+        padding: 8px 3px 1px;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+      ul {
+        margin: 8px 0 0;
+        padding-left: 22px;
+      }
+      li + li {
+        margin-top: 6px;
+      }
+      footer {
+        margin-top: 34px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.86rem;
+      }
+      @media (max-width: 740px) {
+        main {
+          padding-top: 28px;
+        }
+        .wins,
+        .gallery {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 480px) {
+        .wins,
+        .gallery {
+          grid-template-columns: 1fr;
+        }
+        .finding {
+          padding: 17px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="eyebrow">Shoes On / pre-submission review</div>
+        <h1>User experience audit</h1>
+        <p class="meta">
+          6 October 2026 | Focus: first setup, morning run, notifications,
+          subscription, accessibility, and localization
+        </p>
+      </header>
+
+      <div class="summary">
+        <strong>Release read</strong>
+        The core morning flow is clear and specific. Before a broad launch,
+        resolve the trial reminder promise for people who deny notifications and
+        confirm that localized App Store pages match the language available in
+        the app. The run catch-up action also needs a recovery path.
+      </div>
+
+      <section>
+        <h2>Prioritized findings</h2>
+        <p class="meta">
+          <strong>P1</strong> affects trust or access on a launch path and
+          should be resolved for the affected audience. <strong>P2</strong> is a
+          meaningful recovery or accessibility gap to address before expanding
+          reach.
+        </p>
+        <div class="findings">
+          <article class="finding">
+            <div class="finding-head">
+              <span class="severity p1">P1, localized storefronts</span>
+              <h3>
+                Store copy is localized, core app copy appears English only
+              </h3>
+            </div>
+            <p>
+              The repo contains store copy for 50 locales, while the app bundle
+              has no <code>.xcstrings</code>, <code>.strings</code>, or
+              <code>.lproj</code> resources. Visible onboarding, run, settings,
+              notification, Watch, and purchase copy is written in English. A
+              customer arriving from a translated product page can land in an
+              English-only experience.
+            </p>
+            <div class="field">
+              <b>Recommendation</b>
+              <p>
+                Localize the customer-facing app surfaces, including
+                notification text and the Watch app, before enabling translated
+                product pages. If launch is English only, keep App Store
+                availability and listing languages aligned with that scope.
+              </p>
+            </div>
+            <div class="field muted">
+              <b>Evidence</b>
+              <p>
+                <code>ShoesOn/Info.plist:5</code> declares English as the
+                development region. A repository search found no localization
+                catalogs. The repo guide documents 50 store-copy locales.
+              </p>
+            </div>
+          </article>
+
+          <article class="finding">
+            <div class="finding-head">
+              <span class="severity p1">P1, trial trust</span>
+              <h3>
+                The Day 5 reminder is promised even when notifications are
+                denied
+              </h3>
+            </div>
+            <p>
+              Onboarding requests notification access immediately before the Pro
+              offer, but ignores the permission result and always shows “A
+              reminder before your trial ends.” If the customer denies access,
+              the reminder cannot reach them, yet the offer still presents it as
+              part of the trial timeline.
+            </p>
+            <div class="field">
+              <b>Recommendation</b>
+              <p>
+                Check notification authorization before showing the reminder
+                promise. When access is off, say that the reminder requires
+                notifications and provide a clear route to enable them, or make
+                the reminder explicitly conditional.
+              </p>
+            </div>
+            <div class="field muted">
+              <b>Evidence</b>
+              <p>
+                <code>ShoesOn/Views/OnboardingView.swift:349-359</code> ignores
+                the result.
+                <code>ShoesOn/Views/OnboardingView.swift:520-524</code> always
+                shows the Day 5 reminder.
+                <code>Shared/Services/NotificationService.swift:50-60</code>
+                schedules it after purchase.
+              </p>
+            </div>
+          </article>
+
+          <article class="finding">
+            <div class="finding-head">
+              <span class="severity p2">P2, accessibility</span>
+              <h3>
+                Key text does not follow Dynamic Type, and onboarding progress
+                is silent to VoiceOver
+              </h3>
+            </div>
+            <p>
+              The custom onboarding title, reveal total, run step name and
+              timer, paywall title, and summary headline use fixed point sizes.
+              The visible page dots are hidden from accessibility and have no
+              accessible page-count label. Large Text users may not get larger
+              key content, and screen-reader users do not hear where they are in
+              setup.
+            </p>
+            <div class="field">
+              <b>Recommendation</b>
+              <p>
+                Use scalable text styles for custom headings and the timer while
+                preserving the run layout. Announce the current setup page and
+                total pages. Check the longest step name at the largest
+                accessibility text size and with VoiceOver.
+              </p>
+            </div>
+            <div class="field muted">
+              <b>Evidence</b>
+              <p>
+                <code
+                  >ShoesOn/Views/OnboardingView.swift:163-168, 186-189, 265-269,
+                  550-563</code
+                >; <code>ShoesOn/Views/RunView.swift:158-182</code>;
+                <code>ShoesOn/Views/PaywallView.swift:27-30</code>.
+              </p>
+            </div>
+          </article>
+
+          <article class="finding">
+            <div class="finding-head">
+              <span class="severity p2">P2, run recovery</span>
+              <h3>The catch-up suggestion removes a step with no Undo</h3>
+            </div>
+            <p>
+              When the run falls behind, tapping “Skip [step] today” removes
+              that step from the current run. Normal Done and Skip actions offer
+              a five-second Undo, but the catch-up action clears the undo state
+              and does not offer a way to restore the step. A mis-tap can leave
+              the user unsure how to return to the original plan.
+            </p>
+            <div class="field">
+              <b>Recommendation</b>
+              <p>
+                Offer a short Undo in the same control area after applying the
+                catch-up change. Keep it scoped to this run, as the current
+                action is.
+              </p>
+            </div>
+            <div class="field muted">
+              <b>Evidence</b>
+              <p>
+                <code>ShoesOn/Views/RunView.swift:198-222</code> applies the
+                action directly.
+                <code>Shared/Services/RoutineStore.swift:284-290</code> drops
+                the step and clears undo state.
+              </p>
+            </div>
+          </article>
+
+          <article class="finding">
+            <div class="finding-head">
+              <span class="severity p2">P2, setup continuity</span>
+              <h3>
+                Leaving during the Pro offer restarts setup instead of resuming
+                it
+              </h3>
+            </div>
+            <p>
+              The routine is saved before the notification prompt and Pro offer,
+              while setup is marked complete only after a purchase or “Continue
+              free.” If the app is closed on the offer and reopened, the root
+              view starts onboarding at page one with default draft values. The
+              saved routine is not loaded back into those draft controls, so the
+              user repeats setup and can see a reveal that no longer matches the
+              saved routine.
+            </p>
+            <div class="field">
+              <b>Recommendation</b>
+              <p>
+                Persist and restore the onboarding page and answers, or finish
+                the free setup before presenting Pro as a dismissible offer.
+              </p>
+            </div>
+            <div class="field muted">
+              <b>Evidence</b>
+              <p>
+                <code>ShoesOn/App.swift:51-62</code> selects a fresh onboarding
+                view while setup is incomplete.
+                <code>ShoesOn/Views/OnboardingView.swift:349-380</code> saves
+                the routine before marking setup complete.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <h2>What is working well</h2>
+        <div class="wins">
+          <article>
+            <strong>Home gives a useful next action</strong>
+            <p class="muted">
+              The next start time, leave time, and guess-versus-real gap are
+              visible together.
+            </p>
+          </article>
+          <article>
+            <strong>The run screen explains the tradeoff</strong>
+            <p class="muted">
+              It keeps the current step, remaining time, schedule status, and
+              time recovered by a suggested skip together.
+            </p>
+          </article>
+          <article>
+            <strong>Setup demonstrates a personal plan</strong>
+            <p class="muted">
+              The reveal turns the user's guesses into a concrete start time
+              before the Pro offer.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <h2>Evidence reviewed</h2>
+        <div class="gallery">
+          <figure>
+            <img
+              src="app-store/raw/01_home.png"
+              alt="Shoes On home screen showing the next start time and routine timeline"
+            />
+            <figcaption>Home, next start and learned routine</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="app-store/raw/02_reveal.png"
+              alt="Onboarding reveal showing the real duration and leave plan"
+            />
+            <figcaption>Onboarding reveal</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="app-store/raw/03_run.png"
+              alt="Active run showing step timer, behind status, and catch-up action"
+            />
+            <figcaption>Active run and catch-up action</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="app-store/raw/04_summary.png"
+              alt="Summary showing departure and guess versus actual step times"
+            />
+            <figcaption>Run summary</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="app-store/raw/06_pace.png"
+              alt="Onboarding pace selection"
+            />
+            <figcaption>Pace selection</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="app-store/watch/run.png"
+              alt="Apple Watch run screen with step, timer, status, and Done"
+            />
+            <figcaption>Apple Watch run</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <h2>Before submission</h2>
+        <div class="panel">
+          <ul>
+            <li>
+              Confirm the launch storefront languages match the languages
+              available in the app.
+            </li>
+            <li>
+              Walk through first launch with notifications denied, then inspect
+              the trial offer and the Home recovery card.
+            </li>
+            <li>
+              Try the catch-up action and verify the user can restore the
+              dropped step.
+            </li>
+            <li>
+              Review onboarding and the active run at the largest accessibility
+              text size and with VoiceOver.
+            </li>
+            <li>
+              Close and reopen the app from the Pro offer, then confirm setup
+              resumes without changing the saved routine.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <footer>
+        <strong>Scope and limits</strong>
+        <p>
+          Static review of SwiftUI flows, notification and purchase paths, the
+          checked-in App Store and Watch captures above, and existing UI-test
+          coverage. Existing tests cover screenshot flows, common Done and Undo
+          behavior, catch-up, and one-off day changes. They do not cover a
+          denied-notification trial, interrupted setup, large text, VoiceOver
+          progress, or localized screens. No source code was changed and no
+          tests were run. All available simulators were shut down, so this pass
+          does not claim a live runtime check. In particular, the current
+          paywall layout and permission-denied behavior still need a device or
+          simulator review.
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>
