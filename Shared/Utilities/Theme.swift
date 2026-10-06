@@ -43,6 +43,37 @@ enum Theme {
     }
 }
 
+/// A big SF Rounded size that still follows the reader's text size, the way
+/// the built-in styles do. Pick the style whose size is nearest, so it grows
+/// at the same rate as the text around it.
+private struct DisplayFont: ViewModifier {
+    @ScaledMetric private var size: CGFloat
+    let weight: Font.Weight
+    let monospacedDigits: Bool
+
+    init(size: CGFloat, weight: Font.Weight, relativeTo style: Font.TextStyle, monospacedDigits: Bool) {
+        _size = ScaledMetric(wrappedValue: size, relativeTo: style)
+        self.weight = weight
+        self.monospacedDigits = monospacedDigits
+    }
+
+    func body(content: Content) -> some View {
+        let font = Font.system(size: size, weight: weight, design: .rounded)
+        content.font(monospacedDigits ? font.monospacedDigit() : font)
+    }
+}
+
+extension View {
+    func displayFont(
+        _ size: CGFloat,
+        weight: Font.Weight = .heavy,
+        relativeTo style: Font.TextStyle = .largeTitle,
+        monospacedDigits: Bool = false
+    ) -> some View {
+        modifier(DisplayFont(size: size, weight: weight, relativeTo: style, monospacedDigits: monospacedDigits))
+    }
+}
+
 #if canImport(UIKit) && !os(watchOS)
 extension Color {
     struct RGB {

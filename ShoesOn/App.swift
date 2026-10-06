@@ -38,6 +38,11 @@ private struct RootView: View {
     @EnvironmentObject private var store: RoutineStore
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var review: ReviewPromptService
+    /// The routine is saved before the Pro offer, so a saved routine with
+    /// setup unfinished means they left on the offer: pick up there, not at
+    /// page one. Read once at launch, so saving mid-setup never swaps the
+    /// onboarding out from under itself.
+    @State private var resumesAtOffer = !AppSettings.shared.hasCompletedSetup && !RoutineStore.shared.routines.isEmpty
 
     var body: some View {
         content
@@ -54,7 +59,7 @@ private struct RootView: View {
         } else if let page = ScreenshotConfig.value(after: "-OnboardingPage").flatMap(Int.init) {
             OnboardingView(startPage: page)
         } else if !settings.hasCompletedSetup {
-            OnboardingView()
+            if resumesAtOffer { OnboardingView.resumingOffer } else { OnboardingView() }
         } else if store.activeRun != nil || store.state.lastFinished != nil {
             RunView()
         } else {

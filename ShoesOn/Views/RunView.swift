@@ -60,8 +60,13 @@ private struct ActiveRunScreen: View {
     @EnvironmentObject private var store: RoutineStore
     let run: ActiveRun
     @State private var confirmEnd = false
-    /// The step index an Undo is on offer for, while it shows.
-    @State private var undoOffered: Int?
+    /// The undo on offer, while it shows.
+    @State private var undoOffered: UUID?
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    /// The dial gives up room to the text at accessibility sizes, so Done
+    /// never leaves the screen.
+    private var dialSize: CGFloat { typeSize.isAccessibilitySize ? 190 : 260 }
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
@@ -89,10 +94,8 @@ private struct ActiveRunScreen: View {
             .sensoryFeedback(trigger: isOverdue) { _, overdue in overdue ? .warning : nil }
         }
         .sensoryFeedback(.success, trigger: run.stepIndex)
-        .onChange(of: run.stepIndex) { _, index in
-            withAnimation(.smooth) {
-                undoOffered = store.lastStepUndo?.after.stepIndex == index ? index : nil
-            }
+        .onChange(of: store.lastStepUndo?.id) { _, id in
+            withAnimation(.smooth) { undoOffered = id }
         }
         .task(id: undoOffered) {
             guard undoOffered != nil else { return }
@@ -100,6 +103,9 @@ private struct ActiveRunScreen: View {
             guard !Task.isCancelled else { return }
             withAnimation(.smooth) { undoOffered = nil }
         }
+        // One screen with no scrolling: text grows up to the first
+        // accessibility size, where everything still fits with Done in reach.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
         // Mornings happen with the phone on the counter: the screen stays on
         // for as long as a routine runs.
         .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
@@ -118,6 +124,7 @@ private struct ActiveRunScreen: View {
                     Text(run.routineName)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.white)
+                        .lineLimit(1)
                     Text(run.isPracticeRun ? "Practice run · ready by \(Format.time(run.leaveAt))" : "Out the door \(Format.time(run.leaveAt))")
                         .font(.subheadline)
                         .foregroundStyle(.white.opacity(0.6))
@@ -156,7 +163,7 @@ private struct ActiveRunScreen: View {
                     .textCase(.uppercase)
                     .tracking(1)
                 Text(run.currentStep?.name ?? "")
-                    .font(.system(size: 38, weight: .heavy, design: .rounded))
+                    .displayFont(38)
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
                     .minimumScaleFactor(0.6)
@@ -170,8 +177,10 @@ private struct ActiveRunScreen: View {
             Dial(remaining: remaining / planned, color: Theme.color(for: status)) {
                 VStack(spacing: 2) {
                     Text(Self.clock(remaining))
-                        .font(.system(size: 64, weight: .semibold, design: .rounded).monospacedDigit())
+                        .displayFont(64, weight: .semibold, monospacedDigits: true)
                         .foregroundStyle(clockColor)
+                        .minimumScaleFactor(0.5)
+                        .lineLimit(1)
                         .contentTransition(.numericText(countsDown: true))
                     Text(remaining >= 0 ? "left" : "over")
                         .font(.subheadline.weight(.semibold))
@@ -179,7 +188,7 @@ private struct ActiveRunScreen: View {
                 }
                 .accessibilityElement(children: .combine)
             }
-            .frame(width: 260, height: 260)
+            .frame(width: dialSize, height: dialSize)
             VStack(spacing: 12) {
                 StatusPill(status: status)
                 if let drop = run.catchUpSuggestion(now: now) {
@@ -231,7 +240,7 @@ private struct ActiveRunScreen: View {
                 .symbolEffect(.bounce, value: run.stepIndex)
                 .accessibilityHidden(true)
             Text(untilLeave > 0 ? "Shoes on." : "Time to go.")
-                .font(.system(size: 44, weight: .heavy, design: .rounded))
+                .displayFont(44)
                 .foregroundStyle(.white)
             Text(untilLeave > 0 ? "\(Self.clock(untilLeave)) to spare" : "\(Self.clock(untilLeave)) past \(Format.time(run.leaveAt))")
                 .font(.system(.title2, design: .rounded).monospacedDigit().weight(.bold))
@@ -252,14 +261,14 @@ private struct ActiveRunScreen: View {
             // Right under the thumb that just tapped Done, in the slot the
             // skip button keeps, so offering it never moves anything.
             ZStack {
-                if let undo = store.lastStepUndo, undoOffered == run.stepIndex {
+                if let undo = store.lastStepUndo, undoOffered == undo.id {
                     Button {
                         withAnimation(.smooth) {
                             undoOffered = nil
                             store.undoLastStep()
                         }
                     } label: {
-                        Label("Undo \(undo.stepName) \(undo.wasSkip ? "skip" : "done")", systemImage: "arrow.uturn.backward")
+                        Label(Self.undoTitle(undo), systemImage: "arrow.uturn.backward")
                             .lineLimit(1)
                     }
                     .buttonStyle(.secondary(.white))
@@ -271,6 +280,14 @@ private struct ActiveRunScreen: View {
                 }
             }
             .frame(height: 44)
+        }
+    }
+
+    private static func undoTitle(_ undo: StepUndo) -> String {
+        switch undo.kind {
+        case .done: "Undo \(undo.stepName) done"
+        case .skip: "Undo \(undo.stepName) skip"
+        case .drop: "Put \(undo.stepName) back"
         }
     }
 
@@ -309,7 +326,7 @@ private struct SummaryScreen: View {
                             .foregroundStyle(color)
                             .symbolEffect(.bounce, value: shown)
                         Text(headline)
-                            .font(.system(size: 40, weight: .heavy, design: .rounded))
+                            .displayFont(40)
                             .foregroundStyle(Theme.ink)
                         Text(finished.run.isPracticeRun
                             ? "A practice run, so it doesn't count toward your on-time record."

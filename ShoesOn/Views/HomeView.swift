@@ -244,7 +244,7 @@ private struct NextDepartureCard: View {
                         changeMenu
                     }
                     Text(isOverdue ? "Start now" : "Start \(Format.time(plan.alertAt))")
-                        .font(.system(size: 44, weight: .heavy, design: .rounded))
+                        .displayFont(44)
                         .foregroundStyle(Theme.ink)
                         .minimumScaleFactor(0.6)
                         .lineLimit(1)
@@ -378,7 +378,7 @@ private struct RecordCard: View {
                     let onTime = recent.filter(\.wasOnTime).count
                     HStack(alignment: .lastTextBaseline, spacing: 6) {
                         Text("\(onTime)")
-                            .font(.system(size: 44, weight: .heavy, design: .rounded))
+                            .displayFont(44)
                             .foregroundStyle(Theme.ink)
                         Text("of \(recent.count) on time")
                             .font(.headline)

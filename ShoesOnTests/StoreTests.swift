@@ -72,6 +72,20 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(store.activeRun?.steps[0].skipped, false)
     }
 
+    func testUndoingACatchUpSkipPutsTheStepBack() {
+        let store = makeStore()
+        store.startRun(routineID: routine.id, now: date(21, 7, 50))
+        let shoes = routine.steps[1].id
+        store.dropUpcomingStep(id: shoes)
+        XCTAssertEqual(store.activeRun?.steps[1].skipped, true)
+        XCTAssertEqual(store.lastStepUndo?.kind, .drop)
+        XCTAssertEqual(store.lastStepUndo?.stepName, "Shoes")
+        store.undoLastStep()
+        XCTAssertEqual(store.activeRun?.steps[1].skipped, false)
+        XCTAssertEqual(store.activeRun?.stepIndex, 0)
+        XCTAssertNil(store.lastStepUndo)
+    }
+
     func testUndoDoesNothingOnceTheRunHasMovedOn() {
         let store = makeStore()
         store.startRun(routineID: routine.id, now: date(21, 7, 50))

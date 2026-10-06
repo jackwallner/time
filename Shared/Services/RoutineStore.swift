@@ -17,15 +17,23 @@ struct PersistedState: Codable, Sendable {
     var lastFinished: FinishedRun?
 }
 
-/// The run as it stood before the last Done or Skip, so a mis-tap on a busy
-/// morning can be taken back. Held in memory only: it is for the next few
-/// seconds, not for a relaunch.
+/// The run as it stood before the last Done, Skip or catch-up skip, so a
+/// mis-tap on a busy morning can be taken back. Held in memory only: it is
+/// for the next few seconds, not for a relaunch.
 struct StepUndo: Sendable {
+    enum Kind: Sendable {
+        case done
+        case skip
+        /// A later step taken off the plan to catch up.
+        case drop
+    }
+
+    let id = UUID()
     var before: ActiveRun
     var after: ActiveRun
     /// The timing that Done added to the history, removed again on undo.
     var recordedStepID: UUID?
-    var wasSkip: Bool
+    var kind: Kind
     var stepName: String
 }
 
@@ -254,7 +262,7 @@ final class RoutineStore: ObservableObject {
                 recorded = finished.id
             }
         }
-        lastStepUndo = StepUndo(before: before, after: run, recordedStepID: recorded, wasSkip: false, stepName: finished?.name ?? "")
+        lastStepUndo = StepUndo(before: before, after: run, recordedStepID: recorded, kind: .done, stepName: finished?.name ?? "")
     }
 
     func skipStep(now: Date = .now) {
@@ -262,11 +270,12 @@ final class RoutineStore: ObservableObject {
         var run = before
         run.skipCurrentStep(at: now)
         mutate { $0.activeRun = run }
-        lastStepUndo = StepUndo(before: before, after: run, recordedStepID: nil, wasSkip: true, stepName: before.currentStep?.name ?? "")
+        lastStepUndo = StepUndo(before: before, after: run, recordedStepID: nil, kind: .skip, stepName: before.currentStep?.name ?? "")
     }
 
-    /// Puts the last Done or Skip back, as long as nothing has moved since.
-    /// The step picks up its clock where it was, as if it never ended.
+    /// Puts the last Done, Skip or catch-up skip back, as long as nothing has
+    /// moved since. The step picks up its clock where it was, as if it never
+    /// ended.
     func undoLastStep() {
         guard let undo = lastStepUndo, state.activeRun == undo.after else {
             lastStepUndo = nil
@@ -283,10 +292,12 @@ final class RoutineStore: ObservableObject {
 
     /// Takes a later step off today's plan to catch up.
     func dropUpcomingStep(id: UUID) {
-        guard var run = state.activeRun else { return }
+        guard let before = state.activeRun, let step = before.steps.first(where: { $0.id == id }) else { return }
+        var run = before
         run.dropUpcomingStep(id: id)
-        lastStepUndo = nil
+        guard run != before else { return }
         mutate { $0.activeRun = run }
+        lastStepUndo = StepUndo(before: before, after: run, recordedStepID: nil, kind: .drop, stepName: step.name)
     }
 
     /// The user walked out. Records the departure and hands back the summary.

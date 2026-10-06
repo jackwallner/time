@@ -19,9 +19,20 @@ struct OnboardingView: View {
     static let pageCount = 6
 
     init(startPage: Int = 0) {
-        _page = State(initialValue: startPage)
+        self.init(page: startPage, pace: startPage >= 1 ? .halfOver : nil)
+    }
+
+    /// Back after leaving the app on the Pro offer. The routine and pace were
+    /// saved before the offer, so only the offer is left; no pace is set here,
+    /// so finishing cannot overwrite the saved one.
+    static var resumingOffer: OnboardingView {
+        OnboardingView(page: pageCount - 1, pace: nil)
+    }
+
+    private init(page: Int, pace: PaceAnswer?) {
+        _page = State(initialValue: page)
+        _pace = State(initialValue: pace)
         _leaveTime = State(initialValue: Calendar.current.date(bySettingHour: 8, minute: 15, second: 0, of: .now) ?? .now)
-        if startPage >= 1 { _pace = State(initialValue: .halfOver) }
     }
 
     var body: some View {
@@ -48,6 +59,15 @@ struct OnboardingView: View {
             if newPage == Self.pageCount - 1 {
                 purchases.trackPaywallImpression(id: "shoeson_onboarding_trial")
             }
+        }
+        .onAppear {
+            guard isTrialPage else { return }
+            if purchases.isPro { finish() } else { purchases.trackPaywallImpression(id: "shoeson_onboarding_trial") }
+        }
+        // Pro that lands while the offer shows (a restore, or a purchase
+        // from before a relaunch) has nothing left to offer.
+        .onChange(of: purchases.isPro) { _, isPro in
+            if isPro && isTrialPage { finish() }
         }
     }
 
@@ -162,9 +182,10 @@ struct OnboardingView: View {
 
     private func title(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 34, weight: .heavy, design: .rounded))
+            .displayFont(34)
             .foregroundStyle(Theme.ink)
             .fixedSize(horizontal: false, vertical: true)
+            .accessibilityAddTraits(.isHeader)
     }
 
     private func lead(_ text: String) -> some View {
@@ -184,7 +205,8 @@ struct OnboardingView: View {
                 .padding(.top, 16)
                 .accessibilityHidden(true)
             Text("Leave on time.\nFor real this time.")
-                .font(.system(size: 40, weight: .heavy, design: .rounded))
+                .displayFont(40)
+                .accessibilityAddTraits(.isHeader)
                 .foregroundStyle(Theme.ink)
             lead("Tell Shoes On when you walk out the door. It works backward through your routine, learns how long each step really takes you, and tells you when to start.")
             Card {
@@ -263,7 +285,7 @@ struct OnboardingView: View {
                     .font(.system(.title2, design: .rounded).weight(.bold))
                     .foregroundStyle(Theme.secondary)
                 Text(Format.duration(minutes: plan.realMinutes))
-                    .font(.system(size: 60, weight: .heavy, design: .rounded))
+                    .displayFont(60)
                     .foregroundStyle(Theme.ink)
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
@@ -560,7 +582,8 @@ private struct PageDots: View {
             }
         }
         .animation(.snappy, value: current)
-        .accessibilityHidden(true)
+        .accessibilityElement()
+        .accessibilityLabel("Step \(current + 1) of \(count)")
     }
 }
 

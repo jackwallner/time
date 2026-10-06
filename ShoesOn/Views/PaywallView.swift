@@ -25,7 +25,8 @@ struct PaywallView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Shoes On Pro")
-                            .font(.system(size: 38, weight: .heavy, design: .rounded))
+                            .displayFont(38)
+                            .accessibilityAddTraits(.isHeader)
                             .foregroundStyle(Theme.ink)
                         Text("Your first routine stays free. Pro adds the rest of your week.")
                             .font(.body)
