@@ -9,11 +9,11 @@ Tell it how far your guesses usually run over. If getting ready feels like an ho
 KNOW WHEN YOU'RE SLIPPING
 While you get ready, one screen shows the step you're on, the time left for it, and whether you're on track or minutes behind. The same view sits on your Lock Screen and in the Dynamic Island, with a Done button.
 
-ALERTS THAT MATTER
-Time to get ready. Wrap up this step. Still in the shower? Leave in 10 minutes. Time to go. Alerts are Time Sensitive, so they can come through a Focus if you allow it.
+ALERTS ALONG THE WAY
+You get an alert to start getting ready, a heads-up before a long step runs out, a nudge when a step's time is up, a warning 10 minutes before you leave, and one when it's time to go. They are Time Sensitive, so they can come through a Focus if you allow it.
 
 BUILT FOR MORNINGS THAT GO SIDEWAYS
-Missed the get-ready alert? Two follow-ups tell you when starting right now still gets you out the door. Running behind mid-routine? It offers to drop one later step that wins the time back. Different day? Skip it or give it a one-off leave time without touching your usual plan. Tapped Done by mistake? Undo. A Home Screen and Lock Screen widget counts down to your start.
+Missed the get-ready alert? Two follow-ups tell you when starting right now still gets you out the door. If you fall behind mid-routine, it offers to drop one later step that wins the time back. On an unusual day, skip the routine or give it a one-off leave time without touching your usual plan. Done and Skip can be undone for a few seconds, and a Home Screen and Lock Screen widget counts down to your start.
 
 FREE, AND STAYING FREE
 Your first routine, with every alert, the Lock Screen view, the widget and all the learning.
