@@ -116,6 +116,12 @@ struct OnboardingView: View {
                             .foregroundStyle(Theme.late)
                             .multilineTextAlignment(.center)
                     }
+                    if let yearly = purchases.yearly {
+                        Text(trialEligible ? "Free for 7 days, then \(yearly.billedLabel)" : yearly.billedLabel)
+                            .font(.subheadline.weight(.bold))
+                            .foregroundStyle(Theme.ink)
+                            .multilineTextAlignment(.center)
+                    }
                     if let trialDisclosure {
                         Text(trialDisclosure)
                             .font(.footnote)
@@ -147,16 +153,14 @@ struct OnboardingView: View {
         return trialEligible ? "Start 7-day free trial" : "Continue with Pro"
     }
 
-    /// Nil when the plans failed and the error above already says so.
+    /// The terms under the bold price line. Nil when the plans failed and the
+    /// error above already says so.
     private var trialDisclosure: String? {
-        guard let yearly = purchases.yearly else {
+        guard purchases.yearly != nil else {
             guard purchases.plansUnavailable else { return "Loading plans…" }
             return purchases.errorMessage == nil ? "Plans couldn't load. Check your connection and try again." : nil
         }
-        if trialEligible {
-            return "Free for 7 days, then \(yearly.billedLabel). Cancel anytime in Settings at least 24 hours before the trial ends."
-        }
-        return "\(yearly.billedLabel). Renews automatically unless cancelled at least 24 hours before the period ends."
+        return "Renews automatically unless cancelled at least 24 hours before the \(trialEligible ? "trial" : "period") ends."
     }
 
     private var canContinue: Bool {

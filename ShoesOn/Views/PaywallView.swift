@@ -182,37 +182,3 @@ private struct PlanCard: View {
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
-
-/// The enjoyment gate. Apple's prompt only follows a yes.
-struct ReviewPromptView: View {
-    @EnvironmentObject private var review: ReviewPromptService
-    @Environment(\.requestReview) private var requestReview
-    @Environment(\.openURL) private var openURL
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Is Shoes On helping you get out the door?")
-                .font(.system(.title3, design: .rounded).weight(.bold))
-                .foregroundStyle(Theme.ink)
-                .multilineTextAlignment(.center)
-                .padding(.top, 28)
-            VStack(spacing: 4) {
-                Button("Yes, it is") {
-                    review.markRated()
-                    requestReview()
-                }
-                .buttonStyle(.primary)
-                Button("Not really") {
-                    review.markDeferred()
-                    openURL(URL(string: "mailto:jackwallner@gmail.com?subject=Shoes%20On%20feedback")!)
-                }
-                .buttonStyle(.secondary)
-                Button("Maybe later") { review.markDeferred() }
-                    .buttonStyle(.secondary)
-            }
-        }
-        .padding(.horizontal, 24)
-        .presentationDetents([.height(300)])
-        .background(Theme.background.ignoresSafeArea())
-    }
-}

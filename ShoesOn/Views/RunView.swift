@@ -1,3 +1,4 @@
+import StoreKit
 import SwiftUI
 
 /// The routine in progress: one step at a time, a dial for it, and whether the
@@ -310,7 +311,7 @@ private struct ActiveRunScreen: View {
 /// time against the guess.
 private struct SummaryScreen: View {
     @EnvironmentObject private var store: RoutineStore
-    @EnvironmentObject private var review: ReviewPromptService
+    @Environment(\.requestReview) private var requestReview
     let finished: FinishedRun
     @State private var shown = false
 
@@ -370,7 +371,7 @@ private struct SummaryScreen: View {
     private func askForReviewIfEarned() {
         guard finished.departure.wasOnTime, !finished.run.isPracticeRun else { return }
         let onTime = store.state.departures.filter(\.wasOnTime).count
-        review.considerAfterOnTimeDeparture(onTimeCount: onTime)
+        if ReviewPromptService.shared.shouldAskAfterOnTimeDeparture(onTimeCount: onTime) { requestReview() }
     }
 
     private var headline: String {

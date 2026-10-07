@@ -6,7 +6,6 @@ struct ShoesOnApp: App {
     @StateObject private var store = RoutineStore.shared
     @StateObject private var settings = AppSettings.shared
     @StateObject private var purchases = StoreService.shared
-    @StateObject private var review = ReviewPromptService.shared
 
     init() {
         NotificationService.shared.configure()
@@ -23,7 +22,6 @@ struct ShoesOnApp: App {
                 .environmentObject(store)
                 .environmentObject(settings)
                 .environmentObject(purchases)
-                .environmentObject(review)
                 .task { purchases.start() }
                 .onChange(of: scenePhase) { _, phase in
                     // Plans move as timings arrive and days pass, so the
@@ -37,7 +35,6 @@ struct ShoesOnApp: App {
 private struct RootView: View {
     @EnvironmentObject private var store: RoutineStore
     @EnvironmentObject private var settings: AppSettings
-    @EnvironmentObject private var review: ReviewPromptService
     /// The routine is saved before the Pro offer, so a saved routine with
     /// setup unfinished means they left on the offer: pick up there, not at
     /// page one. Read once at launch, so saving mid-setup never swaps the
@@ -50,7 +47,6 @@ private struct RootView: View {
             .fontDesign(.rounded)
             .animation(.smooth, value: store.activeRun == nil)
             .animation(.smooth, value: settings.hasCompletedSetup)
-            .sheet(isPresented: $review.isPresented) { ReviewPromptView() }
     }
 
     @ViewBuilder private var content: some View {
