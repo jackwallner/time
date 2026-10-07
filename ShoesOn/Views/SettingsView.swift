@@ -100,27 +100,44 @@ struct SettingsView: View {
     private var alertsSection: some View {
         Section {
             if notificationsDenied {
-                Button("Turn on notifications in Settings") {
+                settingsLink("Turn on notifications in Settings", systemImage: "bell.slash") {
                     if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
                 }
             }
             if liveActivitiesOff {
-                Button("Turn on Live Activities in Settings") {
+                settingsLink("Turn on Live Activities in Settings", systemImage: "rectangle.badge.xmark") {
                     if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
                 }
             }
             Toggle("Time to get ready", isOn: $settings.startAlerts)
                 .toggleStyle(SwitchToggleStyle(tint: Theme.onTrack))
+                .disabled(notificationsDenied)
             Toggle("Leave in 10 minutes, and time to go", isOn: $settings.leaveAlerts)
                 .toggleStyle(SwitchToggleStyle(tint: Theme.onTrack))
+                .disabled(notificationsDenied)
             Toggle("Nudges when a step runs over", isOn: $settings.stepNudges)
                 .toggleStyle(SwitchToggleStyle(tint: Theme.onTrack))
+                .disabled(notificationsDenied)
         } header: {
             Text("Alerts")
         } footer: {
             Text(liveActivitiesOff
                  ? "Alerts are Time Sensitive, so they can come through a Focus if you allow it. With Live Activities off, the step and its Done button can't show on the Lock Screen."
                  : "Alerts are Time Sensitive, so they can come through a Focus if you allow it.")
+        }
+    }
+
+    /// A fix that lives in the Settings app: flagged, and clearly a way out.
+    private func settingsLink(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Label(title, systemImage: systemImage)
+                    .foregroundStyle(Theme.late)
+                Spacer()
+                Image(systemName: "arrow.up.forward")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(Theme.secondary)
+            }
         }
     }
 

@@ -182,6 +182,7 @@ private struct ActiveRunScreen: View {
                         .minimumScaleFactor(0.5)
                         .lineLimit(1)
                         .contentTransition(.numericText(countsDown: true))
+                        .frame(maxWidth: dialSize * 0.72)
                     Text(remaining >= 0 ? "left" : "over")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.white.opacity(0.55))
@@ -350,7 +351,10 @@ private struct SummaryScreen: View {
                 }
                 .padding(.horizontal, 20)
             }
-            Button("Done") { withAnimation(.smooth) { store.dismissSummary() } }
+            Button("Done") {
+                askForReviewIfEarned()
+                withAnimation(.smooth) { store.dismissSummary() }
+            }
                 .buttonStyle(.primary)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 8)
@@ -359,10 +363,14 @@ private struct SummaryScreen: View {
         .sensoryFeedback(.success, trigger: shown)
         .onAppear {
             withAnimation(.spring(duration: 0.9, bounce: 0.2).delay(0.1)) { shown = true }
-            guard finished.departure.wasOnTime, !finished.run.isPracticeRun else { return }
-            let onTime = store.state.departures.filter(\.wasOnTime).count
-            review.considerAfterOnTimeDeparture(onTimeCount: onTime)
         }
+    }
+
+    /// Asked once they have taken in the win, not over the top of it.
+    private func askForReviewIfEarned() {
+        guard finished.departure.wasOnTime, !finished.run.isPracticeRun else { return }
+        let onTime = store.state.departures.filter(\.wasOnTime).count
+        review.considerAfterOnTimeDeparture(onTimeCount: onTime)
     }
 
     private var headline: String {

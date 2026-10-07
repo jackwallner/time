@@ -13,7 +13,7 @@
     <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
     <key>ITSAppUsesNonExemptEncryption</key><false/>
     <key>NSSupportsLiveActivities</key><true/>
-    <key>UILaunchScreen</key><dict/>
+    <key>UILaunchScreen</key><dict><key>UIColorName</key><string>LaunchBackground</string></dict>
     <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string></array>
 </dict>
 </plist>

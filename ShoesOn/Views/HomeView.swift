@@ -104,7 +104,8 @@ private struct RoutineDashboard: View {
     let routine: Routine
     let onEdit: () -> Void
     @State private var changingDay: ChangeDay?
-    @State private var alertsOff = false
+    /// Remembered so a cold launch draws the warning from the first frame.
+    @AppStorage("homeAlertsOff") private var alertsOff = false
 
     var body: some View {
         TimelineView(.everyMinute) { context in
@@ -162,7 +163,7 @@ private struct RoutineDashboard: View {
         .task(id: scenePhase) {
             guard scenePhase == .active else { return }
             let denied = await NotificationService.shared.authorizationStatus() == .denied
-            withAnimation(.smooth) { alertsOff = denied }
+            if alertsOff != denied { withAnimation(.smooth) { alertsOff = denied } }
         }
         #if DEBUG
         .onAppear {
