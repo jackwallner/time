@@ -107,4 +107,45 @@ final class StoreTests: XCTestCase {
         store.startRunFromAlert(routineID: routine.id, leaveAt: date(21, 8, 15), now: date(21, 12))
         XCTAssertNil(store.activeRun)
     }
+
+    func testStartingOnASkippedDayPracticesInsteadOfRecordingTheSkippedDeparture() {
+        let store = makeStore()
+        var state = store.state
+        state.routines[0].setChange(DayChange(day: date(21, 0), leaveMinuteOfDay: nil), on: date(21, 0))
+        store.replaceState(state)
+        XCTAssertEqual(store.nextPlan(for: state.routines[0], now: date(21, 7, 50))?.leaveAt, date(22, 8, 15))
+        store.startRun(routineID: routine.id, now: date(21, 7, 50))
+        XCTAssertEqual(store.activeRun?.isPracticeRun, true)
+        store.finishRun(now: date(21, 8))
+        XCTAssertTrue(store.state.departures.isEmpty)
+    }
+
+    func testAnOffDayDoesNotStartADifferentDepartureFromTheHomePlan() {
+        let store = makeStore()
+        store.startRun(routineID: routine.id, now: date(20, 7, 50))
+        XCTAssertEqual(store.activeRun?.isPracticeRun, true)
+        XCTAssertNil(store.activeRun?.alertAt)
+    }
+
+    func testStartingAgainAfterLeavingEarlyDoesNotRecordTheDepartureTwice() {
+        let store = makeStore()
+        store.startRun(routineID: routine.id, now: date(21, 7, 50))
+        store.finishRun(now: date(21, 8))
+        store.dismissSummary()
+        store.startRun(routineID: routine.id, now: date(21, 8, 1))
+        XCTAssertEqual(store.activeRun?.isPracticeRun, true)
+        store.finishRun(now: date(21, 8, 10))
+        XCTAssertEqual(store.state.departures.count, 1)
+    }
+
+    func testAnAlertForASkippedOrMovedDepartureDoesNotStartARun() {
+        for override in [Int?.none, 7 * 60] {
+            let store = makeStore()
+            var state = store.state
+            state.routines[0].setChange(DayChange(day: date(21, 0), leaveMinuteOfDay: override), on: date(21, 0))
+            store.replaceState(state)
+            store.startRunFromAlert(routineID: routine.id, leaveAt: date(21, 8, 15), now: date(21, 7, 50))
+            XCTAssertNil(store.activeRun)
+        }
+    }
 }

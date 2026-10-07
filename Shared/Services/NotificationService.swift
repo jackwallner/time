@@ -140,7 +140,11 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             let store = RoutineStore.shared
             switch action {
             case Self.startAction:
-                if let routineID { store.startRun(routineID: routineID) } else { store.startNextRun() }
+                if let routineID, let leaveAt {
+                    store.startRunFromAlert(routineID: routineID, leaveAt: leaveAt)
+                } else {
+                    store.startNextRun()
+                }
             case Self.doneAction:
                 store.completeStep()
             case Self.skipAction:

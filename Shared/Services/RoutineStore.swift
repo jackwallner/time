@@ -198,7 +198,7 @@ final class RoutineStore: ObservableObject {
     /// from now. A practice run at 10 PM must not count as tomorrow's
     /// departure, or it would cancel tomorrow's alerts.
     func runTarget(for routine: Routine, now: Date = .now) -> (leaveAt: Date, isPractice: Bool) {
-        let leave = routine.leaveTimeForRunStarted(at: now)
+        let leave = nextPlan(for: routine, now: now)?.leaveAt ?? routine.leaveTimeForRunStarted(at: now)
         let due = plan(for: routine, leaveAt: leave)
         guard due.alertAt.timeIntervalSince(now) > Self.practiceLeadSeconds else { return (leave, false) }
         let ready = now.addingTimeInterval(TimeInterval(due.realMinutes * 60))
@@ -231,7 +231,7 @@ final class RoutineStore: ObservableObject {
     func startRunFromAlert(routineID: UUID, leaveAt: Date, now: Date = .now) {
         guard state.activeRun == nil, leaveAt > now,
               let routine = routine(id: routineID),
-              routine.leaveTimeForRunStarted(at: now) == leaveAt,
+              nextPlan(for: routine, now: now)?.leaveAt == leaveAt,
               !state.departures.contains(where: { $0.routineID == routineID && $0.target == leaveAt })
         else { return }
         startRun(routineID: routineID, now: now)

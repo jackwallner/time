@@ -2,6 +2,7 @@ import XCTest
 
 /// The coaching moves a late morning needs: skip or move a day, and cut a
 /// later step when the run falls behind.
+@MainActor
 final class CoachingUITests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
@@ -74,5 +75,38 @@ final class CoachingUITests: XCTestCase {
             // Tomorrow is not a routine day: only a one-off time is offered.
             XCTAssertTrue(app.buttons["Save"].exists)
         }
+    }
+
+    func testContinueKeepsACustomOnboardingStepWithoutTappingAdd() {
+        let app = launch(["-OnboardingPage", "3"])
+        let field = app.textFields["Add your own step"]
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
+        app.swipeUp()
+        field.tap()
+        field.typeText("Feed the cat")
+        app.buttons["Continue"].tap()
+        XCTAssertTrue(app.staticTexts["It really takes"].waitForExistence(timeout: 5))
+        app.buttons["Back"].tap()
+        XCTAssertTrue(app.buttons["Feed the cat"].waitForExistence(timeout: 5))
+        XCTAssertEqual(field.value as? String, "Add your own step")
+    }
+
+    func testCancelProtectsUnsavedRoutineChanges() {
+        let app = launch(["-SeedScreenshotData"])
+        XCTAssertTrue(app.buttons["Edit"].waitForExistence(timeout: 10))
+        app.buttons["Edit"].tap()
+        let name = app.textFields["Name, like Weekday mornings"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText(" changed")
+        app.buttons["Cancel"].tap()
+        XCTAssertTrue(app.buttons["Discard changes"].waitForExistence(timeout: 5))
+        app.buttons["Keep editing"].tap()
+        XCTAssertTrue(app.buttons["Discard changes"].waitForNonExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Edit routine"].exists)
+        app.buttons["Cancel"].tap()
+        app.buttons["Discard changes"].tap()
+        XCTAssertTrue(app.buttons["Settings"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Weekday mornings changed"].exists)
     }
 }

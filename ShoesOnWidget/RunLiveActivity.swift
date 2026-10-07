@@ -163,6 +163,7 @@ private func statusColor(_ state: RunSnapshot, isStale: Bool) -> Color {
     return Theme.color(for: state.status(now: .now))
 }
 
+@MainActor
 private func doneButton(_ state: RunSnapshot) -> some View {
     Button(intent: CompleteStepIntent()) {
         Text(state.isLeaving ? "I'm out" : "Done")

@@ -16,6 +16,7 @@ struct OnboardingView: View {
     @State private var customName = ""
     @State private var isAdvancing = false
     @State private var notificationsDenied = false
+    @FocusState private var customStepFocused: Bool
 
     static let pageCount = 6
 
@@ -162,7 +163,7 @@ struct OnboardingView: View {
         switch page {
         case 1: pace != nil
         case 2: !weekdays.isEmpty
-        case 3: drafts.contains { $0.isOn }
+        case 3: drafts.contains { $0.isOn } || !customName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         case Self.pageCount - 1: purchases.yearly != nil || purchases.plansUnavailable
         default: true
         }
@@ -264,6 +265,7 @@ struct OnboardingView: View {
                 Divider().overlay(Theme.hairline)
                 HStack {
                     TextField("Add your own step", text: $customName)
+                        .focused($customStepFocused)
                         .submitLabel(.done)
                         .onSubmit(addCustom)
                     Button("Add", action: addCustom)
@@ -363,7 +365,7 @@ struct OnboardingView: View {
     }
 
     private func addCustom() {
-        let name = customName.trimmingCharacters(in: .whitespaces)
+        let name = customName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
         let insertAt = max(drafts.count - 1, 0)
         withAnimation(.snappy) {
@@ -373,7 +375,11 @@ struct OnboardingView: View {
     }
 
     private func advance() {
+        customStepFocused = false
         switch page {
+        case 3:
+            addCustom()
+            withAnimation(.smooth) { page += 1 }
         case 4:
             saveRoutine()
             isAdvancing = true

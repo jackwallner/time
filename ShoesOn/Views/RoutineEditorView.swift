@@ -9,9 +9,12 @@ struct RoutineEditorView: View {
     @State private var leaveTime: Date
     @State private var newStepName = ""
     @State private var confirmDelete = false
+    @State private var confirmDiscard = false
+    private let originalRoutine: Routine
     let isNew: Bool
 
     init(routine: Routine, isNew: Bool) {
+        originalRoutine = routine
         _routine = State(initialValue: routine)
         _leaveTime = State(initialValue: routine.usualLeaveTime(on: .now))
         self.isNew = isNew
@@ -68,7 +71,9 @@ struct RoutineEditorView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel") {
+                        if hasChanges { confirmDiscard = true } else { dismiss() }
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save", action: save)
@@ -83,18 +88,29 @@ struct RoutineEditorView: View {
             } message: {
                 Text("Its steps and timing history go with it.")
             }
+            .alert("Discard your changes?", isPresented: $confirmDiscard) {
+                Button("Keep editing", role: .cancel) {}
+                Button("Discard changes", role: .destructive) { dismiss() }
+            }
         }
         .tint(Theme.ink)
+        .interactiveDismissDisabled(hasChanges)
     }
 
     private var canSave: Bool {
         !routine.name.trimmingCharacters(in: .whitespaces).isEmpty
-            && !routine.steps.isEmpty
+            && (!routine.steps.isEmpty || !newStepName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             && routine.steps.allSatisfy { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
     }
 
+    private var hasChanges: Bool {
+        routine != originalRoutine
+            || leaveTime != originalRoutine.usualLeaveTime(on: leaveTime)
+            || !newStepName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     private func addStep() {
-        let name = newStepName.trimmingCharacters(in: .whitespaces)
+        let name = newStepName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
         routine.steps.append(RoutineStep(name: name, guessMinutes: 10))
         newStepName = ""

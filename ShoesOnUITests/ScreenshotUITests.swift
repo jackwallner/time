@@ -3,6 +3,7 @@ import XCTest
 /// Renders each surface from seeded data under StoreKit Testing, so the real
 /// paywall prices show, and attaches a screenshot per surface. Also walks the
 /// run: Done advances the step.
+@MainActor
 final class ScreenshotUITests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
@@ -87,7 +88,7 @@ final class ScreenshotUITests: XCTestCase {
         app.buttons["I'm out the door"].tap()
         XCTAssertTrue(app.buttons["Done"].waitForExistence(timeout: 5))
         app.terminate()
-        let summary = launch(["-SeedScreenshotData", "-Screen", "summary"])
+        let summary = launch(["-SeedScreenshotData", "-Screen", "summary", "-FixedNow", "08:14"])
         XCTAssertTrue(summary.staticTexts["2 min early."].waitForExistence(timeout: 10))
         sleep(2)
         capture(summary, "summary")

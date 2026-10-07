@@ -26,9 +26,16 @@ enum Theme {
     static let night = Color(red: 0.035, green: 0.040, blue: 0.050)
     #endif
 
+    #if os(watchOS)
     static let onTrack = Color(red: 0.16, green: 0.78, blue: 0.52)
     static let behind = Color(red: 1.00, green: 0.62, blue: 0.20)
     static let late = Color(red: 1.00, green: 0.36, blue: 0.33)
+    #else
+    // Status words need contrast on paper; the dark run keeps its brighter glow.
+    static let onTrack = Color(light: .init(0.08, 0.43, 0.29), dark: .init(0.16, 0.78, 0.52))
+    static let behind = Color(light: .init(0.57, 0.31, 0.06), dark: .init(1.00, 0.62, 0.20))
+    static let late = Color(light: .init(0.72, 0.17, 0.16), dark: .init(1.00, 0.36, 0.33))
+    #endif
     /// The time your guesses leave out.
     static let gap = Color(red: 1.00, green: 0.62, blue: 0.20)
 
