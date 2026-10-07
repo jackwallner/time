@@ -15,6 +15,7 @@ struct OnboardingView: View {
     @State private var drafts: [StepDraft] = StepDraft.presets
     @State private var customName = ""
     @State private var isAdvancing = false
+    @State private var notificationsDenied = false
 
     static let pageCount = 6
 
@@ -333,8 +334,11 @@ struct OnboardingView: View {
                 ProBenefit(symbol: "applewatch", title: "Apple Watch coach", detail: "Your step, the time left, and whether you're slipping. Tap Done from your wrist.")
             }
             if trialEligible, let yearly = purchases.yearly {
-                TrialTimeline(billed: yearly.billedLabel)
+                TrialTimeline(billed: yearly.billedLabel, remindersOff: notificationsDenied)
             }
+        }
+        .task {
+            notificationsDenied = await NotificationService.shared.authorizationStatus() == .denied
         }
     }
 
@@ -535,14 +539,16 @@ struct ProBenefit: View {
 }
 
 /// Today, the reminder, the first charge. Only shown when a trial applies, and
-/// the reminder is real: `NotificationService.scheduleTrialReminder`.
+/// the reminder is real: `NotificationService.scheduleTrialReminder`. With
+/// notifications denied it cannot arrive, so the row says what it needs.
 struct TrialTimeline: View {
     let billed: String
+    var remindersOff = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             row(symbol: "lock.open.fill", title: "Today", detail: "Every routine and the Watch coach, free.", isLast: false)
-            row(symbol: "bell.fill", title: "Day 5", detail: "A reminder before your trial ends.", isLast: false)
+            row(symbol: "bell.fill", title: "Day 5", detail: remindersOff ? "Turn on notifications to get a reminder before your trial ends." : "A reminder before your trial ends.", isLast: false)
             row(symbol: "calendar", title: "Day 7", detail: "\(billed) begins, unless you cancel.", isLast: true)
         }
     }
