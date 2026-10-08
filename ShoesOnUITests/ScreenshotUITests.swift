@@ -40,7 +40,7 @@ final class ScreenshotUITests: XCTestCase {
             let app = launch(["-OnboardingPage", "\(page)"])
             XCTAssertTrue(app.buttons[page == 5 ? "Start 7-day free trial" : "Continue"].waitForExistence(timeout: 10))
             if page == 5 {
-                XCTAssertTrue(app.buttons["Continue free"].exists)
+                XCTAssertTrue(app.buttons["Get Started"].exists)
             }
             capture(app, "onboarding-\(page)")
             app.terminate()
