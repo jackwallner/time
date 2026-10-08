@@ -286,28 +286,28 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
         do {
             let offerings = try await Purchases.shared.offerings()
             let offering = offerings.offering(identifier: "default") ?? offerings.current
-            packages = (offering?.availablePackages ?? [])
+            let loaded = (offering?.availablePackages ?? [])
                 .filter { $0.plan != .other }
                 .sorted { $0.plan < $1.plan }
-            await refreshIntroEligibility()
+            // Eligibility is resolved before the plans are published, so a
+            // paywall never draws the paid copy and then flips to the trial.
+            let eligibility = await introEligibility(for: loaded)
+            packages = loaded
+            introEligibility = eligibility
+            introEligibilityResolved = true
         } catch {
             logger.error("Offering load failed: \(String(describing: error), privacy: .public)")
             errorMessage = "Couldn't load plans. Check your connection and try again."
         }
     }
 
-    /// On failure, marks resolved with an empty map so trial copy hides rather
-    /// than over-promises.
-    private func refreshIntroEligibility() async {
+    /// Per-product trial eligibility. Anything unknown reads as ineligible, so
+    /// trial copy hides rather than over-promises.
+    private func introEligibility(for packages: [Package]) async -> [String: Bool] {
         let ids = packages.filter { $0.trialLabel != nil }.map(\.storeProduct.productIdentifier)
-        guard !ids.isEmpty else {
-            introEligibility = [:]
-            introEligibilityResolved = true
-            return
-        }
+        guard !ids.isEmpty else { return [:] }
         let result = await Purchases.shared.checkTrialOrIntroDiscountEligibility(productIdentifiers: ids)
-        introEligibility = result.mapValues { $0.status == .eligible }
-        introEligibilityResolved = true
+        return result.mapValues { $0.status == .eligible }
     }
 
     private func update(customerInfo: CustomerInfo) {

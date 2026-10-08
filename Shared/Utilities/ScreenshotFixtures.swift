@@ -18,6 +18,11 @@ enum ScreenshotFixtures {
 
     static func applyIfRequested(now: Date = AppClock.now) {
         if ScreenshotConfig.has("-DemoPro") { StoreService.shared.setLocalOverride(isPro: true) }
+        if ScreenshotConfig.has("-ResetState") {
+            // A first launch, for tests that walk setup from the start.
+            AppSettings.shared.hasCompletedSetup = false
+            RoutineStore.shared.replaceState(PersistedState())
+        }
         guard ScreenshotConfig.has("-SeedScreenshotData") else { return }
         AppSettings.shared.hasCompletedSetup = true
         RoutineStore.shared.replaceState(state(screen: ScreenshotConfig.value(after: "-Screen"), now: now))

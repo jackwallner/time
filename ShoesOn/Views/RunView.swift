@@ -6,16 +6,36 @@ import SwiftUI
 /// with a slow light behind it in the colour of the status.
 struct RunView: View {
     @EnvironmentObject private var store: RoutineStore
+    /// What the cover last had to show, kept through its dismissal so the
+    /// slide-down never shows an empty sheet.
+    @State private var lastShown: Content?
+
+    private enum Content: Hashable {
+        case run(ActiveRun)
+        case finished(FinishedRun)
+    }
+
+    private var current: Content? {
+        if let run = store.activeRun { return .run(run) }
+        if let finished = store.state.lastFinished { return .finished(finished) }
+        return nil
+    }
 
     var body: some View {
         Group {
-            if let run = store.activeRun {
+            switch current ?? lastShown {
+            case .run(let run):
                 ActiveRunScreen(run: run)
                     .environment(\.colorScheme, .dark)
                     .preferredColorScheme(.dark)
-            } else if let finished = store.state.lastFinished {
+            case .finished(let finished):
                 SummaryScreen(finished: finished)
+            case nil:
+                Theme.background.ignoresSafeArea()
             }
+        }
+        .onChange(of: current, initial: true) { _, content in
+            if let content { lastShown = content }
         }
     }
 }
@@ -24,29 +44,31 @@ struct RunView: View {
 /// status. A mesh gradient on iOS 18, a radial one before it.
 struct StatusGlow: View {
     let color: Color
+    /// Drifts the glow back and forth on one slow animation, so the backdrop
+    /// costs nothing while the run's clock ticks for an hour.
+    @State private var drifted = false
 
     var body: some View {
         ZStack {
             Theme.night
             if #available(iOS 18.0, *) {
-                TimelineView(.animation(minimumInterval: 1 / 20)) { context in
-                    let t = context.date.timeIntervalSinceReferenceDate
-                    let drift = Float(sin(t / 3) * 0.08)
-                    let drift2 = Float(cos(t / 4) * 0.08)
-                    MeshGradient(
-                        width: 3,
-                        height: 3,
-                        points: [
-                            [0, 0], [0.5, 0], [1, 0],
-                            [0, 0.5], [0.5 + drift, 0.45 + drift2], [1, 0.5],
-                            [0, 1], [0.5 - drift2, 1], [1, 1],
-                        ],
-                        colors: [
-                            Theme.night, color.opacity(0.35), Theme.night,
-                            Theme.night, color.opacity(0.22), Theme.night,
-                            color.opacity(0.10), Theme.night, color.opacity(0.18),
-                        ]
-                    )
+                let drift: Float = drifted ? 0.08 : -0.08
+                MeshGradient(
+                    width: 3,
+                    height: 3,
+                    points: [
+                        [0, 0], [0.5, 0], [1, 0],
+                        [0, 0.5], [0.5 + drift, 0.45 - drift], [1, 0.5],
+                        [0, 1], [0.5 - drift, 1], [1, 1],
+                    ],
+                    colors: [
+                        Theme.night, color.opacity(0.35), Theme.night,
+                        Theme.night, color.opacity(0.22), Theme.night,
+                        color.opacity(0.10), Theme.night, color.opacity(0.18),
+                    ]
+                )
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 9).repeatForever(autoreverses: true)) { drifted = true }
                 }
             } else {
                 RadialGradient(colors: [color.opacity(0.28), .clear], center: .top, startRadius: 0, endRadius: 520)
@@ -170,10 +192,9 @@ private struct ActiveRunScreen: View {
                     .minimumScaleFactor(0.6)
                     .lineLimit(2)
                     .id(run.stepIndex)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
-                    ))
+                    // A push clips to its own frame, so the old name never
+                    // shows beside the new one mid-slide.
+                    .transition(.push(from: .trailing))
             }
             Dial(remaining: remaining / planned, color: Theme.color(for: status)) {
                 VStack(spacing: 2) {

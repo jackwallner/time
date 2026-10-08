@@ -78,7 +78,9 @@ the home screen, the reveal page and the summary show.
   `upcoming` departures so the Watch moves on when the phone is quiet;
   `WatchModel` writes the complication's `WidgetSnapshot` to the App Group.
 - UI: `ShoesOn/Views/`. Onboarding (6 pages) → Home (next departure, the real
-  plan, how it's going) → RunView (step, clock, status, Done) → summary.
+  plan, how it's going). RunView (step, clock, status, Done, then the summary)
+  is a full-screen cover over Home, mirrored from the store in `RootView`, so
+  its dark scheme stays on the run and Home never flips dark beneath it.
 
 ## Access model
 

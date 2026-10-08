@@ -40,12 +40,17 @@ private struct RootView: View {
     /// page one. Read once at launch, so saving mid-setup never swaps the
     /// onboarding out from under itself.
     @State private var resumesAtOffer = !AppSettings.shared.hasCompletedSetup && !RoutineStore.shared.routines.isEmpty
+    /// The run is a presentation over Home. Mirrors the store so a run found
+    /// open at launch shows at once, and one started later slides up like
+    /// the session it is.
+    @State private var runShown = false
+
+    private var runPresent: Bool { store.activeRun != nil || store.state.lastFinished != nil }
 
     var body: some View {
         content
             .tint(Theme.ink)
             .fontDesign(.rounded)
-            .animation(.smooth, value: store.activeRun == nil)
             .animation(.smooth, value: settings.hasCompletedSetup)
     }
 
@@ -56,10 +61,26 @@ private struct RootView: View {
             OnboardingView(startPage: page)
         } else if !settings.hasCompletedSetup {
             if resumesAtOffer { OnboardingView.resumingOffer } else { OnboardingView() }
-        } else if store.activeRun != nil || store.state.lastFinished != nil {
-            RunView()
         } else {
-            HomeView()
+            // Presented from a wrapper, not from Home itself, so a run that
+            // starts while a Home sheet is open still comes up on top. As its
+            // own presentation, the run's dark scheme never flips Home dark
+            // underneath it mid-fade.
+            ZStack { HomeView() }
+                .fullScreenCover(isPresented: $runShown) {
+                    RunView()
+                        .tint(Theme.ink)
+                        .fontDesign(.rounded)
+                }
+                .onAppear {
+                    guard runPresent, !runShown else { return }
+                    var transaction = Transaction()
+                    transaction.disablesAnimations = true
+                    withTransaction(transaction) { runShown = true }
+                }
+                .onChange(of: runPresent) { _, present in
+                    withAnimation(.smooth) { runShown = present }
+                }
         }
     }
 }

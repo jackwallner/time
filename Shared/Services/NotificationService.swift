@@ -41,6 +41,22 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
+    /// Asks, and returns when answered or after `timeout`, whichever comes
+    /// first. The prompt itself stays up until answered; only the wait ends.
+    func requestAuthorization(timeout: Duration) async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let gate = ContinuationGate(continuation)
+            Task { @MainActor in
+                await self.requestAuthorization()
+                gate.resume()
+            }
+            Task { @MainActor in
+                try? await Task.sleep(for: timeout)
+                gate.resume()
+            }
+        }
+    }
+
     func authorizationStatus() async -> UNAuthorizationStatus {
         await center.notificationSettings().authorizationStatus
     }
@@ -159,5 +175,20 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
                 break
             }
         }
+    }
+}
+
+/// Resumes a continuation once, from whichever of two races finishes first.
+@MainActor
+private final class ContinuationGate {
+    private var continuation: CheckedContinuation<Void, Never>?
+
+    init(_ continuation: CheckedContinuation<Void, Never>) {
+        self.continuation = continuation
+    }
+
+    func resume() {
+        continuation?.resume()
+        continuation = nil
     }
 }

@@ -60,6 +60,7 @@ the `ios-dev` skill.
 
 ## Launch arguments (DEBUG)
 
+- `-ResetState`: a first launch (no routines, setup not done).
 - `-SeedScreenshotData`: twelve weekday mornings of history on one routine.
 - `-Screen run|leaving|summary`: open a run in that state (with the seed).
 - `-OnboardingPage N`: onboarding at page N (0 to 5).

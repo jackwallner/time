@@ -37,6 +37,14 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showSettings) { SettingsView() }
         .sheet(isPresented: $showPaywall) { PaywallView(surface: "shoeson_new_routine") }
+        // A run can begin from a notification or the Lock Screen while a
+        // sheet is open here; the run then needs the whole screen.
+        .onChange(of: store.activeRun != nil) { _, running in
+            guard running else { return }
+            editing = nil
+            showSettings = false
+            showPaywall = false
+        }
     }
 
     private var routineMenu: some View {
@@ -157,6 +165,9 @@ private struct RoutineDashboard: View {
         }
         .sheet(item: $changingDay) { day in
             DayChangeSheet(routine: routine, day: day.date)
+        }
+        .onChange(of: store.activeRun != nil) { _, running in
+            if running { changingDay = nil }
         }
         // Without alerts the plan is only a screen nobody looks at in the
         // morning. Checked again on return from Settings.

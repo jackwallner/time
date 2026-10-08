@@ -40,20 +40,25 @@ struct OnboardingView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            ScrollView {
-                content
-                    .id(page)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
-                    ))
-                    .padding(.horizontal, 24)
-                    .padding(.top, 8)
-                    .padding(.bottom, 24)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            // Each page scrolls on its own, so a page slides in whole and
+            // from the top instead of two pages sharing one scroll offset.
+            ZStack {
+                ScrollView {
+                    content
+                        .padding(.horizontal, 24)
+                        .padding(.top, 8)
+                        .padding(.bottom, 24)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .scrollDismissesKeyboard(.interactively)
+                .scrollBounceBehavior(.basedOnSize)
+                .id(page)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .move(edge: .leading).combined(with: .opacity)
+                ))
             }
-            .scrollDismissesKeyboard(.interactively)
-            .scrollBounceBehavior(.basedOnSize)
+            .clipped()
         }
         .background(Theme.background.ignoresSafeArea())
         .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar }
@@ -384,7 +389,7 @@ struct OnboardingView: View {
             saveRoutine()
             isAdvancing = true
             Task {
-                await NotificationService.shared.requestAuthorization()
+                await requestAlerts()
                 NotificationService.shared.reschedule(store: store)
                 isAdvancing = false
                 if purchases.isPro { finish() } else { withAnimation(.smooth) { page += 1 } }
@@ -400,6 +405,13 @@ struct OnboardingView: View {
         default:
             withAnimation(.smooth) { page += 1 }
         }
+    }
+
+    /// The system prompt returns once answered. Setup waits for that, but
+    /// never longer than the prompt should take to appear: if it is slow to
+    /// come, the offer page carries on and the prompt lands over it.
+    private func requestAlerts() async {
+        await NotificationService.shared.requestAuthorization(timeout: .seconds(10))
     }
 
     private func saveRoutine() {
