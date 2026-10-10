@@ -73,7 +73,7 @@ struct SettingsView: View {
 
     private var paceSection: some View {
         Section {
-            Picker("An hour really takes", selection: Binding(
+            Picker("30 minutes really takes", selection: Binding(
                 get: { store.state.pace },
                 set: { store.setPace($0) }
             )) {

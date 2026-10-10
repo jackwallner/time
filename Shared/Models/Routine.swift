@@ -199,10 +199,11 @@ struct DepartureRecord: Codable, Hashable, Sendable, Identifiable {
     var wasOnTime: Bool { lateSeconds <= 60 }
 }
 
-/// The answer to the onboarding question "when getting ready feels like an
-/// hour, it usually takes…". It seeds the pace multiplier until real runs
-/// replace it.
+/// The answer to the onboarding question "when you plan 30 minutes to get
+/// ready, it usually takes…". It seeds the pace multiplier until real runs
+/// replace it. Raw values are stored, so cases keep their names.
 enum PaceAnswer: String, Codable, CaseIterable, Identifiable, Sendable {
+    case ahead
     case onTheDot
     case quarterOver
     case halfOver
@@ -212,6 +213,7 @@ enum PaceAnswer: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var multiplier: Double {
         switch self {
+        case .ahead: 0.85
         case .onTheDot: 1.0
         case .quarterOver: 1.25
         case .halfOver: 1.5
@@ -221,19 +223,21 @@ enum PaceAnswer: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .onTheDot: "About an hour"
-        case .quarterOver: "An hour and 15 minutes"
-        case .halfOver: "An hour and a half"
-        case .doubleOver: "Closer to two hours"
+        case .ahead: "About 25 minutes"
+        case .onTheDot: "About 30 minutes"
+        case .quarterOver: "35 to 40 minutes"
+        case .halfOver: "About 45 minutes"
+        case .doubleOver: "An hour or more"
         }
     }
 
     var detail: String {
         switch self {
-        case .onTheDot: "My guesses are usually right"
+        case .ahead: "I'm usually ready early"
+        case .onTheDot: "My guesses hold up"
         case .quarterOver: "I run a little behind"
-        case .halfOver: "I'm often 20 to 30 minutes late"
-        case .doubleOver: "I'm late more often than not"
+        case .halfOver: "I'm often 15 minutes late"
+        case .doubleOver: "Everything takes twice as long"
         }
     }
 }

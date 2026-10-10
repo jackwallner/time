@@ -12,8 +12,8 @@ The tailoring is the product. Three things are learned, each blended with a
 prior so one odd morning cannot swing the plan (`Shared/Engine/Calibration.swift`):
 
 1. **Pace**: real time over guessed time across recent steps, seeded by the
-   onboarding answer "when getting ready feels like an hour, it takes..."
-   (1.0, 1.25, 1.5 or 2.0x). Applies to steps that have never been timed.
+   onboarding answer "you plan 30 minutes to get ready, it usually takes..."
+   (0.85, 1.0, 1.25, 1.5 or 2.0x). Applies to steps that have never been timed.
 2. **Each step's own time**: 70th percentile of its last 8 timings, blended
    with the paced guess. Slow-side on purpose: the mean is late half the time.
 3. **Start delay**: how long after the get-ready alert they actually start.

@@ -9,6 +9,7 @@ struct OnboardingView: View {
     @EnvironmentObject private var purchases: StoreService
 
     @State private var page: Int
+    @State private var furthestPage: Int
     @State private var pace: PaceAnswer?
     @State private var leaveTime: Date
     @State private var weekdays: Set<Int> = [2, 3, 4, 5, 6]
@@ -33,6 +34,7 @@ struct OnboardingView: View {
 
     private init(page: Int, pace: PaceAnswer?) {
         _page = State(initialValue: page)
+        _furthestPage = State(initialValue: page)
         _pace = State(initialValue: pace)
         _leaveTime = State(initialValue: Calendar.current.date(bySettingHour: 8, minute: 15, second: 0, of: .now) ?? .now)
     }
@@ -40,29 +42,26 @@ struct OnboardingView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            // Each page scrolls on its own, so a page slides in whole and
-            // from the top instead of two pages sharing one scroll offset.
-            ZStack {
-                ScrollView {
-                    content
-                        .padding(.horizontal, 24)
-                        .padding(.top, 8)
-                        .padding(.bottom, 24)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+            // The pages sit side by side on one strip the buttons slide, so
+            // everything on a page moves together, the system time wheel
+            // included, which a SwiftUI move transition leaves behind. Each
+            // page scrolls on its own. A paging ScrollView here loops layout
+            // forever on first launch, so the strip is a plain offset.
+            GeometryReader { proxy in
+                HStack(spacing: 0) {
+                    ForEach(0..<Self.pageCount, id: \.self) { index in
+                        pageScroller(index)
+                            .frame(width: proxy.size.width, height: proxy.size.height)
+                    }
                 }
-                .scrollDismissesKeyboard(.interactively)
-                .scrollBounceBehavior(.basedOnSize)
-                .id(page)
-                .transition(.asymmetric(
-                    insertion: .move(edge: .trailing).combined(with: .opacity),
-                    removal: .move(edge: .leading).combined(with: .opacity)
-                ))
+                .offset(x: -CGFloat(page) * proxy.size.width)
             }
             .clipped()
         }
         .background(Theme.background.ignoresSafeArea())
         .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar }
         .onChange(of: page) { _, newPage in
+            furthestPage = max(furthestPage, newPage)
             if newPage == Self.pageCount - 1 {
                 purchases.trackPaywallImpression(id: "shoeson_onboarding_trial")
             }
@@ -176,8 +175,26 @@ struct OnboardingView: View {
 
     // MARK: - Pages
 
-    @ViewBuilder private var content: some View {
-        switch page {
+    /// Pages ahead of the furthest one reached stay empty until reached, so
+    /// the reveal plays its bars as it slides in, not offscreen in advance.
+    private func pageScroller(_ index: Int) -> some View {
+        ScrollView {
+            if index <= max(furthestPage, page) {
+                content(index)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 8)
+                    .padding(.bottom, 24)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .scrollBounceBehavior(.basedOnSize)
+        .allowsHitTesting(index == page)
+        .accessibilityHidden(index != page)
+    }
+
+    @ViewBuilder private func content(_ index: Int) -> some View {
+        switch index {
         case 0: welcome
         case 1: pacePage
         case 2: leavePage
@@ -230,7 +247,7 @@ struct OnboardingView: View {
 
     private var pacePage: some View {
         VStack(alignment: .leading, spacing: 18) {
-            title("When getting ready feels like an hour, it usually takes…")
+            title("You plan 30 minutes to get ready. It usually takes…")
             lead("Be honest. This only sets the starting point; your real times take over as you go.")
             VStack(spacing: 10) {
                 ForEach(PaceAnswer.allCases) { answer in
@@ -479,7 +496,8 @@ private struct StepDraftRow: View {
     }
 }
 
-/// One pace answer, with a bar showing how far an hour stretches.
+/// One pace answer, with a bar showing how far the half hour stretches. The
+/// track is an hour wide, so the planned half hour fills half of it.
 private struct PaceChoice: View {
     let answer: PaceAnswer
     let isSelected: Bool
@@ -506,7 +524,7 @@ private struct PaceChoice: View {
                 GeometryReader { proxy in
                     let unit = proxy.size.width / 2
                     HStack(spacing: 0) {
-                        Capsule().fill(Theme.ink.opacity(isSelected ? 1 : 0.25)).frame(width: unit)
+                        Capsule().fill(Theme.ink.opacity(isSelected ? 1 : 0.25)).frame(width: unit * min(answer.multiplier, 1))
                         if answer.multiplier > 1 {
                             Capsule().fill(Theme.gap.opacity(isSelected ? 1 : 0.35))
                                 .frame(width: unit * (answer.multiplier - 1))

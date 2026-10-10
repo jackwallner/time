@@ -101,10 +101,16 @@ private struct ActiveRunScreen: View {
                 VStack(spacing: 0) {
                     topBar
                     Spacer(minLength: 8)
-                    if run.isLeaving {
-                        leaving(now: now)
-                    } else {
-                        stepFace(now: now, status: status)
+                    // Overlaid, not stacked, so the face that leaves never
+                    // holds space against the one that arrives.
+                    ZStack {
+                        if run.isLeaving {
+                            leaving(now: now)
+                                .transition(.stepChange)
+                        } else {
+                            stepFace(now: now, status: status)
+                                .transition(.stepChange)
+                        }
                     }
                     Spacer(minLength: 8)
                     controls
@@ -178,23 +184,25 @@ private struct ActiveRunScreen: View {
         let remaining = run.stepEndsAt.timeIntervalSince(now)
         let planned = max(run.currentStep?.plannedSeconds ?? 1, 1)
         let clockColor = remaining >= 0 ? Color.white : Theme.color(for: status)
+        // The ring stays and refills; the words in and around it hand over
+        // to the next step's, the old ones gone before the new ones land.
         return VStack(spacing: 26) {
-            VStack(spacing: 6) {
-                Text("Step \(run.planStepNumber) of \(run.planStepCount)")
-                    .font(.footnote.weight(.bold))
-                    .foregroundStyle(.white.opacity(0.55))
-                    .textCase(.uppercase)
-                    .tracking(1)
-                Text(run.currentStep?.name ?? "")
-                    .displayFont(38)
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.6)
-                    .lineLimit(2)
-                    .id(run.stepIndex)
-                    // A push clips to its own frame, so the old name never
-                    // shows beside the new one mid-slide.
-                    .transition(.push(from: .trailing))
+            ZStack {
+                VStack(spacing: 6) {
+                    Text("Step \(run.planStepNumber) of \(run.planStepCount)")
+                        .font(.footnote.weight(.bold))
+                        .foregroundStyle(.white.opacity(0.55))
+                        .textCase(.uppercase)
+                        .tracking(1)
+                    Text(run.currentStep?.name ?? "")
+                        .displayFont(38)
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.6)
+                        .lineLimit(2)
+                }
+                .id(run.stepIndex)
+                .transition(.stepChange)
             }
             Dial(remaining: remaining / planned, color: Theme.color(for: status)) {
                 VStack(spacing: 2) {
@@ -210,19 +218,25 @@ private struct ActiveRunScreen: View {
                         .foregroundStyle(.white.opacity(0.55))
                 }
                 .accessibilityElement(children: .combine)
+                .id(run.stepIndex)
+                .transition(.stepChange)
             }
             .frame(width: dialSize, height: dialSize)
-            VStack(spacing: 12) {
-                StatusPill(status: status)
-                if let drop = run.catchUpSuggestion(now: now) {
-                    catchUp(drop, status: status)
-                } else {
-                    Text("Then \(run.nextStep?.name ?? "shoes on and out the door")")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.white.opacity(0.6))
+            ZStack {
+                VStack(spacing: 12) {
+                    StatusPill(status: status)
+                    if let drop = run.catchUpSuggestion(now: now) {
+                        catchUp(drop, status: status)
+                    } else {
+                        Text("Then \(run.nextStep?.name ?? "shoes on and out the door")")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
                 }
+                .animation(.smooth, value: run.catchUpSuggestion(now: now)?.id)
+                .id(run.stepIndex)
+                .transition(.stepChange)
             }
-            .animation(.smooth, value: run.catchUpSuggestion(now: now)?.id)
         }
         .animation(.smooth(duration: 0.4), value: run.stepIndex)
     }
@@ -240,6 +254,7 @@ private struct ActiveRunScreen: View {
                     .font(.subheadline.weight(.semibold))
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .foregroundStyle(.white)
             .padding(.horizontal, 18)
@@ -295,11 +310,11 @@ private struct ActiveRunScreen: View {
                             .lineLimit(1)
                     }
                     .buttonStyle(.secondary(.white))
-                    .transition(.opacity)
+                    .transition(.handOff)
                 } else if !run.isLeaving {
                     Button("Skip this step") { advance(store.skipStep) }
                         .buttonStyle(.secondary(.white.opacity(0.6)))
-                        .transition(.opacity)
+                        .transition(.handOff)
                 }
             }
             .frame(height: 44)
@@ -320,11 +335,35 @@ private struct ActiveRunScreen: View {
         withAnimation(.smooth) { action(.now) }
     }
 
-    /// "12:04" counting down, or "+3:10" once over.
+    /// "12:04" counting down, "1:36:57" past an hour, or "+3:10" once over.
     static func clock(_ seconds: TimeInterval) -> String {
         let total = Int(abs(seconds).rounded(.down))
-        let text = String(format: "%d:%02d", total / 60, total % 60)
+        let text = total >= 3600
+            ? String(format: "%d:%02d:%02d", total / 3600, total / 60 % 60, total % 60)
+            : String(format: "%d:%02d", total / 60, total % 60)
         return seconds < 0 ? "+\(text)" : text
+    }
+}
+
+private extension AnyTransition {
+    /// One step handing over to the next: the old words leave quickly, then
+    /// the new ones settle in from the side Done sends them, so two names or
+    /// two clocks never sit on top of each other mid-change.
+    static var stepChange: AnyTransition {
+        .asymmetric(
+            insertion: .opacity.combined(with: .offset(x: 24))
+                .animation(.smooth(duration: 0.38).delay(0.12)),
+            removal: .opacity.combined(with: .offset(x: -24))
+                .animation(.easeIn(duration: 0.12))
+        )
+    }
+
+    /// The same hand-over in place, for the button under Done.
+    static var handOff: AnyTransition {
+        .asymmetric(
+            insertion: .opacity.animation(.smooth(duration: 0.25).delay(0.1)),
+            removal: .opacity.animation(.easeIn(duration: 0.1))
+        )
     }
 }
 
