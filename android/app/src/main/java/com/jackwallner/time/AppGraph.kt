@@ -23,6 +23,9 @@ import java.time.format.DateTimeFormatter
 object AppClock {
     @Volatile var offsetMillis: Long = 0
 
+    /** How often the run screen's clock ticks. Tests on slow emulators stretch it so Compose can idle. */
+    @Volatile var runTickMillis: Long = 1_000
+
     fun now(): Instant = Instant.now().plusMillis(offsetMillis)
 }
 

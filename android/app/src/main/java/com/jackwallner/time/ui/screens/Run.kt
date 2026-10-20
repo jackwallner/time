@@ -134,9 +134,12 @@ fun RunCover(graph: AppGraph) {
 @Composable
 private fun StatusGlow(color: Color) {
     val tint by animateColorAsState(color, tween(1200), label = "glow")
-    val drift by rememberInfiniteTransition(label = "drift").animateFloat(
+    // With "Remove animations" on (animator scale 0) the glow holds still.
+    val context = LocalContext.current
+    val still = remember { android.provider.Settings.Global.getFloat(context.contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f }
+    val drift = if (still) 0f else rememberInfiniteTransition(label = "drift").animateFloat(
         -0.08f, 0.08f, infiniteRepeatable(tween(9000, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "drift",
-    )
+    ).value
     Canvas(Modifier.fillMaxSize().background(Palette.night)) {
         val w = size.width
         val h = size.height
@@ -152,7 +155,7 @@ private fun ActiveRunScreen(graph: AppGraph, run: ActiveRun) {
     val store = graph.store
     val palette = LocalPalette.current
     val view = LocalView.current
-    val now = rememberNow(1_000)
+    val now = rememberNow(AppClock.runTickMillis)
     val status = run.status(now)
     val isOverdue = now >= (if (run.isLeaving) run.leaveAt else run.stepEndsAt)
     var confirmEnd by remember { mutableStateOf(false) }
@@ -288,10 +291,10 @@ private fun StepFace(graph: AppGraph, run: ActiveRun, now: java.time.Instant, st
         // The ring stays and refills; the words in and around it hand over to
         // the next step's, the old ones gone before the new ones land.
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(26.dp)) {
-            AnimatedContent(run.stepIndex, transitionSpec = { stepChange() }, label = "name") { _ ->
+            AnimatedContent(run, transitionSpec = { stepChange() }, contentKey = { it.stepIndex }, label = "name") { shown ->
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("STEP ${run.planStepNumber} OF ${run.planStepCount}", style = Type.footnote(FontWeight.Bold).copy(letterSpacing = androidx.compose.ui.unit.TextUnit(1f, androidx.compose.ui.unit.TextUnitType.Sp)), color = Color.White.copy(alpha = 0.55f))
-                    Text(run.currentStep?.name.orEmpty(), style = Type.display(38), color = Color.White, textAlign = TextAlign.Center, maxLines = 2, modifier = Modifier.testTag("stepName"))
+                    Text("STEP ${shown.planStepNumber} OF ${shown.planStepCount}", style = Type.footnote(FontWeight.Bold).copy(letterSpacing = androidx.compose.ui.unit.TextUnit(1f, androidx.compose.ui.unit.TextUnitType.Sp)), color = Color.White.copy(alpha = 0.55f))
+                    Text(shown.currentStep?.name.orEmpty(), style = Type.display(38), color = Color.White, textAlign = TextAlign.Center, maxLines = 2, modifier = Modifier.testTag("stepName"))
                 }
             }
             Dial(remaining = (remaining / planned).toFloat(), color = statusColor, modifier = Modifier.size(dialSize)) {

@@ -58,7 +58,6 @@ import com.jackwallner.time.ui.theme.Type
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.TextStyle
-import java.util.Locale
 
 /**
  * One day, just this once: leave at another time, or skip it. The plan for
@@ -154,6 +153,7 @@ fun DayChangeSheet(graph: AppGraph, routineAtOpen: Routine, startDay: LocalDate,
 @Composable
 private fun DayStrip(routine: Routine, selected: LocalDate, today: LocalDate, onPick: (LocalDate) -> Unit) {
     val palette = LocalPalette.current
+    val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         (0L until 7L).map { today.plusDays(it) }.forEach { date ->
             val isOn = date == selected
@@ -164,7 +164,7 @@ private fun DayStrip(routine: Routine, selected: LocalDate, today: LocalDate, on
                     .border(if (isOn) 0.dp else 1.dp, palette.hairline, shape)
                     .clickable(role = Role.Tab) { onPick(date) }
                     .semantics {
-                        contentDescription = "${date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${date.dayOfMonth}"
+                        contentDescription = "${date.dayOfWeek.getDisplayName(TextStyle.FULL, locale)} ${date.dayOfMonth}"
                         this.selected = isOn
                     }
                     .padding(vertical = 10.dp),
@@ -172,7 +172,7 @@ private fun DayStrip(routine: Routine, selected: LocalDate, today: LocalDate, on
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 val ink = if (isOn) palette.inkInverse else palette.ink
-                Text(date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()).uppercase(), style = Type.caption2(FontWeight.Bold), color = ink)
+                Text(date.dayOfWeek.getDisplayName(TextStyle.SHORT, locale).uppercase(), style = Type.caption2(FontWeight.Bold), color = ink)
                 Text("${date.dayOfMonth}", style = Type.headline().copy(fontFeatureSettings = "tnum"), color = ink)
                 Box(Modifier.size(5.dp).clip(CircleShape).background(if (departs) ink else androidx.compose.ui.graphics.Color.Transparent))
             }

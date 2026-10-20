@@ -59,6 +59,12 @@ class ShoesOnFlowTests {
             InstrumentationRegistry.getInstrumentation().uiAutomation.grantRuntimePermission(context.packageName, Manifest.permission.POST_NOTIFICATIONS)
         }
         AppClock.offsetMillis = 0
+        // This emulator draws a frame in about a second, so a one-second
+        // clock tick would keep Compose busy forever.
+        AppClock.runTickMillis = 30_000
+        // The run screen's drifting glow is an infinite animation; like
+        // "Remove animations", scale 0 holds it still so Compose can idle.
+        InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand("settings put global animator_duration_scale 0").close()
     }
 
     @After fun tearDown() {

@@ -1,6 +1,7 @@
 package com.jackwallner.time.data
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -118,6 +119,8 @@ object AlertScheduler {
     }
 
     /** Posts an alert whose alarm fired. */
+    // Guarded by canPostNotifications; lint cannot see through the helper.
+    @SuppressLint("MissingPermission")
     fun post(context: Context, intent: Intent) {
         if (!canPostNotifications(context)) return
         val id = intent.getStringExtra(EXTRA_ALERT_ID) ?: return
@@ -179,6 +182,8 @@ object AlertScheduler {
      * The Android stand-in for the iOS Live Activity: an ongoing notification
      * with the step, a countdown to its planned end, and a Done button.
      */
+    // Guarded by canPostNotifications; lint cannot see through the helper.
+    @SuppressLint("MissingPermission")
     fun syncRunNotification(context: Context, run: ActiveRun?) {
         val manager = NotificationManagerCompat.from(context)
         if (run == null || !canPostNotifications(context)) {
@@ -250,7 +255,18 @@ class AlertActionReceiver : BroadcastReceiver() {
 /** Alarms do not survive a reboot or a clock change; rebuild them. */
 class RescheduleReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action !in ACTIONS) return
         AppGraph.get(context).propagate()
+    }
+
+    private companion object {
+        val ACTIONS = setOf(
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_MY_PACKAGE_REPLACED,
+            Intent.ACTION_TIMEZONE_CHANGED,
+            Intent.ACTION_TIME_CHANGED,
+            "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED",
+        )
     }
 }
 
@@ -276,6 +292,7 @@ object TrialReminder {
 }
 
 class TrialReceiver : BroadcastReceiver() {
+    @SuppressLint("MissingPermission")
     override fun onReceive(context: Context, intent: Intent) {
         if (!AlertScheduler.canPostNotifications(context)) return
         val notification = NotificationCompat.Builder(context, AlertScheduler.CHANNEL_TRIAL)
