@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Shoes On</string>
+    <string name="shortcut_start_short">Start getting ready</string>
+    <string name="shortcut_start_long">Start getting ready</string>
+</resources>

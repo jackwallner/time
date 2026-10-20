@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Android stand-in for the iOS "Start getting ready" control: a
+     long-press launcher shortcut that starts the soonest routine. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="start"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_start_short"
+        android:shortcutLongLabel="@string/shortcut_start_long">
+        <intent
+            android:action="com.jackwallner.time.START_RUN"
+            android:targetPackage="com.jackwallner.time"
+            android:targetClass="com.jackwallner.time.MainActivity" />
+    </shortcut>
+</shortcuts>
