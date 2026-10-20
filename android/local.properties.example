@@ -1,0 +1,9 @@
+sdk.dir=/Users/<you>/Library/Android/sdk
+# Debug only: the RevenueCat Test Store public key for project proj457863e6.
+REVENUECAT_TEST_KEY=
+# Release only, kept on the Air.
+REVENUECAT_PLAY_KEY=
+PLAY_UPLOAD_KEYSTORE=
+PLAY_UPLOAD_KEY_ALIAS=upload
+PLAY_UPLOAD_STORE_PASSWORD=
+PLAY_UPLOAD_KEY_PASSWORD=
