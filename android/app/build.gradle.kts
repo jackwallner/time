@@ -11,6 +11,8 @@ val localProperties = Properties().apply {
 }
 val playKey = localProperties.getProperty("REVENUECAT_PLAY_KEY", "")
 val testKey = localProperties.getProperty("REVENUECAT_TEST_KEY", "")
+// SHA-256 of the Play reviewer code; the plain code stays with Jack. Empty turns reviewer access off.
+val reviewCodeDigest = localProperties.getProperty("PLAY_REVIEW_CODE_SHA256", "")
 val uploadKeyStore = localProperties.getProperty("PLAY_UPLOAD_KEYSTORE", "")
 val uploadKeyAlias = localProperties.getProperty("PLAY_UPLOAD_KEY_ALIAS", "")
 val uploadStorePassword = localProperties.getProperty("PLAY_UPLOAD_STORE_PASSWORD", "")
@@ -42,6 +44,7 @@ android {
         // Debug runs on the RevenueCat Test Store key, or on fixture plans with
         // purchases off when no key is set. Never the production Play key.
         buildConfigField("String", "REVENUECAT_API_KEY", "\"$testKey\"")
+        buildConfigField("String", "PLAY_REVIEW_CODE_SHA256", "\"$reviewCodeDigest\"")
     }
     buildFeatures {
         buildConfig = true

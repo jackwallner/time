@@ -88,12 +88,14 @@ class StoreService(
 ) {
     private var entitlementActive by mutableStateOf(defaults.getBoolean(CACHED_PRO))
     private var overrideActive by mutableStateOf(BuildConfig.DEBUG && defaults.getBoolean(LOCAL_OVERRIDE))
+    private val reviewAccess = ReviewAccess(defaults, BuildConfig.PLAY_REVIEW_CODE_SHA256)
+    private var reviewGranted by mutableStateOf(reviewAccess.isGranted)
 
     /** Fired when Pro flips, so every surface can refresh. */
     var onProChanged: () -> Unit = {}
 
     /** The one gate the app reads. */
-    val isPro: Boolean get() = entitlementActive || overrideActive
+    val isPro: Boolean get() = entitlementActive || overrideActive || reviewGranted
 
     var plans by mutableStateOf<List<Plan>>(emptyList())
         private set
@@ -234,6 +236,15 @@ class StoreService(
         defaults.putBoolean(LOCAL_OVERRIDE, value)
         overrideActive = value
         if (before != isPro) onProChanged()
+    }
+
+    /** Play reviewer access: a code from the review notes, checked against its SHA-256 only. */
+    fun activateReviewAccess(code: String): Boolean {
+        val before = isPro
+        if (!reviewAccess.activate(code)) return false
+        reviewGranted = true
+        if (before != isPro) onProChanged()
+        return true
     }
 
     private suspend fun refreshStatus() {

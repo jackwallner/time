@@ -1,5 +1,6 @@
 package com.jackwallner.time.ui
 
+import android.app.Activity
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -13,11 +14,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import com.jackwallner.time.AppGraph
 import com.jackwallner.time.DebugLaunchOptions
 import com.jackwallner.time.model.Routine
@@ -50,6 +54,16 @@ fun RootScreen(graph: AppGraph, launchIntent: Intent?, modifier: Modifier = Modi
     val resumesAtOffer = remember { !settings.hasCompletedSetup && store.routines.isNotEmpty() }
     val paywallSnapshot = remember(launchIntent) { DebugLaunchOptions.paywallSnapshot(launchIntent) }
     val onboardingPage = remember(launchIntent) { DebugLaunchOptions.onboardingPage(launchIntent) }
+    val view = LocalView.current
+    // Light icons over the always-dark run and in dark mode; dark icons on paper.
+    val darkBars = palette.isDark || (settings.hasCompletedSetup && store.activeRun != null)
+    SideEffect {
+        val window = (view.context as? Activity)?.window ?: return@SideEffect
+        WindowCompat.getInsetsController(window, view).apply {
+            isAppearanceLightStatusBars = !darkBars
+            isAppearanceLightNavigationBars = !darkBars
+        }
+    }
 
     Box(modifier.fillMaxSize().background(palette.background)) {
         when {

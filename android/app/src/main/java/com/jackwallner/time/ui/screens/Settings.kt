@@ -1,7 +1,9 @@
 package com.jackwallner.time.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -57,6 +59,7 @@ import com.jackwallner.time.ui.theme.TextAction
 import com.jackwallner.time.ui.theme.Type
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingsScreen(graph: AppGraph, onOverlay: (Overlay) -> Unit, onClose: () -> Unit) {
     val palette = LocalPalette.current
@@ -70,6 +73,7 @@ fun SettingsScreen(graph: AppGraph, onOverlay: (Overlay) -> Unit, onClose: () ->
     var confirmReset by remember { mutableStateOf(false) }
     var pickingPace by remember { mutableStateOf(false) }
     var restoreMessage by remember { mutableStateOf<String?>(null) }
+    var reviewCodeOpen by remember { mutableStateOf(false) }
     // Re-read on return from system Settings, so the fix shows at once.
     LaunchedEffect(graph.foregroundCount) {
         notificationsOff = !AlertScheduler.notificationsEnabled(context)
@@ -143,7 +147,7 @@ fun SettingsScreen(graph: AppGraph, onOverlay: (Overlay) -> Unit, onClose: () ->
                 Divider()
                 LinkRow("Terms of Use", external = true) { Links.open(context, Links.TERMS) }
             }
-            FormSection(footer = "Shoes On is a planning tool, not medical advice, and does not diagnose or treat any condition.\n\nShoes On ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}). Everything stays on this phone.") {
+            FormSection(footer = "Shoes On is a planning tool, not medical advice, and does not diagnose or treat any condition.") {
                 Text(
                     "Forget my real times",
                     style = Type.body(),
@@ -151,6 +155,14 @@ fun SettingsScreen(graph: AppGraph, onOverlay: (Overlay) -> Unit, onClose: () ->
                     modifier = Modifier.fillMaxWidth().clickable(role = Role.Button) { confirmReset = true }.padding(16.dp),
                 )
             }
+            // Long-press opens Play reviewer access (code in the review notes).
+            Text(
+                "Shoes On ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}). Everything stays on this phone.",
+                style = Type.footnote(),
+                color = palette.secondary,
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp).combinedClickable(onClick = {}, onLongClick = { reviewCodeOpen = true })
+                    .padding(horizontal = 16.dp, vertical = 8.dp).testTag("versionRow"),
+            )
             if (BuildConfig.DEBUG) {
                 FormSection(header = "Debug") {
                     ToggleRow("Pro", purchases.isPro, true) { purchases.setLocalOverride(it) }
@@ -191,6 +203,28 @@ fun SettingsScreen(graph: AppGraph, onOverlay: (Overlay) -> Unit, onClose: () ->
             text = { Text("Plans go back to your guesses adjusted for your pace. Routines stay.", style = Type.subheadline()) },
             confirmButton = { TextButton(onClick = { confirmReset = false; store.resetLearning() }) { Text("Forget", style = Type.subheadline(FontWeight.Bold), color = palette.late) } },
             dismissButton = { TextButton(onClick = { confirmReset = false }) { Text("Cancel", style = Type.subheadline(FontWeight.SemiBold), color = palette.ink) } },
+            containerColor = palette.surface,
+        )
+    }
+    if (reviewCodeOpen) {
+        var code by remember { mutableStateOf("") }
+        var wrong by remember { mutableStateOf(false) }
+        AlertDialog(
+            onDismissRequest = { reviewCodeOpen = false },
+            title = { Text("Reviewer access", style = Type.headline()) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Enter the code from the review notes.", style = Type.subheadline())
+                    PlainField(code, { code = it; wrong = false }, "Code", Modifier.fillMaxWidth().testTag("reviewCode"))
+                    if (wrong) Text("That code didn't work.", style = Type.footnote(), color = palette.late)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (purchases.activateReviewAccess(code)) reviewCodeOpen = false else wrong = true
+                }, modifier = Modifier.testTag("reviewCodeSubmit")) { Text("Unlock", style = Type.subheadline(FontWeight.Bold), color = palette.ink) }
+            },
+            dismissButton = { TextButton(onClick = { reviewCodeOpen = false }) { Text("Cancel", style = Type.subheadline(FontWeight.SemiBold), color = palette.ink) } },
             containerColor = palette.surface,
         )
     }
