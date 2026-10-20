@@ -1,0 +1,78 @@
+---
+paths: ["android/**"]
+---
+
+# Shoes On on Android
+
+Native Kotlin/Compose port in `android/`. The iOS app is the spec: same copy,
+engine, alerts, flows, products and paid boundary. Shared conventions live in
+the `android-dev` skill.
+
+## Identity
+- Package and namespace `com.jackwallner.time` (permanent once uploaded).
+  Listing name `Shoes On: Time Blindness Coach`, launcher label `Shoes On`.
+- `versionName` tracks iOS `MARKETING_VERSION`; `versionCode` goes up on every upload.
+- RevenueCat entitlement `pro`, offering `default`, packages `$rc_annual` /
+  `$rc_monthly`; Play subscriptions use the iOS product IDs with base plans
+  `yearly` / `monthly` and a 7-day new-customer trial offer.
+
+## Layout
+- `model/`: pure ports of `Shared/Engine` and `Shared/Models` (Calibration,
+  Planner, ActiveRun, NotificationPlan, Format). Swift `rounded()` is half away
+  from zero: use `roundHalfAway`, never Kotlin `round`.
+- `data/RoutineStore.kt` is the single door, as on iOS. Every mutation
+  persists `filesDir/shoeson-state.json` and calls `AppGraph.propagate()`
+  (AlarmManager alerts + the ongoing run notification).
+- `data/Alerts.kt`: AlarmManager stands in for pending UNNotification
+  requests. Exact alarms when granted, else a one-minute window. Get-ready
+  alerts carry Start now / Skip this time; step nudges carry Done. The ongoing
+  "Routine in progress" notification (countdown chronometer, Done) replaces the
+  Live Activity.
+- Launcher shortcut "Start getting ready" (`res/xml/shortcuts.xml`) replaces
+  the iOS Control Center control.
+
+## Intentional differences from iOS
+- No Wear OS app, widget or Live Activity. Pro on Android is "every routine"
+  only; the paywall does not mention a watch (decision pending, see
+  `project-docs/android/play-release-prep.md`).
+- Play review card is called straight after an on-time summary (same 3 on-time
+  / 90-day tracker), no question first. Settings has separate Rate (Play
+  listing) and Send feedback rows.
+- Terms link to `docs/terms.html`, not Apple's EULA. Paywall disclosure names
+  Google Play renewal and cancellation.
+- "Remove animations" (animator scale 0) holds the run screen's glow still.
+
+## Build and test (jmbp or jmbp2, never the Air)
+- `JAVA_HOME=~/jdks/temurin-17/Contents/Home ./gradlew --no-daemon
+  "-Dorg.gradle.jvmargs=-Xmx2g -XX:TieredStopAtLevel=1" --max-workers=2 <tasks>`
+  in `android/`. On jmbp2 the C2 JIT crashed the Gradle JVM once
+  (`Matcher::find_shared`); `TieredStopAtLevel=1` avoids it.
+- `testDebugUnitTest` (79 tests: every iOS Planner, Run, NotificationPlan,
+  Store, DayChange and PaywallFunnel test one for one, plus Format, codec,
+  reviewer access), `assembleDebug lintDebug`, then
+  `ANDROID_SERIAL=emulator-5554 ./gradlew connectedDebugAndroidTest`
+  (`ShoesOnFlowTests`, 10). The connected run uninstalls the app and leaves
+  `animator_duration_scale` at 0; set it back to 1 before screenshots.
+- jmbp2 AVD `agent-emu-1` (API 36, x86_64): `emulator -avd agent-emu-1 -port
+  5554 -no-window -no-audio -no-boot-anim -no-metrics -no-snapshot-save`; wait
+  for `sys.boot_completed` = 1; stop with `adb -s emulator-5554 emu kill`.
+  System UI may ANR right after boot (tap Wait). It renders with SwiftShader at
+  about 10 fps, so tests stretch `AppClock.runTickMillis` to 30 s or Compose
+  never idles; motion review belongs on jmbp or the Air.
+- Debug launch extras (`src/debug/.../DebugLaunchOptions.kt`, release no-op):
+  `reset`, `seed`, `screen` run|leaving|summary, `seedDayChanges`,
+  `onboardingPage` N, `paywall` yearly|monthly, `demoPro`, `free`,
+  `fixedNow` HH:mm, `appearance` light|dark. Example:
+  `adb shell am start -n com.jackwallner.time/.MainActivity --ez seed true --es screen run`.
+
+## Keys and boundaries
+- `android/local.properties` (ignored): `REVENUECAT_TEST_KEY` (debug only),
+  `REVENUECAT_PLAY_KEY` and upload keystore entries (release, Air only),
+  `PLAY_REVIEW_CODE_SHA256` (optional reviewer access).
+- `StoreService` refuses a `goog_` key in debug and anything else in release.
+  Debug with no key shows fixture plans with purchases off. The `qa` build type
+  is release code with no key.
+
+## Play Console state (2026-10-20)
+- Not on Play. No app record, upload, products or RevenueCat Play app.
+  Release prep and the remaining steps: `project-docs/android/play-release-prep.md`.

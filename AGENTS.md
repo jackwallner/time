@@ -120,6 +120,7 @@ portfolio entry lives in `~/portfolio/docs/projects.json`, slug `time`.
 | File | Covers | Read when |
 |---|---|---|
 | `.claude/rules/store-and-release.md` | ASC/RC setup commands, screenshots, launch args | Touching store, scripts, fastlane, screenshot fixtures |
+| `.claude/rules/android.md` | Android port: layout, iOS differences, build/test on jmbp/jmbp2, keys, Play state | Touching `android/**` |
 
 ---
 Shared iOS conventions (build, simulator, release/TestFlight, ASC key, signing,
