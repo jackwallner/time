@@ -98,3 +98,25 @@ ratio). A widget capture on the launcher (countdown, Start now) is in
 5. License-tester purchase and restore on a Play image; pre-launch report.
 6. Production submission only under fleet pacing (one new app at a time on the
    E3 Apps account), managed publishing off.
+
+## Package attempt (2026-10-21, Air)
+
+Run `shift-android-package-time-1-1792570004` on source `fc424e4` built
+nothing signed. `assembleRelease bundleRelease` stops at
+`validateReleaseConfiguration` ("Set REVENUECAT_PLAY_KEY"). Missing inputs,
+none of which this task may invent:
+
+- Upload keystore `~/.android/keystores/time-upload.p12` (none exists; the
+  app has never been uploaded, so making the first one is a deliberate
+  release-worker step with an encrypted backup, not a replacement).
+- `android/local.properties` on the Air (`sdk.dir`, `REVENUECAT_PLAY_KEY`,
+  `PLAY_UPLOAD_*`, optional `PLAY_REVIEW_CODE_SHA256`).
+- A RevenueCat Play app in `proj457863e6` for the `goog_` key. Today it has
+  only `app_store` and `test_store`. Its Android block also goes in
+  `~/.rc-clean/apps.json`.
+
+Unblock order: steps 1 and 3 above (Play app record and products, then the
+RevenueCat Play app), the upload key and `local.properties`, then rerun the
+package task (signed APK and AAB, apksigner and jarsigner, aapt2 badging,
+`zipalign -c -P 16`, ELF LOAD alignment of every `.so`). Evidence:
+`~/fleet-evidence/shift-android-package-time-1-1792570004/` on the Air.

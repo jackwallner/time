@@ -86,6 +86,14 @@ the `android-dev` skill.
   Debug with no key shows fixture plans with purchases off. The `qa` build type
   is release code with no key.
 
-## Play Console state (2026-10-20)
+## Play Console state (2026-10-21)
 - Not on Play. No app record, upload, products or RevenueCat Play app.
   Release prep and the remaining steps: `project-docs/android/play-release-prep.md`.
+- No signed APK or AAB exists yet. Air package run
+  `shift-android-package-time-1-1792570004` (source `fc424e4`) stopped at
+  `validateReleaseConfiguration`: no `~/.android/keystores/time-upload.p12`,
+  no `android/local.properties` on the Air, and RevenueCat `proj457863e6` has
+  only `app_store` and `test_store` apps, so no `goog_` key. Evidence:
+  `~/fleet-evidence/shift-android-package-time-1-1792570004/` on the Air.
+- Release builds on the Air need `ANDROID_HOME=~/Library/Android/sdk` (or
+  `sdk.dir` in `local.properties`), or Gradle stops at "SDK location not found".
