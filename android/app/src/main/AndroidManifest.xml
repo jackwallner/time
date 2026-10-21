@@ -32,6 +32,15 @@
         <receiver android:name=".data.AlertReceiver" android:exported="false" />
         <receiver android:name=".data.AlertActionReceiver" android:exported="false" />
         <receiver android:name=".data.TrialReceiver" android:exported="false" />
+        <receiver
+            android:name=".data.NextStartWidget"
+            android:exported="false"
+            android:label="@string/widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/next_start_widget" />
+        </receiver>
         <receiver android:name=".data.RescheduleReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

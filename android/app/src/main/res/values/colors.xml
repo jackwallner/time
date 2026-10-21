@@ -3,4 +3,10 @@
     <color name="launch_canvas">#FFF6F5F1</color>
     <color name="accent">#FF121417</color>
     <color name="ic_launcher_background">#FFFFBA3E</color>
+    <!-- Next-start widget, from iOS Theme. -->
+    <color name="widget_background">#FFF6F5F1</color>
+    <color name="widget_ink">#FF121417</color>
+    <color name="widget_secondary">#FF6E7075</color>
+    <color name="widget_late">#FFB82B29</color>
+    <color name="widget_on_track">#FF146E4A</color>
 </resources>

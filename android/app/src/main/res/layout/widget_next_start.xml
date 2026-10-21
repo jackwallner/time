@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/widget_routine"
+        android:text="@string/widget_sample_routine"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:fontFamily="@font/nunito"
+        android:maxLines="1"
+        android:textAllCaps="true"
+        android:textColor="@color/widget_secondary"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        tools:ignore="UselessLeaf" />
+
+    <TextView
+        android:id="@+id/widget_label"
+        android:text="@string/widget_sample_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/nunito"
+        android:maxLines="1"
+        android:textColor="@color/widget_secondary"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/widget_headline"
+        android:text="@string/widget_sample_time"
+        style="@style/WidgetHeadline"
+        android:textColor="@color/widget_ink" />
+
+    <TextView
+        android:id="@+id/widget_headline_urgent"
+        style="@style/WidgetHeadline"
+        android:textColor="@color/widget_late"
+        android:visibility="gone" />
+
+    <Chronometer
+        android:id="@+id/widget_clock"
+        style="@style/WidgetHeadline"
+        android:textColor="@color/widget_ink"
+        android:visibility="gone" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        tools:ignore="UselessLeaf" />
+
+    <TextView
+        android:id="@+id/widget_footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawablePadding="6dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/nunito"
+        android:gravity="center_vertical"
+        android:maxLines="1"
+        android:text="@string/widget_sample_footer"
+        android:textColor="@color/widget_ink"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:drawableStart="@drawable/widget_dot" />
+</LinearLayout>

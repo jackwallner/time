@@ -5,6 +5,10 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
+import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -24,9 +28,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.jackwallner.time.data.AlertActionReceiver
 import com.jackwallner.time.data.AlertScheduler
+import com.jackwallner.time.data.NextStartWidget
+import com.jackwallner.time.data.NextStartWidgets
 import com.jackwallner.time.data.SharedPreferencesStore
 import com.jackwallner.time.model.PaceAnswer
 import com.jackwallner.time.model.PlannedAlert
+import com.jackwallner.time.model.WidgetPhase
+import com.jackwallner.time.model.WidgetRun
 import com.jackwallner.time.model.day
 import java.time.ZoneId
 import org.junit.After
@@ -305,5 +313,34 @@ class ShoesOnFlowTests {
         compose.waitUntil(10_000) { graph.settings.startAlerts }
         compose.onNodeWithTag("tryPro").performScrollTo().performClick()
         waitForTag("paywall")
+    }
+
+    @Test fun theNextStartWidgetIsOfferedAndDrawsEveryPhase() {
+        launch {
+            putExtra("seed", true)
+            putExtra("fixedNow", "05:00")
+        }
+        waitForTag("settings")
+        val provider = AppWidgetManager.getInstance(context).installedProviders
+            .firstOrNull { it.provider == ComponentName(context, NextStartWidget::class.java) }
+        assertNotNull(provider)
+        if (Build.VERSION.SDK_INT >= 31) assertEquals(2, provider!!.targetCellWidth)
+        val now = AppClock.now()
+        val departures = graph.store.widgetDepartures(now)
+        assertTrue(departures.isNotEmpty())
+        val next = departures.first()
+        val run = WidgetRun("Weekday mornings", next.leaveAt, "Shower", isLeaving = false)
+        val phases = listOf(
+            WidgetPhase.Later(next), WidgetPhase.Countdown(next), WidgetPhase.Overdue(next), WidgetPhase.Running(run), WidgetPhase.None,
+        )
+        // The launcher inflates these in its own process; apply() proves the layout is RemoteViews-safe.
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            for (phase in phases) {
+                val view = NextStartWidgets.views(context, phase, now).apply(context, FrameLayout(context))
+                val footer = view.findViewById<TextView>(R.id.widget_footer).text.toString()
+                assertEquals(phase.footer(now), footer)
+            }
+        }
+        NextStartWidgets.refresh(context)
     }
 }

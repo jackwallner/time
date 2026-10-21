@@ -8,11 +8,13 @@ import com.jackwallner.time.model.Calibration
 import com.jackwallner.time.model.DayChange
 import com.jackwallner.time.model.DeparturePlan
 import com.jackwallner.time.model.DepartureRecord
+import com.jackwallner.time.model.NextDepartureSnapshot
 import com.jackwallner.time.model.NotificationPlan
 import com.jackwallner.time.model.PaceAnswer
 import com.jackwallner.time.model.Planner
 import com.jackwallner.time.model.Routine
 import com.jackwallner.time.model.StepRecord
+import com.jackwallner.time.model.WidgetRun
 import com.jackwallner.time.model.day
 import com.jackwallner.time.model.plusSeconds
 import com.jackwallner.time.model.secondsSince
@@ -120,6 +122,34 @@ class RoutineStore(
     /** The soonest departure across every routine. */
     fun nextDeparture(now: Instant = clock()): UpcomingDeparture? =
         state.routines.mapNotNull { r -> nextPlan(r, now)?.let { UpcomingDeparture(r, it) } }.minByOrNull { it.plan.leaveAt }
+
+    /**
+     * The next departures across every routine, soonest first, as far ahead
+     * as the alerts reach so the widget never goes blank before they do.
+     */
+    fun upcomingDepartures(now: Instant = clock(), limit: Int = 12): List<UpcomingDeparture> {
+        val today = now.day(zone())
+        val found = mutableListOf<UpcomingDeparture>()
+        for (routine in state.routines) {
+            for (offset in 0L..NotificationPlan.HORIZON_DAYS.toLong()) {
+                val day = today.plusDays(offset)
+                if (!routine.departs(day)) continue
+                val leave = routine.leaveTime(day, zone())
+                if (leave <= now) continue
+                if (state.activeRun?.let { it.routineID == routine.id && it.leaveAt == leave } == true) continue
+                if (state.departures.any { it.routineID == routine.id && it.target == leave }) continue
+                found += UpcomingDeparture(routine, plan(routine, leave))
+            }
+        }
+        return found.sortedBy { it.plan.leaveAt }.take(limit)
+    }
+
+    /** What the next-start widget draws between launches. */
+    fun widgetDepartures(now: Instant = clock()): List<NextDepartureSnapshot> =
+        upcomingDepartures(now).map { NextDepartureSnapshot(it.routine.name, it.plan.alertAt, it.plan.leaveAt) }
+
+    val widgetRun: WidgetRun?
+        get() = state.activeRun?.let { WidgetRun(it.routineName, it.leaveAt, it.currentStep?.name, it.isLeaving) }
 
     fun departures(routineID: UUID): List<DepartureRecord> =
         state.departures.filter { it.routineID == routineID }.sortedByDescending { it.left }
