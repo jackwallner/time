@@ -2,4 +2,9 @@
 <resources>
     <color name="launch_canvas">#FF0B0C0E</color>
     <color name="accent">#FFF6F5F1</color>
+    <color name="widget_background">#FF191B1E</color>
+    <color name="widget_ink">#FFF6F5F1</color>
+    <color name="widget_secondary">#FF999EA6</color>
+    <color name="widget_late">#FFFF5C54</color>
+    <color name="widget_on_track">#FF29C785</color>
 </resources>

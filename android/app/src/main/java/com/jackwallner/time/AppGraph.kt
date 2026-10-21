@@ -9,6 +9,7 @@ import com.jackwallner.time.data.AlertScheduler
 import com.jackwallner.time.data.AppSettings
 import com.jackwallner.time.data.ConversionDiagnostics
 import com.jackwallner.time.data.DiskStateFile
+import com.jackwallner.time.data.NextStartWidgets
 import com.jackwallner.time.data.ReviewPromptTracker
 import com.jackwallner.time.data.RoutineStore
 import com.jackwallner.time.data.SharedPreferencesStore
@@ -64,6 +65,7 @@ class AppGraph private constructor(private val context: Context) {
     fun propagate() {
         AlertScheduler.reschedule(context, store.alerts(settings.alertPreferences, AppClock.now()))
         AlertScheduler.syncRunNotification(context, store.activeRun)
+        NextStartWidgets.refresh(context)
     }
 
     companion object {

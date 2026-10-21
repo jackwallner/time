@@ -3,4 +3,10 @@
     <string name="app_name">Shoes On</string>
     <string name="shortcut_start_short">Start getting ready</string>
     <string name="shortcut_start_long">Start getting ready</string>
+    <string name="widget_description">When to start getting ready, counting down in the last hour.</string>
+    <string name="widget_name">Next start</string>
+    <string name="widget_sample_routine">Weekday mornings</string>
+    <string name="widget_sample_label">Start at</string>
+    <string name="widget_sample_time" translatable="false">7:14</string>
+    <string name="widget_sample_footer">Out the door 8:22</string>
 </resources>
