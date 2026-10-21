@@ -49,6 +49,9 @@ the `android-dev` skill.
 - "Remove animations" (animator scale 0) holds the run screen's glow still.
 
 ## Build and test (jmbp or jmbp2, never the Air)
+- From the Air, run the Gradle tasks below with `fm-gradle <tasks>` from
+  `android/` (it runs them on jmbp); the full command lines here are for work
+  directly on a fleet host.
 - `JAVA_HOME=~/jdks/temurin-17/Contents/Home ./gradlew --no-daemon
   "-Dorg.gradle.jvmargs=-Xmx2g -XX:TieredStopAtLevel=1" --max-workers=2 <tasks>`
   in `android/`. On jmbp2 the C2 JIT crashed the Gradle JVM once
