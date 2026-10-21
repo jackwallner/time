@@ -99,24 +99,34 @@ ratio). A widget capture on the launcher (countdown, Start now) is in
 6. Production submission only under fleet pacing (one new app at a time on the
    E3 Apps account), managed publishing off.
 
-## Package attempt (2026-10-21, Air)
+## Signed package (2026-10-21, Air)
 
-Run `shift-android-package-time-1-1792570004` on source `fc424e4` built
-nothing signed. `assembleRelease bundleRelease` stops at
-`validateReleaseConfiguration` ("Set REVENUECAT_PLAY_KEY"). Missing inputs,
-none of which this task may invent:
+Run `shift-android-package-time-2-1792593641` built and verified the first
+signed release from commit `e7934af` (android tree `1c7319d`, identical to
+`origin/main` `1540361`: the accepted port plus the Test Store QA tester fix).
+Artifacts on the Air, under
+`~/fleet-evidence/shift-android-package-time-2-1792593641/artifacts/`:
 
-- Upload keystore `~/.android/keystores/time-upload.p12` (none exists; the
-  app has never been uploaded, so making the first one is a deliberate
-  release-worker step with an encrypted backup, not a replacement).
-- `android/local.properties` on the Air (`sdk.dir`, `REVENUECAT_PLAY_KEY`,
-  `PLAY_UPLOAD_*`, optional `PLAY_REVIEW_CODE_SHA256`).
-- A RevenueCat Play app in `proj457863e6` for the `goog_` key. Today it has
-  only `app_store` and `test_store`. Its Android block also goes in
-  `~/.rc-clean/apps.json`.
+- `shoeson-1.0.1-vc1-release.aab` (sha256 `437d5aa8...`), the Play upload.
+- `shoeson-1.0.1-vc1-release.apk` (sha256 `706396fc...`).
 
-Unblock order: steps 1 and 3 above (Play app record and products, then the
-RevenueCat Play app), the upload key and `local.properties`, then rerun the
-package task (signed APK and AAB, apksigner and jarsigner, aapt2 badging,
-`zipalign -c -P 16`, ELF LOAD alignment of every `.so`). Evidence:
-`~/fleet-evidence/shift-android-package-time-1-1792570004/` on the Air.
+Checks, each a fleet-proof record in that folder:
+
+- `com.jackwallner.time`, versionCode 1, versionName 1.0.1 (iOS
+  `MARKETING_VERSION`), minSdk 26, targetSdk 36, label "Shoes On", not
+  debuggable (aapt2 badging of the APK and of the AAB base module).
+- Upload certificate `CN=Jack Wallner, O=E3 Fitness, C=US`, SHA-256
+  `71:A0:BE:96:...:D4:2D:96`, the `upload` alias of
+  `~/.android/keystores/time-upload.p12` (backup in `backups/` is
+  byte-identical). `apksigner verify` (v2) and `jarsigner -verify` pass.
+- `zipalign -c -P 16 -v 4` passes on the APK. All 8 native libraries
+  (`libandroidx.graphics.path.so`, 4 ABIs, in the APK and the AAB) have every
+  ELF LOAD segment aligned to 16 KB.
+- Release dex has none of the debug launch extras and not the Test Store key;
+  it carries the `goog_` key of RevenueCat Play app `appeae40f53c5`.
+
+Still open (release worker and Jack, in the order above): Play app record if
+not yet made, internal testing upload of the AAB, the two Play subscriptions
+(RevenueCat has the Play app but no Play products yet), RevenueCat mapping and
+the `~/.rc-clean/apps.json` Android block, then listing and policy forms.
+Nothing is uploaded or under review. The next upload must use versionCode 2.

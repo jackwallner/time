@@ -87,13 +87,17 @@ the `android-dev` skill.
   is release code with no key.
 
 ## Play Console state (2026-10-21)
-- Not on Play. No app record, upload, products or RevenueCat Play app.
-  Release prep and the remaining steps: `project-docs/android/play-release-prep.md`.
-- No signed APK or AAB exists yet. Air package run
-  `shift-android-package-time-1-1792570004` (source `fc424e4`) stopped at
-  `validateReleaseConfiguration`: no `~/.android/keystores/time-upload.p12`,
-  no `android/local.properties` on the Air, and RevenueCat `proj457863e6` has
-  only `app_store` and `test_store` apps, so no `goog_` key. Evidence:
-  `~/fleet-evidence/shift-android-package-time-1-1792570004/` on the Air.
-- Release builds on the Air need `ANDROID_HOME=~/Library/Android/sdk` (or
-  `sdk.dir` in `local.properties`), or Gradle stops at "SDK location not found".
+- Not on Play yet: nothing uploaded, no Play products. RevenueCat
+  `proj457863e6` has Play app `appeae40f53c5` (key in the Air's
+  `local.properties`). Remaining steps: `project-docs/android/play-release-prep.md`.
+- First signed release built and verified on the Air (run
+  `shift-android-package-time-2-1792593641`, android tree `1c7319d`):
+  versionCode 1, versionName 1.0.1, targetSdk 36, upload cert SHA-256
+  `71:A0:BE:96:...:D4:2D:96`. AAB and APK in
+  `~/fleet-evidence/shift-android-package-time-2-1792593641/artifacts/`.
+  Bump `versionCode` before any rebuild that will be uploaded after this one.
+- Upload key `~/.android/keystores/time-upload.p12` (alias `upload`, backup in
+  `backups/`). Release builds on the Air: copy `~/time/android/local.properties`
+  into the checkout, `JAVA_HOME` Temurin 17, `ANDROID_HOME=~/Library/Android/sdk`,
+  `./gradlew --no-daemon assembleRelease bundleRelease`. Delete the copy after
+  the build.
