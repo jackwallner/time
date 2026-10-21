@@ -30,10 +30,16 @@ the `android-dev` skill.
   Live Activity.
 - Launcher shortcut "Start getting ready" (`res/xml/shortcuts.xml`) replaces
   the iOS Control Center control.
+- `data/NextStartWidget.kt` + `model/WidgetPhase.kt`: the free "Next start"
+  home screen widget (iOS `NextDepartureWidget` small family). RemoteViews,
+  no Glance. The last-hour countdown is a launcher-drawn `Chronometer`, so the
+  app never wakes to tick it. `propagate()` redraws it, and a non-wakeup RTC
+  alarm redraws at each phase change and midnight. The headline auto-sizes
+  (16 to 34sp) like iOS `minimumScaleFactor(0.5)`.
 
 ## Intentional differences from iOS
-- No Wear OS app, widget or Live Activity. Pro on Android is "every routine"
-  only; the paywall does not mention a watch (decision pending, see
+- No Wear OS app, Lock Screen widget or Live Activity. Pro on Android is
+  "every routine" only; the paywall does not mention a watch (decision pending, see
   `project-docs/android/play-release-prep.md`).
 - Play review card is called straight after an on-time summary (same 3 on-time
   / 90-day tracker), no question first. Settings has separate Rate (Play
@@ -47,11 +53,11 @@ the `android-dev` skill.
   "-Dorg.gradle.jvmargs=-Xmx2g -XX:TieredStopAtLevel=1" --max-workers=2 <tasks>`
   in `android/`. On jmbp2 the C2 JIT crashed the Gradle JVM once
   (`Matcher::find_shared`); `TieredStopAtLevel=1` avoids it.
-- `testDebugUnitTest` (79 tests: every iOS Planner, Run, NotificationPlan,
+- `testDebugUnitTest` (88 tests: every iOS Planner, Run, NotificationPlan,
   Store, DayChange and PaywallFunnel test one for one, plus Format, codec,
-  reviewer access), `assembleDebug lintDebug`, then
+  reviewer access, WidgetPhase), `assembleDebug lintDebug`, then
   `ANDROID_SERIAL=emulator-5554 ./gradlew connectedDebugAndroidTest`
-  (`ShoesOnFlowTests`, 10). The connected run uninstalls the app and leaves
+  (`ShoesOnFlowTests`, 11). The connected run uninstalls the app and leaves
   `animator_duration_scale` at 0; set it back to 1 before screenshots.
 - jmbp2 AVD `agent-emu-1` (API 36, x86_64): `emulator -avd agent-emu-1 -port
   5554 -no-window -no-audio -no-boot-anim -no-metrics -no-snapshot-save`; wait
@@ -59,6 +65,13 @@ the `android-dev` skill.
   System UI may ANR right after boot (tap Wait). It renders with SwiftShader at
   about 10 fps, so tests stretch `AppClock.runTickMillis` to 30 s or Compose
   never idles; motion review belongs on jmbp or the Air.
+- On a cold boot jmbp2's system server can restart mid-run: Gradle then
+  reports BUILD SUCCESSFUL with `tests="0"`. Always check the XML count and
+  rerun. Use `-Xmx1500m --max-workers=1` there and one task per invocation;
+  a combined assemble + androidTest + lint run was SIGKILLed (exit 137).
+- Placing the widget by adb: long-press empty home, Widgets, type "Shoes" one
+  letter at a time (fast `input text` drops letters), tap the result, tap the
+  preview, then Add. Escape closes the picker.
 - Debug launch extras (`src/debug/.../DebugLaunchOptions.kt`, release no-op):
   `reset`, `seed`, `screen` run|leaving|summary, `seedDayChanges`,
   `onboardingPage` N, `paywall` yearly|monthly, `demoPro`, `free`,
