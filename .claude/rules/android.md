@@ -89,6 +89,13 @@ the `android-dev` skill.
   Debug with no key shows fixture plans with purchases off. The `qa` build type
   is release code with no key.
 
+## Store assets
+- `android/play-assets/` holds the listing copy, icon, feature graphic and
+  five screenshots in the `play_stage.py` layout; its README records how each
+  was made. Play accepts 2:1 at most, so captures are 1080 x 2160 (`wm size`,
+  or the native 2400 cropped). Turn heads-up notifications off first: the
+  seed schedules real alerts that pop over the app.
+
 ## Play Console state (2026-10-20)
 - Not on Play. No app record, upload, products or RevenueCat Play app.
   Release prep and the remaining steps: `project-docs/android/play-release-prep.md`.

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <!-- Background: the icon's warm morning gradient, top to bottom -->
+  <defs>
+    <linearGradient id="morning" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd54c"/>
+      <stop offset="1" stop-color="#ff9f2f"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="500" fill="url(#morning)"/>
+
+  <!-- The app icon's mark, from the launcher vector's 1024 grid: an open dial, its hub, and the way out -->
+  <g transform="translate(-24 -53) scale(0.55)">
+    <path d="M486,255 A297,297 0 1,0 783,552" fill="none" stroke="#2a1e6e" stroke-width="95" stroke-linecap="round"/>
+    <path d="M486,552 L690,348" stroke="#ffffff" stroke-width="92"/>
+    <path d="M605,258 L812,225 L780,432 Z" fill="#ffffff"/>
+    <circle cx="486" cy="552" r="74" fill="#2a1e6e"/>
+  </g>
+
+  <!-- Name and one line -->
+  <g font-family="ui-rounded, 'SF Pro Rounded', 'Nunito', 'Helvetica Neue', Helvetica, Arial, sans-serif" fill="#2a1e6e">
+    <text x="476" y="220" font-size="84" font-weight="800" letter-spacing="-2">Shoes On</text>
+    <text x="478" y="282" font-size="36" font-weight="600">Time Blindness Coach</text>
+    <text x="478" y="356" font-size="28" font-weight="500" fill="#3d2f80">Plans with how long things</text>
+    <text x="478" y="394" font-size="28" font-weight="500" fill="#3d2f80">really take you.</text>
+  </g>
+</svg>
