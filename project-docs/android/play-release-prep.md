@@ -24,15 +24,16 @@ been uploaded or created in Play Console or RevenueCat yet.
 ## Listing copy
 
 `android/play-assets/listing/`: title (30), short description (77), full
-description (2361). Written from Android behaviour: no Live Activity, widget or
-Watch claims; the ongoing run notification with Done stands in for the Lock
-Screen view. No prices, no em dashes, no ADHD treatment claim.
+description. Written from Android behaviour: no Live Activity or Watch claims;
+the ongoing run notification with Done stands in for the Lock Screen view,
+and the free "Next start" home screen widget (2026-10-20) is named once. No prices, no em dashes, no ADHD treatment claim.
 
 Icon: `android/play-assets/icon-512.png` (iOS icon, no alpha).
 Still to make: the 1024 x 500 feature graphic, and four 1080 x 1920 phone
 screenshots composited from the raw captures (raw ones: Home, run, leaving,
 summary, paywall in the run's evidence folder; Play rejects the raw 1080 x 2400
-ratio).
+ratio). A widget capture on the launcher (countdown, Start now) is in
+`~/fleet-evidence/shift-android-time-4-1792544616/screenshots/` on jmbp2.
 
 ## Data Safety answers (from the code)
 

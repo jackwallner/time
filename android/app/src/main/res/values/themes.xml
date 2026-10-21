@@ -8,12 +8,18 @@
 
     <style name="WidgetHeadline">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
+        <!-- Fixed height so long step names shrink to fit instead of cutting off. -->
+        <item name="android:layout_height">40dp</item>
         <item name="android:fontFamily">@font/nunito</item>
         <item name="android:fontFeatureSettings">tnum</item>
         <item name="android:maxLines">1</item>
         <item name="android:ellipsize">end</item>
         <item name="android:textSize">34sp</item>
+        <item name="android:autoSizeTextType">uniform</item>
+        <item name="android:autoSizeMinTextSize">16sp</item>
+        <item name="android:autoSizeMaxTextSize">34sp</item>
+        <item name="android:autoSizeStepGranularity">1sp</item>
+        <item name="android:gravity">center_vertical</item>
         <item name="android:textStyle">bold</item>
         <item name="android:includeFontPadding">false</item>
     </style>

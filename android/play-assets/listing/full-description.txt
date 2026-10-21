@@ -7,7 +7,7 @@ TAILORED TO YOU
 Tell it how far your guesses usually run over. If getting ready feels like an hour but really takes an hour and a half, your plan starts earlier from day one. Then, as you tap Done on each step, it learns your real time for every step, your overall pace, and how long you usually take to get going after the alert.
 
 KNOW WHEN YOU'RE SLIPPING
-While you get ready, one screen shows the step you're on, the time left for it, and whether you're on track or minutes behind. The screen stays on while you get ready, and the step you're on, with a countdown and a Done button, sits in your notifications.
+While you get ready, one screen shows the step you're on, the time left for it, and whether you're on track or minutes behind. The screen stays on while you get ready, and the step you're on, with a countdown and a Done button, sits in your notifications. A home screen widget shows when to start, counting down in the last hour.
 
 ALERTS ALONG THE WAY
 You get an alert to start getting ready, a heads-up before a long step runs out, a nudge when a step's time is up, a warning 10 minutes before you leave, and one when it's time to go. Allow alarms and reminders and they arrive on the minute.
