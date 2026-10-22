@@ -10,28 +10,34 @@ struct HomeView: View {
     @State private var showPaywall = false
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if let routine = store.selectedRoutine {
-                    RoutineDashboard(routine: routine) { editing = routine }
-                } else {
-                    emptyState
-                }
-            }
-            .background(Theme.background.ignoresSafeArea())
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) { routineMenu }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showSettings = true
-                    } label: {
-                        Image(systemName: "gearshape")
+        // Unfolded, the record moves to its own History screen beside the plan.
+        FoldSplit { isSplit in
+            NavigationStack {
+                Group {
+                    if let routine = store.selectedRoutine {
+                        RoutineDashboard(routine: routine, showsRecord: !isSplit) { editing = routine }
+                    } else {
+                        emptyState
                     }
-                    .accessibilityLabel("Settings")
                 }
+                .background(Theme.background.ignoresSafeArea())
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) { routineMenu }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showSettings = true
+                        } label: {
+                            Image(systemName: "gearshape")
+                        }
+                        .accessibilityLabel("Settings")
+                    }
+                }
+                .tint(Theme.ink)
             }
-            .tint(Theme.ink)
+        } secondary: {
+            HistoryPane()
         }
+        .background(Theme.background.ignoresSafeArea())
         .sheet(item: $editing) { routine in
             RoutineEditorView(routine: routine, isNew: store.routine(id: routine.id) == nil)
         }
@@ -110,6 +116,8 @@ private struct RoutineDashboard: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
     let routine: Routine
+    /// Off when History stands beside Home and already shows the record.
+    var showsRecord = true
     let onEdit: () -> Void
     @State private var changingDay: ChangeDay?
     /// Remembered so a cold launch draws the warning from the first frame.
@@ -156,7 +164,9 @@ private struct RoutineDashboard: View {
                         .padding(.bottom, 16)
                         PlanTimeline(plan: plan)
                     }
-                    RecordCard(departures: store.departures(for: routine.id), calibration: store.calibration)
+                    if showsRecord {
+                        RecordCard(departures: store.departures(for: routine.id), calibration: store.calibration)
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 4)
@@ -372,7 +382,7 @@ private struct ChangesCard: View {
     }
 }
 
-private struct RecordCard: View {
+struct RecordCard: View {
     let departures: [DepartureRecord]
     let calibration: Calibration
 

@@ -98,31 +98,51 @@ private struct ActiveRunScreen: View {
             let isOverdue = now >= (run.isLeaving ? run.leaveAt : run.stepEndsAt)
             ZStack {
                 StatusGlow(color: Theme.color(for: status))
-                VStack(spacing: 0) {
-                    topBar
-                    Spacer(minLength: 8)
-                    // Overlaid, not stacked, so the face that leaves never
-                    // holds space against the one that arrives.
-                    ZStack {
-                        if run.isLeaving {
-                            leaving(now: now)
-                                .transition(.stepChange)
-                        } else {
-                            stepFace(now: now, status: status)
-                                .transition(.stepChange)
+                // Unfolded, the whole morning sits beside the step in hand.
+                FoldSplit { _ in
+                    VStack(spacing: 0) {
+                        topBar
+                        Spacer(minLength: 8)
+                        // Overlaid, not stacked, so the face that leaves never
+                        // holds space against the one that arrives.
+                        ZStack {
+                            if run.isLeaving {
+                                leaving(now: now)
+                                    .transition(.stepChange)
+                            } else {
+                                stepFace(now: now, status: status)
+                                    .transition(.stepChange)
+                            }
                         }
+                        Spacer(minLength: 8)
+                        controls
                     }
-                    Spacer(minLength: 8)
-                    controls
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 8)
+                } secondary: {
+                    RunPlanPane(run: run, now: now, status: status)
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 8)
             }
             // A buzz the moment time runs out, for when the phone is
             // propped on the counter and nobody is looking at it.
             .sensoryFeedback(trigger: isOverdue) { _, overdue in overdue ? .warning : nil }
         }
         .sensoryFeedback(.success, trigger: run.stepIndex)
+        #if DEBUG
+        // Capture-only: a real Done, then its Undo, so a native recording
+        // shows the step hand-over and lands back where it began.
+        .task {
+            guard ScreenshotConfig.has("-CaptureTour") else { return }
+            try? await Task.sleep(for: .seconds(9))
+            // On the app clock, which `-FixedNow` moves, like the seeded run.
+            withAnimation(.smooth) { store.completeStep(now: AppClock.now) }
+            try? await Task.sleep(for: .seconds(4))
+            withAnimation(.smooth) {
+                undoOffered = nil
+                store.undoLastStep()
+            }
+        }
+        #endif
         .onChange(of: store.lastStepUndo?.id) { _, id in
             withAnimation(.smooth) { undoOffered = id }
         }
@@ -345,6 +365,122 @@ private struct ActiveRunScreen: View {
     }
 }
 
+/// Unfolded, the run's second screen: the whole morning beside the step in
+/// hand, what is done, what is running, and when the rest should start.
+private struct RunPlanPane: View {
+    let run: ActiveRun
+    let now: Date
+    let status: RunStatus
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(run.isPracticeRun ? "Practice run" : "This morning")
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(.white.opacity(0.55))
+                    .textCase(.uppercase)
+                    .tracking(1)
+                    .padding(.bottom, 24)
+                ForEach(run.timeline(now: now)) { stop in
+                    row(stop)
+                }
+                door
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 12)
+            .padding(.bottom, 24)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .animation(.smooth, value: run.stepIndex)
+    }
+
+    private func row(_ stop: RunTimelineStop) -> some View {
+        let isCurrent = stop.phase == .current
+        let isPast = stop.phase == .done || stop.phase == .skipped
+        return HStack(alignment: .top, spacing: 14) {
+            timeLabel(stop.startsAt, emphasized: isCurrent)
+            VStack(spacing: 0) {
+                marker(stop.phase)
+                    .frame(height: 14)
+                    .padding(.top, 3)
+                Rectangle()
+                    .fill(.white.opacity(0.14))
+                    .frame(width: 2)
+                    .frame(maxHeight: .infinity)
+            }
+            .frame(width: 14)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(stop.name)
+                        .font(isCurrent ? .body.weight(.bold) : .body.weight(.medium))
+                        .strikethrough(stop.phase == .skipped)
+                        .foregroundStyle(.white.opacity(isPast ? 0.5 : 1))
+                    Spacer(minLength: 8)
+                    Text(stop.phase == .skipped ? "Skipped" : "\(stop.minutes) min")
+                        .font(.subheadline.monospacedDigit().weight(.semibold))
+                        .foregroundStyle(.white.opacity(isCurrent ? 1 : 0.55))
+                }
+                if isCurrent {
+                    Text("Now · wrap up by \(Format.time(run.stepEndsAt))")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Theme.color(for: status))
+                }
+            }
+            .padding(.bottom, 22)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var door: some View {
+        HStack(alignment: .top, spacing: 14) {
+            timeLabel(run.leaveAt, emphasized: true)
+            Circle()
+                .fill(Theme.color(for: status))
+                .frame(width: 14, height: 14)
+                .padding(.top, 3)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Out the door")
+                    .font(.body.weight(.bold))
+                    .foregroundStyle(.white)
+                Text(run.isLeaving ? status.label : "Ready \(Format.time(run.projectedReadyAt(now: now))) · \(status.label)")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(Theme.color(for: status))
+                    .contentTransition(.numericText())
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func timeLabel(_ date: Date?, emphasized: Bool) -> some View {
+        Text(date.map(Format.time) ?? "")
+            .font(.footnote.monospacedDigit().weight(.medium))
+            .foregroundStyle(.white.opacity(emphasized ? 0.9 : 0.5))
+            .frame(width: 66, alignment: .trailing)
+            .padding(.top, 2)
+    }
+
+    @ViewBuilder private func marker(_ phase: RunTimelineStop.Phase) -> some View {
+        switch phase {
+        case .done:
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.7))
+        case .skipped:
+            Circle()
+                .strokeBorder(.white.opacity(0.3), lineWidth: 1.5)
+                .frame(width: 10, height: 10)
+        case .current:
+            Circle()
+                .fill(Theme.color(for: status))
+                .frame(width: 14, height: 14)
+        case .upcoming:
+            Circle()
+                .strokeBorder(.white.opacity(0.5), lineWidth: 2)
+                .frame(width: 12, height: 12)
+        }
+    }
+}
+
 private extension AnyTransition {
     /// One step handing over to the next: the old words leave quickly, then
     /// the new ones settle in from the side Done sends them, so two names or
@@ -379,46 +515,51 @@ private struct SummaryScreen: View {
         let late = finished.run.isPracticeRun ? 0 : finished.departure.lateSeconds
         let color: Color = late <= 60 ? Theme.onTrack : late < 5 * 60 ? Theme.behind : Theme.late
         let longest = Double(finished.run.steps.map { max($0.guessMinutes, Format.minutes(fromSeconds: $0.actualSeconds ?? 0)) }.max() ?? 1)
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 26) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Image(systemName: late <= 60 ? "checkmark.circle.fill" : "clock.badge.exclamationmark.fill")
-                            .font(.system(size: 44))
-                            .foregroundStyle(color)
-                            .symbolEffect(.bounce, value: shown)
-                        Text(headline)
-                            .displayFont(40)
-                            .foregroundStyle(Theme.ink)
-                        Text(finished.run.isPracticeRun
-                            ? "A practice run, so it doesn't count toward your on-time record."
-                            : "Out the door at \(Format.time(finished.departure.left)), aiming for \(Format.time(finished.departure.target)).")
-                            .font(.body)
-                            .foregroundStyle(Theme.secondary)
-                    }
-                    .padding(.top, 28)
-                    Card {
-                        SectionLabel("Guess vs real")
-                            .padding(.bottom, 14)
-                        VStack(spacing: 16) {
-                            ForEach(finished.run.steps) { step in
-                                StepCompare(step: step, longest: longest, shown: shown)
+        // Unfolded, this morning lands beside the record it just joined.
+        FoldSplit { _ in
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 26) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Image(systemName: late <= 60 ? "checkmark.circle.fill" : "clock.badge.exclamationmark.fill")
+                                .font(.system(size: 44))
+                                .foregroundStyle(color)
+                                .symbolEffect(.bounce, value: shown)
+                            Text(headline)
+                                .displayFont(40)
+                                .foregroundStyle(Theme.ink)
+                            Text(finished.run.isPracticeRun
+                                ? "A practice run, so it doesn't count toward your on-time record."
+                                : "Out the door at \(Format.time(finished.departure.left)), aiming for \(Format.time(finished.departure.target)).")
+                                .font(.body)
+                                .foregroundStyle(Theme.secondary)
+                        }
+                        .padding(.top, 28)
+                        Card {
+                            SectionLabel("Guess vs real")
+                                .padding(.bottom, 14)
+                            VStack(spacing: 16) {
+                                ForEach(finished.run.steps) { step in
+                                    StepCompare(step: step, longest: longest, shown: shown)
+                                }
                             }
                         }
+                        Text("Your next plan already uses these times.")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.secondary)
                     }
-                    Text("Your next plan already uses these times.")
-                        .font(.subheadline)
-                        .foregroundStyle(Theme.secondary)
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal, 20)
+                Button("Done") {
+                    askForReviewIfEarned()
+                    withAnimation(.smooth) { store.dismissSummary() }
+                }
+                    .buttonStyle(.primary)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 8)
             }
-            Button("Done") {
-                askForReviewIfEarned()
-                withAnimation(.smooth) { store.dismissSummary() }
-            }
-                .buttonStyle(.primary)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 8)
+        } secondary: {
+            HistoryPane()
         }
         .background(Theme.background.ignoresSafeArea())
         .sensoryFeedback(.success, trigger: shown)
