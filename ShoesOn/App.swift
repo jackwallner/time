@@ -23,9 +23,6 @@ struct ShoesOnApp: App {
                 .environmentObject(settings)
                 .environmentObject(purchases)
                 .task { purchases.start() }
-                #if DEBUG
-                .onOpenURL { ScreenshotFixtures.open($0) }
-                #endif
                 .onChange(of: scenePhase) { _, phase in
                     // Plans move as timings arrive and days pass, so the
                     // rolling alert window is rebuilt whenever the app is seen.

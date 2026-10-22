@@ -11,10 +11,6 @@
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
     <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
-    <key>CFBundleURLTypes</key><array><dict>
-        <key>CFBundleURLName</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-        <key>CFBundleURLSchemes</key><array><string>shoeson</string></array>
-    </dict></array>
     <key>ITSAppUsesNonExemptEncryption</key><false/>
     <key>NSSupportsLiveActivities</key><true/>
     <key>UILaunchScreen</key><dict><key>UIColorName</key><string>LaunchBackground</string></dict>
