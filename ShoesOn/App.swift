@@ -60,7 +60,13 @@ private struct RootView: View {
         } else if let page = ScreenshotConfig.value(after: "-OnboardingPage").flatMap(Int.init) {
             OnboardingView(startPage: page)
         } else if !settings.hasCompletedSetup {
-            if resumesAtOffer { OnboardingView.resumingOffer } else { OnboardingView() }
+            // Unfolded, setup keeps to the leading pane, clear of the fold.
+            FoldSplit { _ in
+                if resumesAtOffer { OnboardingView.resumingOffer } else { OnboardingView() }
+            } secondary: {
+                SetupMark()
+            }
+            .background(Theme.background.ignoresSafeArea())
         } else {
             // Presented from a wrapper, not from Home itself, so a run that
             // starts while a Home sheet is open still comes up on top. As its
@@ -82,5 +88,23 @@ private struct RootView: View {
                     withAnimation(.smooth) { runShown = present }
                 }
         }
+    }
+}
+
+/// The quiet half of the unfolded display while setup runs beside it.
+private struct SetupMark: View {
+    var body: some View {
+        VStack(spacing: 18) {
+            Image("OnboardingMark")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 96, height: 96)
+                .shadow(color: .black.opacity(0.18), radius: 16, y: 8)
+            Text("Shoes On")
+                .displayFont(28)
+                .foregroundStyle(Theme.ink)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityHidden(true)
     }
 }

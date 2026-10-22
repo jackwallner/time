@@ -96,7 +96,10 @@ enum ScreenshotFixtures {
             state.activeRun = midRun(routine: routine, calibration: calibration, now: now)
         case "leaving":
             var run = midRun(routine: routine, calibration: calibration, now: now)
+            let took: [Double] = [17, 8, 6]
+            for (offset, minutes) in took.enumerated() { run.steps[2 + offset].actualSeconds = minutes * 60 }
             run.stepIndex = run.steps.count
+            run.stepStartedAt = now.addingTimeInterval(-40)
             run.leaveAt = now.addingTimeInterval(4 * 60 + 20)
             state.activeRun = run
         case "summary":
@@ -106,6 +109,9 @@ enum ScreenshotFixtures {
             run.stepIndex = run.steps.count
             run.leaveAt = routine.leaveTime(on: now)
             let departure = DepartureRecord(routineID: routine.id, target: run.leaveAt, left: run.leaveAt.addingTimeInterval(-120), startDelaySeconds: 180)
+            // Recorded as a finished run records it, so the record beside the
+            // summary already counts this morning.
+            state.departures.append(departure)
             state.lastFinished = FinishedRun(run: run, departure: departure)
         default:
             break

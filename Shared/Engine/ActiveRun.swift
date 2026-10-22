@@ -204,3 +204,43 @@ enum RunProjection {
         return max(now, stepEndsAt).addingTimeInterval(remainingAfterCurrentSeconds)
     }
 }
+
+/// One line of a run's plan as it stands: what is done, what is running, and
+/// when the rest should start on the current pace.
+struct RunTimelineStop: Hashable, Sendable, Identifiable {
+    enum Phase: Hashable, Sendable { case done, skipped, current, upcoming }
+
+    var id: UUID
+    var name: String
+    var phase: Phase
+    /// When it started or should start. Nil once past: a finished step's
+    /// start is not kept, and guessing it would put a wrong time on screen.
+    var startsAt: Date?
+    /// The real minutes once done, else the plan's.
+    var minutes: Int
+}
+
+extension ActiveRun {
+    /// Every step in order, the ones still to come chained from when the
+    /// current one ends, or from now once it runs over.
+    func timeline(now: Date) -> [RunTimelineStop] {
+        var cursor = max(now, stepEndsAt)
+        return steps.indices.map { index in
+            let step = steps[index]
+            var stop = RunTimelineStop(id: step.id, name: step.name, phase: .upcoming, startsAt: nil, minutes: step.plannedMinutes)
+            if step.skipped {
+                stop.phase = .skipped
+            } else if index < stepIndex {
+                stop.phase = .done
+                if let actual = step.actualSeconds { stop.minutes = Format.minutes(fromSeconds: actual) }
+            } else if index == stepIndex {
+                stop.phase = .current
+                stop.startsAt = stepStartedAt
+            } else {
+                stop.startsAt = cursor
+                cursor = cursor.addingTimeInterval(step.plannedSeconds)
+            }
+            return stop
+        }
+    }
+}
