@@ -373,25 +373,51 @@ private struct RunPlanPane: View {
     let status: RunStatus
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                Text(run.isPracticeRun ? "Practice run" : "This morning")
-                    .font(.footnote.weight(.bold))
-                    .foregroundStyle(.white.opacity(0.55))
-                    .textCase(.uppercase)
-                    .tracking(1)
-                    .padding(.bottom, 24)
-                ForEach(run.timeline(now: now)) { stop in
-                    row(stop)
-                }
-                door
+        VStack(spacing: 0) {
+            ScrollView {
+                timeline
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 12)
-            .padding(.bottom, 24)
+            .scrollBounceBehavior(.basedOnSize)
+            gapCard
+                .padding(.horizontal, 24)
+                // Level with the bottom of Done across the fold.
+                .padding(.bottom, 56)
         }
-        .scrollBounceBehavior(.basedOnSize)
         .animation(.smooth, value: run.stepIndex)
+    }
+
+    private var timeline: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(run.isPracticeRun ? "Practice run" : "This morning")
+                .font(.footnote.weight(.bold))
+                .foregroundStyle(.white.opacity(0.55))
+                .textCase(.uppercase)
+                .tracking(1)
+                .padding(.bottom, 24)
+            ForEach(run.timeline(now: now)) { stop in
+                row(stop)
+            }
+            door
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 12)
+        .padding(.bottom, 24)
+    }
+
+    /// The morning's guess against the real plan it is running on.
+    private var gapCard: some View {
+        let onPlan = run.steps.filter { !$0.skipped }
+        return VStack(alignment: .leading, spacing: 14) {
+            Text("Planned with your real times")
+                .font(.footnote.weight(.bold))
+                .foregroundStyle(.white.opacity(0.55))
+                .textCase(.uppercase)
+                .tracking(1)
+            GapBars(guess: onPlan.reduce(0) { $0 + $1.guessMinutes }, real: onPlan.reduce(0) { $0 + $1.plannedMinutes })
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
     }
 
     private func row(_ stop: RunTimelineStop) -> some View {
