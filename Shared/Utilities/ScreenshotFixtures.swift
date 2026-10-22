@@ -3,7 +3,8 @@ import Foundation
 
 /// Seeded state for App Store captures and UI tests. `-SeedScreenshotData`
 /// writes two weeks of believable mornings; `-Screen run|leaving|summary`
-/// opens a run in that state. DEBUG only.
+/// opens a run in that state, and `shoeson://capture/<screen>` moves a seeded
+/// launch to another, so one launch can shoot every surface. DEBUG only.
 @MainActor
 enum ScreenshotFixtures {
     static let routineID = UUID(uuidString: "5A0E5A0E-0000-4000-8000-000000000001")!
@@ -26,6 +27,13 @@ enum ScreenshotFixtures {
         guard ScreenshotConfig.has("-SeedScreenshotData") else { return }
         AppSettings.shared.hasCompletedSetup = true
         RoutineStore.shared.replaceState(state(screen: ScreenshotConfig.value(after: "-Screen"), now: now))
+    }
+
+    /// Re-seeds into the screen the capture link names; `home` is the plain seed.
+    static func open(_ url: URL, now: Date = AppClock.now) {
+        guard ScreenshotConfig.has("-SeedScreenshotData"), url.host == "capture" else { return }
+        let screen = url.pathComponents.dropFirst().first
+        RoutineStore.shared.replaceState(state(screen: screen, now: now))
     }
 
     static var routine: Routine {
