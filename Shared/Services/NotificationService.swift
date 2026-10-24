@@ -144,15 +144,22 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         [.banner, .sound, .list]
     }
 
+    // Completion handler form, answered on the main thread. The async form's
+    // compiler-made thunk calls UIKit's handler from a background thread, and
+    // UIKit asserts the main thread there, so a tap could abort the app (the
+    // crash Baby build 66 and Recharge build 39 shipped).
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
-        didReceive response: UNNotificationResponse
-    ) async {
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
         let action = response.actionIdentifier
         let info = response.notification.request.content.userInfo
         let routineID = (info["routineID"] as? String).flatMap(UUID.init)
         let leaveAt = (info["leaveAt"] as? TimeInterval).map(Date.init(timeIntervalSince1970:))
-        await MainActor.run {
+        nonisolated(unsafe) let done = completionHandler
+        Task { @MainActor in
+            defer { done() }
             let store = RoutineStore.shared
             switch action {
             case Self.startAction:
