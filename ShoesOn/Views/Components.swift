@@ -159,12 +159,14 @@ struct GapBars: View {
     let guess: Int
     let real: Int
     var animate = true
+    /// The guess bar's fill; the run's dark panes need a lighter one.
+    var guessFill: Color = Theme.raised
     @State private var shown = false
 
     var body: some View {
         let longest = CGFloat(max(guess, real, 1))
         VStack(alignment: .leading, spacing: 10) {
-            row(label: "Your guess", minutes: guess, fraction: CGFloat(guess) / longest, fill: Theme.raised, text: Theme.secondary, gap: false)
+            row(label: "Your guess", minutes: guess, fraction: CGFloat(guess) / longest, fill: guessFill, text: Theme.secondary, gap: false)
             row(label: "Real time", minutes: real, fraction: CGFloat(real) / longest, fill: Theme.ink, text: Theme.ink, gap: real > guess)
         }
         .onAppear {

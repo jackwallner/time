@@ -149,3 +149,36 @@ final class StoreTests: XCTestCase {
         }
     }
 }
+
+/// `-FixedNow` for captures: the time on the latest weekday, never a weekend.
+@MainActor
+final class AppClockTests: XCTestCase {
+    private var calendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        return calendar
+    }
+
+    private func date(_ day: Int, _ hour: Int, _ minute: Int) -> Date {
+        calendar.date(from: DateComponents(year: 2026, month: 10, day: day, hour: hour, minute: minute))!
+    }
+
+    func testWeekdayKeepsTheDay() {
+        // Friday 23 October, 17:49.
+        let now = date(23, 17, 49)
+        let offset = AppClock.fixedOffset("06:20", now: now, calendar: calendar)
+        XCTAssertEqual(offset.map { now.addingTimeInterval($0) }, date(23, 6, 20))
+    }
+
+    func testWeekendMovesToTheFridayBefore() {
+        for day in [24, 25] {
+            let now = date(day, 1, 10)
+            let offset = AppClock.fixedOffset("08:14", now: now, calendar: calendar)
+            XCTAssertEqual(offset.map { now.addingTimeInterval($0) }, date(23, 8, 14), "day \(day)")
+        }
+    }
+
+    func testMalformedValueIsIgnored() {
+        XCTAssertNil(AppClock.fixedOffset("soon", now: date(23, 9, 0), calendar: calendar))
+    }
+}

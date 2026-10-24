@@ -65,7 +65,8 @@ the `ios-dev` skill.
 - `-Screen run|leaving|summary`: open a run in that state (with the seed).
 - `-OnboardingPage N`: onboarding at page N (0 to 5).
 - `-PaywallSnapshot [yearly|monthly]`: the paywall alone. `-DemoPro`: Pro on.
-- `-FixedNow HH:mm`: shift the app clock.
+- `-FixedNow HH:mm`: shift the app clock (a weekend lands on the Friday before,
+  so the seeded weekday routine is due whatever day the runner is on).
 - No URL routes: on the iOS 27.1 iPhone Duo runner, `simctl openurl` on a
   custom scheme raises "Open in Shoes On?" over the app (tried 2026-10-22),
   so gh-sim `--url` cannot switch screens. Use one `--screen "<args>"` per

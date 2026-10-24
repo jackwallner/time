@@ -420,7 +420,11 @@ private struct RunPlanPane: View {
                 .foregroundStyle(.white.opacity(0.55))
                 .textCase(.uppercase)
                 .tracking(1)
-            GapBars(guess: onPlan.reduce(0) { $0 + $1.guessMinutes }, real: onPlan.reduce(0) { $0 + $1.plannedMinutes })
+            GapBars(
+                guess: onPlan.reduce(0) { $0 + $1.guessMinutes },
+                real: onPlan.reduce(0) { $0 + $1.plannedMinutes },
+                guessFill: .white.opacity(0.28)
+            )
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
