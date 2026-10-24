@@ -68,5 +68,9 @@ the `ios-dev` skill.
 - `-FixedNow HH:mm`: shift the app clock.
 - No URL routes: on the iOS 27.1 iPhone Duo runner, `simctl openurl` on a
   custom scheme raises "Open in Shoes On?" over the app (tried 2026-10-22),
-  so gh-sim `--url` cannot switch screens. One `-Screen` per launch.
+  so gh-sim `--url` cannot switch screens. Use one `--screen "<args>"` per
+  surface instead (gh-sim relaunches per screen). The Duo set:
+  `--args "-SeedScreenshotData" --screen "-FixedNow 06:20"`
+  `--screen "-Screen run -FixedNow 07:45"` `--screen "-Screen leaving -FixedNow 08:10"`
+  `--screen "-Screen summary -FixedNow 08:14"`.
 - Watch: `-SeedScreenshotData [-Screen idle] [-Free]`.
