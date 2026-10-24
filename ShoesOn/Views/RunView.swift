@@ -87,9 +87,12 @@ private struct ActiveRunScreen: View {
     @State private var undoOffered: UUID?
     @Environment(\.dynamicTypeSize) private var typeSize
 
-    /// The dial gives up room to the text at accessibility sizes, so Done
-    /// never leaves the screen.
-    private var dialSize: CGFloat { typeSize.isAccessibilitySize ? 190 : 260 }
+    /// Unfolded, the run shares a landscape display about 670 pt tall.
+    @State private var isSplit = false
+
+    /// The dial gives up room to the text at accessibility sizes, and to the
+    /// short landscape pane unfolded, so Done never leaves the screen.
+    private var dialSize: CGFloat { typeSize.isAccessibilitySize || isSplit ? 190 : 260 }
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
@@ -99,9 +102,11 @@ private struct ActiveRunScreen: View {
             ZStack {
                 StatusGlow(color: Theme.color(for: status))
                 // Unfolded, the whole morning sits beside the step in hand.
-                FoldSplit { _ in
+                FoldSplit { split in
                     VStack(spacing: 0) {
                         topBar
+                            // Landscape has no status bar above the pane.
+                            .padding(.top, split ? 12 : 0)
                         Spacer(minLength: 8)
                         // Overlaid, not stacked, so the face that leaves never
                         // holds space against the one that arrives.
@@ -119,6 +124,7 @@ private struct ActiveRunScreen: View {
                     }
                     .padding(.horizontal, 24)
                     .padding(.bottom, 8)
+                    .onChange(of: split, initial: true) { _, split in isSplit = split }
                 } secondary: {
                     RunPlanPane(run: run, now: now, status: status)
                 }
@@ -400,7 +406,8 @@ private struct RunPlanPane: View {
             door
         }
         .padding(.horizontal, 24)
-        .padding(.top, 12)
+        // Level with the leading pane's routine name across the fold.
+        .padding(.top, 22)
         .padding(.bottom, 24)
     }
 
