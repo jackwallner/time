@@ -1,0 +1,17 @@
+{
+  "project": "ShoesOn.xcodeproj",
+  "scheme": "ShoesOnUITests",
+  "uitests_dir": "ShoesOnUITests",
+  "journeys": [
+    "ShoesOnUITests/ReleaseJourneysUITests"
+  ],
+  "personas": [
+    "newcomer",
+    "accessibility",
+    "reduce-motion",
+    "german"
+  ],
+  "persona_overrides": {},
+  "slot": null,
+  "bundle_id": "com.jackwallner.time"
+}
