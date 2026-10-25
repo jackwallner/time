@@ -47,6 +47,7 @@ struct StatusGlow: View {
     /// Drifts the glow back and forth on one slow animation, so the backdrop
     /// costs nothing while the run's clock ticks for an hour.
     @State private var drifted = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
@@ -67,9 +68,8 @@ struct StatusGlow: View {
                         color.opacity(0.10), Theme.night, color.opacity(0.18),
                     ]
                 )
-                .onAppear {
-                    withAnimation(.easeInOut(duration: 9).repeatForever(autoreverses: true)) { drifted = true }
-                }
+                .animation(.easeInOut(duration: 9).repeatForever(autoreverses: true), value: drifted)
+                .onAppear { if !reduceMotion { drifted = true } }
             } else {
                 RadialGradient(colors: [color.opacity(0.28), .clear], center: .top, startRadius: 0, endRadius: 520)
             }
