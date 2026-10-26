@@ -25,6 +25,7 @@ h1 { font-size: 44px; line-height: 1.08; letter-spacing: -0.02em; margin: 48px 0
 h2 { font-size: 22px; margin: 40px 0 8px; }
 p, li { color: var(--muted); }
 .lead { font-size: 20px; }
+.cta { display: inline-block; margin-top: 20px; padding: 13px 22px; border-radius: 14px; background: var(--ink); color: var(--bg); text-decoration: none; font-weight: 600; }
 a { color: var(--ink); }
 .cards { display: grid; gap: 14px; margin-top: 32px; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 20px 22px; }
