@@ -42,7 +42,7 @@ schemes:
     build:
       targets:
         ShoesOn: all
-        ShoesOnUITests: [test]
+        ShoesOnUITests: all
     test:
       config: Debug
       targets:
