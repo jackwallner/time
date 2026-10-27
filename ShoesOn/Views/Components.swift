@@ -151,7 +151,7 @@ struct StatusPill: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
         .background(color.opacity(0.14), in: Capsule())
-        .background(scheme == .dark ? Color.black.opacity(0.4) : .clear, in: Capsule())
+        .background(scheme == .dark ? Color.black.opacity(0.6) : .clear, in: Capsule())
         .accessibilityElement(children: .combine)
     }
 }

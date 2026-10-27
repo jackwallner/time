@@ -370,17 +370,18 @@ struct OnboardingView: View {
                 title(trialEligible ? "Try Shoes On Pro free for 7 days" : "Shoes On Pro")
                 lead("Your first routine stays free for good. Pro adds the rest of your week.")
             }
+            // Large text moves the disclosure out of the bar; the price stays up top.
+            if typeSize.isAccessibilitySize, let trialDisclosure {
+                Text(trialDisclosure)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(Theme.ink)
+            }
             VStack(alignment: .leading, spacing: 18) {
                 ProBenefit(symbol: "rectangle.stack.fill", title: "Every routine", detail: "Workdays, school runs, the gym, weekends. Each learns its own times.")
                 ProBenefit(symbol: "applewatch", title: "Apple Watch coach", detail: "Your step, the time left, and whether you're slipping. Tap Done from your wrist.")
             }
             if trialEligible, let yearly = purchases.yearly {
                 TrialTimeline(billed: yearly.billedLabel, remindersOff: notificationsDenied)
-            }
-            if typeSize.isAccessibilitySize, let trialDisclosure {
-                Text(trialDisclosure)
-                    .font(.footnote)
-                    .foregroundStyle(Theme.secondary)
             }
         }
         .task {
