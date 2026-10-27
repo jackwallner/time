@@ -160,6 +160,8 @@ private struct RoutineDashboard: View {
                             Button("Edit", action: onEdit)
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(Theme.ink)
+                                .frame(minWidth: 44, minHeight: 44)
+                                .contentShape(Rectangle())
                         }
                         .padding(.bottom, 16)
                         PlanTimeline(plan: plan)
@@ -268,8 +270,8 @@ private struct NextDepartureCard: View {
                     Text(isOverdue ? "Start now" : "Start \(Format.time(plan.alertAt))")
                         .displayFont(44)
                         .foregroundStyle(Theme.ink)
-                        .minimumScaleFactor(0.6)
-                        .lineLimit(1)
+                        .minimumScaleFactor(0.4)
+                        .lineLimit(2)
                         .contentTransition(.numericText())
                     subtitle
                         .font(.subheadline.weight(.medium))

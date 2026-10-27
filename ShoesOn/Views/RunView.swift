@@ -182,7 +182,7 @@ private struct ActiveRunScreen: View {
                         .lineLimit(1)
                     Text(run.isPracticeRun ? "Practice run · ready by \(Format.time(run.leaveAt))" : "Out the door \(Format.time(run.leaveAt))")
                         .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.6))
+                        .foregroundStyle(.white.opacity(0.78))
                 }
                 Spacer()
                 IconButton(symbol: "xmark", label: "End routine", tint: .white) { confirmEnd = true }
@@ -217,7 +217,7 @@ private struct ActiveRunScreen: View {
                 VStack(spacing: 6) {
                     Text("Step \(run.planStepNumber) of \(run.planStepCount)")
                         .font(.footnote.weight(.bold))
-                        .foregroundStyle(.white.opacity(0.55))
+                        .foregroundStyle(.white.opacity(0.78))
                         .textCase(.uppercase)
                         .tracking(1)
                     Text(run.currentStep?.name ?? "")
@@ -235,13 +235,13 @@ private struct ActiveRunScreen: View {
                     Text(Self.clock(remaining))
                         .displayFont(64, weight: .semibold, monospacedDigits: true)
                         .foregroundStyle(clockColor)
-                        .minimumScaleFactor(0.5)
+                        .minimumScaleFactor(0.3)
                         .lineLimit(1)
                         .contentTransition(.numericText(countsDown: true))
                         .frame(maxWidth: dialSize * 0.72)
                     Text(remaining >= 0 ? "left" : "over")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white.opacity(0.55))
+                        .foregroundStyle(.white.opacity(0.78))
                 }
                 .accessibilityElement(children: .combine)
                 .id(run.stepIndex)
@@ -256,7 +256,7 @@ private struct ActiveRunScreen: View {
                     } else {
                         Text("Then \(run.nextStep?.name ?? "shoes on and out the door")")
                             .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.white.opacity(0.6))
+                            .foregroundStyle(.white.opacity(0.78))
                     }
                 }
                 .animation(.smooth, value: run.catchUpSuggestion(now: now)?.id)
@@ -339,7 +339,7 @@ private struct ActiveRunScreen: View {
                     .transition(.handOff)
                 } else if !run.isLeaving {
                     Button("Skip this step") { advance(store.skipStep) }
-                        .buttonStyle(.secondary(.white.opacity(0.6)))
+                        .buttonStyle(.secondary(.white.opacity(0.78)))
                         .transition(.handOff)
                 }
             }
@@ -396,7 +396,7 @@ private struct RunPlanPane: View {
         VStack(alignment: .leading, spacing: 0) {
             Text(run.isPracticeRun ? "Practice run" : "This morning")
                 .font(.footnote.weight(.bold))
-                .foregroundStyle(.white.opacity(0.55))
+                .foregroundStyle(.white.opacity(0.78))
                 .textCase(.uppercase)
                 .tracking(1)
                 .padding(.bottom, 24)
@@ -417,7 +417,7 @@ private struct RunPlanPane: View {
         return VStack(alignment: .leading, spacing: 14) {
             Text("Planned with your real times")
                 .font(.footnote.weight(.bold))
-                .foregroundStyle(.white.opacity(0.55))
+                .foregroundStyle(.white.opacity(0.78))
                 .textCase(.uppercase)
                 .tracking(1)
             GapBars(
@@ -451,7 +451,7 @@ private struct RunPlanPane: View {
                     Text(stop.name)
                         .font(isCurrent ? .body.weight(.bold) : .body.weight(.medium))
                         .strikethrough(stop.phase == .skipped)
-                        .foregroundStyle(.white.opacity(isPast ? 0.5 : 1))
+                        .foregroundStyle(.white.opacity(isPast ? 0.7 : 1))
                     Spacer(minLength: 8)
                     Text(stop.phase == .skipped ? "Skipped" : "\(stop.minutes) min")
                         .font(.subheadline.monospacedDigit().weight(.semibold))
@@ -491,8 +491,9 @@ private struct RunPlanPane: View {
     private func timeLabel(_ date: Date?, emphasized: Bool) -> some View {
         Text(date.map(Format.time) ?? "")
             .font(.footnote.monospacedDigit().weight(.medium))
-            .foregroundStyle(.white.opacity(emphasized ? 0.9 : 0.5))
-            .frame(width: 66, alignment: .trailing)
+            .foregroundStyle(.white.opacity(emphasized ? 0.95 : 0.75))
+            .fixedSize(horizontal: true, vertical: false)
+            .frame(minWidth: 66, alignment: .trailing)
             .padding(.top, 2)
     }
 

@@ -7,6 +7,7 @@ import SwiftUI
 struct PaywallView: View {
     @EnvironmentObject private var purchases: StoreService
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var typeSize
     let surface: String
     @State private var selection: PlanKind = ScreenshotConfig.value(after: "-PaywallSnapshot") == "monthly" ? .monthly : .yearly
 
@@ -60,10 +61,14 @@ struct PaywallView: View {
                 .padding(.top, 4)
                 .padding(.bottom, 16)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                // Pinned, the bar would cover most of the page at these sizes.
+                if typeSize.isAccessibilitySize { purchaseBar }
             }
         }
         .background(Theme.background.ignoresSafeArea())
-        .safeAreaInset(edge: .bottom, spacing: 0) { purchaseBar }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if !typeSize.isAccessibilitySize { purchaseBar }
+        }
         .onAppear {
             purchases.trackPaywallImpression(id: surface)
             purchases.reloadProducts()

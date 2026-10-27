@@ -13,8 +13,9 @@ struct PrimaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.headline)
             .foregroundStyle(text)
-            .frame(maxWidth: .infinity)
-            .frame(height: 58)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 12)
+            .frame(maxWidth: .infinity, minHeight: 58)
             .modifier(CapsuleFill(fill: fill.opacity(isEnabled ? 1 : 0.35)))
             .scaleEffect(configuration.isPressed ? 0.97 : 1)
             .animation(.spring(duration: 0.25, bounce: 0.4), value: configuration.isPressed)
@@ -74,6 +75,8 @@ struct IconButton: View {
                 .foregroundStyle(tint)
                 .frame(width: 44, height: 44)
                 .modifier(GlassCircle())
+                .frame(minWidth: 48, minHeight: 48)
+                .contentShape(Circle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
@@ -131,6 +134,7 @@ struct SectionLabel: View {
 /// On track, ahead, or behind, in the colour that says so.
 struct StatusPill: View {
     let status: RunStatus
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         let color = Theme.color(for: status)
@@ -147,6 +151,7 @@ struct StatusPill: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
         .background(color.opacity(0.14), in: Capsule())
+        .background(scheme == .dark ? Color.black.opacity(0.4) : .clear, in: Capsule())
         .accessibilityElement(children: .combine)
     }
 }
@@ -246,7 +251,8 @@ struct PlanTimeline: View {
             Text(Format.time(time))
                 .font(.footnote.monospacedDigit().weight(.medium))
                 .foregroundStyle(Theme.secondary)
-                .frame(width: 66, alignment: .trailing)
+                .fixedSize(horizontal: true, vertical: false)
+                .frame(minWidth: 66, alignment: .trailing)
                 .padding(.top, 2)
             VStack(spacing: 0) {
                 Circle()

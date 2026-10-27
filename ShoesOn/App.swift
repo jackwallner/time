@@ -9,7 +9,6 @@ struct ShoesOnApp: App {
 
     init() {
         NotificationService.shared.configure()
-        WatchSyncService.shared.start()
         ConversionDiagnostics.recordAppOpen()
         #if DEBUG
         ScreenshotFixtures.applyIfRequested()
@@ -22,7 +21,10 @@ struct ShoesOnApp: App {
                 .environmentObject(store)
                 .environmentObject(settings)
                 .environmentObject(purchases)
-                .task { purchases.start() }
+                .task {
+                    WatchSyncService.shared.start()
+                    purchases.start()
+                }
                 .onChange(of: scenePhase) { _, phase in
                     // Plans move as timings arrive and days pass, so the
                     // rolling alert window is rebuilt whenever the app is seen.
@@ -49,6 +51,8 @@ private struct RootView: View {
 
     var body: some View {
         content
+            // Painted from the first frame, so launch never shows a blank window.
+            .background(Theme.background.ignoresSafeArea())
             .tint(Theme.ink)
             .fontDesign(.rounded)
             .animation(.smooth, value: settings.hasCompletedSetup)

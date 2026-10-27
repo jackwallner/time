@@ -85,9 +85,10 @@ struct SettingsView: View {
             LabeledContent("Your pace so far", value: Format.multiplier(store.calibration.pace))
             LabeledContent("Timed steps", value: "\(store.calibration.pacedStepCount)")
         } header: {
-            Text("Your pace")
+            Text("Your pace").foregroundStyle(Theme.secondary)
         } footer: {
             Text("Your answer sets the starting point. Each step you time moves the pace toward how long things really take you.")
+                .foregroundStyle(Theme.secondary)
         }
     }
 
@@ -119,11 +120,12 @@ struct SettingsView: View {
                 .toggleStyle(SwitchToggleStyle(tint: Theme.onTrack))
                 .disabled(notificationsDenied)
         } header: {
-            Text("Alerts")
+            Text("Alerts").foregroundStyle(Theme.secondary)
         } footer: {
             Text(liveActivitiesOff
                  ? "Alerts are Time Sensitive, so they can come through a Focus if you allow it. With Live Activities off, the step and its Done button can't show on the Lock Screen."
                  : "Alerts are Time Sensitive, so they can come through a Focus if you allow it.")
+                .foregroundStyle(Theme.secondary)
         }
     }
 
@@ -162,6 +164,7 @@ struct SettingsView: View {
         } footer: {
             if !purchases.isPro {
                 Text("Every routine, plus the Apple Watch coach. Free for 7 days if you haven't tried it.")
+                    .foregroundStyle(Theme.secondary)
             }
         }
     }

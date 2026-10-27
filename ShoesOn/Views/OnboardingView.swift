@@ -131,7 +131,6 @@ struct OnboardingView: View {
                         .buttonStyle(.secondary)
                 } else {
                     PageDots(count: Self.pageCount - 1, current: page)
-                        .padding(.bottom, 6)
                 }
             }
         }
@@ -327,6 +326,7 @@ struct OnboardingView: View {
                         Text(Format.time(plan.alertAt))
                             .font(.system(.title, design: .rounded).weight(.heavy))
                             .foregroundStyle(Theme.ink)
+                            .fixedSize(horizontal: true, vertical: false)
                     }
                     Spacer()
                     Image(systemName: "arrow.right")
@@ -340,6 +340,7 @@ struct OnboardingView: View {
                         Text(Format.time(plan.leaveAt))
                             .font(.system(.title, design: .rounded).weight(.heavy))
                             .foregroundStyle(Theme.onTrack)
+                            .fixedSize(horizontal: true, vertical: false)
                     }
                 }
             }
@@ -624,6 +625,7 @@ private struct PageDots: View {
             }
         }
         .animation(.snappy, value: current)
+        .frame(minWidth: 44, minHeight: 44)
         .accessibilityElement()
         .accessibilityLabel("Step \(current + 1) of \(count)")
     }
@@ -670,13 +672,19 @@ struct OnboardingLegalFooter: View {
         HStack(spacing: 14) {
             Button(isRestoring ? "Restoring…" : "Restore", action: onRestore)
                 .disabled(isRestoring)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             Link("Terms of Use", destination: ShoesOnLinks.standardEULA)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             Link("Privacy Policy", destination: ShoesOnLinks.privacyPolicy)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
         }
         .font(.caption.weight(.semibold))
         .foregroundStyle(Theme.secondary)
         .frame(maxWidth: .infinity)
-        .frame(height: 28)
+        .frame(minHeight: 44)
         .opacity(isPlaceholder ? 0 : 1)
         .allowsHitTesting(!isPlaceholder)
         .accessibilityHidden(isPlaceholder)
