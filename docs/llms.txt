@@ -1,0 +1,18 @@
+# Shoes On: Time Blindness Coach
+
+> Shoes On is a time blindness app for iPhone and Apple Watch. Set when you leave and it works backward, learns your real step times and tells you when to start.
+
+## App
+
+- [Time Blindness App | Shoes On: Time Blindness Coach](https://jackwallner.com/ios/time/index.html.md): Shoes On is a time blindness app for iPhone and Apple Watch. Set when you leave and it works backward, learns your real step times and tells you when to start.
+
+## Guides
+
+- [Best App for Time Blindness (2026): 5 Apps Compared](https://jackwallner.com/ios/time/best-app-for-time-blindness.html.md): The best apps for time blindness on iPhone compared: Tiimo, Routinery, Time Timer, Lately and Shoes On, for planning, routines and leaving the house on time.
+- [Time Blindness: Why You're Always Late and What Helps](https://jackwallner.com/ios/time/time-blindness-always-late.html.md): Time blindness explained: why you run late even when you try, what research on the planning fallacy and ADHD timing shows, and practical steps that help.
+
+## Optional
+
+- [Privacy Policy: Shoes On](https://jackwallner.com/ios/time/privacy-policy.html.md): How Shoes On handles your data.
+- [Support: Shoes On](https://jackwallner.com/ios/time/support.html.md): Help and contact for Shoes On, the leave-on-time coach for iPhone and Apple Watch by Jack Wallner.
+- [Terms of Use: Shoes On](https://jackwallner.com/ios/time/terms.html.md): Terms of use for Shoes On.
