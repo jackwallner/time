@@ -145,14 +145,20 @@ struct StatusPill: View {
                 .shadow(color: color, radius: 4)
             Text(status.label)
                 .font(.subheadline.weight(.bold))
-                .foregroundStyle(color)
+                .foregroundStyle(textColor(color))
                 .contentTransition(.numericText())
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
         .background(color.opacity(0.14), in: Capsule())
-        .background(scheme == .dark ? Color.black.opacity(0.6) : .clear, in: Capsule())
+        .background(scheme == .dark ? Color.black.opacity(0.85) : .clear, in: Capsule())
         .accessibilityElement(children: .combine)
+    }
+
+    /// On the dark run the glow green is a touch dim for text; lift it only there.
+    private func textColor(_ color: Color) -> Color {
+        guard scheme == .dark, color == Theme.onTrack else { return color }
+        return Color(red: 0.55, green: 0.95, blue: 0.76)
     }
 }
 
