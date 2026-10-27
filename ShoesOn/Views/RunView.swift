@@ -182,7 +182,7 @@ private struct ActiveRunScreen: View {
                         .lineLimit(1)
                     Text(run.isPracticeRun ? "Practice run · ready by \(Format.time(run.leaveAt))" : "Out the door \(Format.time(run.leaveAt))")
                         .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.78))
+                        .foregroundStyle(.white.opacity(0.92))
                 }
                 Spacer()
                 IconButton(symbol: "xmark", label: "End routine", tint: .white) { confirmEnd = true }
@@ -217,7 +217,7 @@ private struct ActiveRunScreen: View {
                 VStack(spacing: 6) {
                     Text("Step \(run.planStepNumber) of \(run.planStepCount)")
                         .font(.footnote.weight(.bold))
-                        .foregroundStyle(.white.opacity(0.78))
+                        .foregroundStyle(.white.opacity(0.92))
                         .textCase(.uppercase)
                         .tracking(1)
                     Text(run.currentStep?.name ?? "")
@@ -241,7 +241,7 @@ private struct ActiveRunScreen: View {
                         .frame(maxWidth: dialSize * 0.72)
                     Text(remaining >= 0 ? "left" : "over")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white.opacity(0.78))
+                        .foregroundStyle(.white.opacity(0.92))
                 }
                 .accessibilityElement(children: .combine)
                 .id(run.stepIndex)
@@ -256,7 +256,7 @@ private struct ActiveRunScreen: View {
                     } else {
                         Text("Then \(run.nextStep?.name ?? "shoes on and out the door")")
                             .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.white.opacity(0.78))
+                            .foregroundStyle(.white.opacity(0.92))
                     }
                 }
                 .animation(.smooth, value: run.catchUpSuggestion(now: now)?.id)
@@ -339,7 +339,7 @@ private struct ActiveRunScreen: View {
                     .transition(.handOff)
                 } else if !run.isLeaving {
                     Button("Skip this step") { advance(store.skipStep) }
-                        .buttonStyle(.secondary(.white.opacity(0.78)))
+                        .buttonStyle(.secondary(.white.opacity(0.92)))
                         .transition(.handOff)
                 }
             }
@@ -396,7 +396,7 @@ private struct RunPlanPane: View {
         VStack(alignment: .leading, spacing: 0) {
             Text(run.isPracticeRun ? "Practice run" : "This morning")
                 .font(.footnote.weight(.bold))
-                .foregroundStyle(.white.opacity(0.78))
+                .foregroundStyle(.white.opacity(0.92))
                 .textCase(.uppercase)
                 .tracking(1)
                 .padding(.bottom, 24)
@@ -417,7 +417,7 @@ private struct RunPlanPane: View {
         return VStack(alignment: .leading, spacing: 14) {
             Text("Planned with your real times")
                 .font(.footnote.weight(.bold))
-                .foregroundStyle(.white.opacity(0.78))
+                .foregroundStyle(.white.opacity(0.92))
                 .textCase(.uppercase)
                 .tracking(1)
             GapBars(

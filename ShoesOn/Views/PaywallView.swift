@@ -34,27 +34,13 @@ struct PaywallView: View {
                             .font(.body)
                             .foregroundStyle(Theme.secondary)
                     }
-                    VStack(alignment: .leading, spacing: 18) {
-                        ProBenefit(symbol: "rectangle.stack.fill", title: "Every routine", detail: "Workdays, school runs, the gym, weekends. Each learns its own times.")
-                        ProBenefit(symbol: "applewatch", title: "Apple Watch coach", detail: "Your step, the time left, and whether you're slipping. Tap Done from your wrist.")
-                    }
-                    VStack(spacing: 10) {
-                        if let yearly = purchases.yearly {
-                            PlanCard(package: yearly, title: "Yearly", badge: savingsBadge, trial: purchases.isEligibleForTrial(yearly) ? yearly.trialLabel : nil, isSelected: selection == .yearly) {
-                                selection = .yearly
-                            }
-                        }
-                        if let monthly = purchases.monthly {
-                            PlanCard(package: monthly, title: "Monthly", badge: nil, trial: purchases.isEligibleForTrial(monthly) ? monthly.trialLabel : nil, isSelected: selection == .monthly) {
-                                selection = .monthly
-                            }
-                        }
-                        if purchases.plansUnavailable {
-                            Button("Try again") { purchases.reloadProducts() }
-                                .buttonStyle(.secondary(Theme.ink))
-                        } else if purchases.packages.isEmpty {
-                            ProgressView().frame(maxWidth: .infinity).padding()
-                        }
+                    // Large text would push the prices off the first screen.
+                    if typeSize.isAccessibilitySize {
+                        plans
+                        benefits
+                    } else {
+                        benefits
+                        plans
                     }
                 }
                 .padding(.horizontal, 24)
@@ -75,6 +61,34 @@ struct PaywallView: View {
         }
         .onChange(of: purchases.isPro) { _, isPro in
             if isPro { dismiss() }
+        }
+    }
+
+    private var benefits: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            ProBenefit(symbol: "rectangle.stack.fill", title: "Every routine", detail: "Workdays, school runs, the gym, weekends. Each learns its own times.")
+            ProBenefit(symbol: "applewatch", title: "Apple Watch coach", detail: "Your step, the time left, and whether you're slipping. Tap Done from your wrist.")
+        }
+    }
+
+    private var plans: some View {
+        VStack(spacing: 10) {
+            if let yearly = purchases.yearly {
+                PlanCard(package: yearly, title: "Yearly", badge: savingsBadge, trial: purchases.isEligibleForTrial(yearly) ? yearly.trialLabel : nil, isSelected: selection == .yearly) {
+                    selection = .yearly
+                }
+            }
+            if let monthly = purchases.monthly {
+                PlanCard(package: monthly, title: "Monthly", badge: nil, trial: purchases.isEligibleForTrial(monthly) ? monthly.trialLabel : nil, isSelected: selection == .monthly) {
+                    selection = .monthly
+                }
+            }
+            if purchases.plansUnavailable {
+                Button("Try again") { purchases.reloadProducts() }
+                    .buttonStyle(.secondary(Theme.ink))
+            } else if purchases.packages.isEmpty {
+                ProgressView().frame(maxWidth: .infinity).padding()
+            }
         }
     }
 

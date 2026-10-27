@@ -18,6 +18,7 @@ struct OnboardingView: View {
     @State private var isAdvancing = false
     @State private var notificationsDenied = false
     @FocusState private var customStepFocused: Bool
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     static let pageCount = 6
 
@@ -120,7 +121,7 @@ struct OnboardingView: View {
                             .foregroundStyle(Theme.late)
                             .multilineTextAlignment(.center)
                     }
-                    if let trialDisclosure {
+                    if let trialDisclosure, !typeSize.isAccessibilitySize {
                         Text(trialDisclosure)
                             .font(.footnote)
                             .foregroundStyle(Theme.secondary)
@@ -188,6 +189,7 @@ struct OnboardingView: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .scrollBounceBehavior(.basedOnSize)
+        .clipped()
         .allowsHitTesting(index == page)
         .accessibilityHidden(index != page)
     }
@@ -311,40 +313,54 @@ struct OnboardingView: View {
                 Text(Format.duration(minutes: plan.realMinutes))
                     .displayFont(60)
                     .foregroundStyle(Theme.ink)
-                    .minimumScaleFactor(0.6)
+                    .minimumScaleFactor(0.25)
                     .lineLimit(1)
             }
             GapBars(guess: plan.guessMinutes, real: plan.realMinutes)
             Card {
                 SectionLabel("Your plan")
                     .padding(.bottom, 8)
-                HStack(alignment: .firstTextBaseline) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Start")
-                            .font(.footnote.weight(.semibold))
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .firstTextBaseline) {
+                        planStart(plan)
+                        Spacer()
+                        Image(systemName: "arrow.right")
+                            .font(.body.weight(.bold))
                             .foregroundStyle(Theme.secondary)
-                        Text(Format.time(plan.alertAt))
-                            .font(.system(.title, design: .rounded).weight(.heavy))
-                            .foregroundStyle(Theme.ink)
-                            .fixedSize(horizontal: true, vertical: false)
+                        Spacer()
+                        planLeave(plan)
                     }
-                    Spacer()
-                    Image(systemName: "arrow.right")
-                        .font(.body.weight(.bold))
-                        .foregroundStyle(Theme.secondary)
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("Out the door")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(Theme.secondary)
-                        Text(Format.time(plan.leaveAt))
-                            .font(.system(.title, design: .rounded).weight(.heavy))
-                            .foregroundStyle(Theme.onTrack)
-                            .fixedSize(horizontal: true, vertical: false)
+                    VStack(alignment: .leading, spacing: 12) {
+                        planStart(plan)
+                        planLeave(plan, alignment: .leading)
                     }
                 }
             }
             lead("Shoes On nudges you at \(Format.time(plan.alertAt)), keeps you on pace step by step, and swaps these estimates for your real times as you use it.")
+        }
+    }
+
+    private func planStart(_ plan: DeparturePlan) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("Start")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Theme.secondary)
+            Text(Format.time(plan.alertAt))
+                .font(.system(.title, design: .rounded).weight(.heavy))
+                .foregroundStyle(Theme.ink)
+                .fixedSize(horizontal: true, vertical: false)
+        }
+    }
+
+    private func planLeave(_ plan: DeparturePlan, alignment: HorizontalAlignment = .trailing) -> some View {
+        VStack(alignment: alignment, spacing: 2) {
+            Text("Out the door")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Theme.secondary)
+            Text(Format.time(plan.leaveAt))
+                .font(.system(.title, design: .rounded).weight(.heavy))
+                .foregroundStyle(Theme.onTrack)
+                .fixedSize(horizontal: true, vertical: false)
         }
     }
 
@@ -360,6 +376,11 @@ struct OnboardingView: View {
             }
             if trialEligible, let yearly = purchases.yearly {
                 TrialTimeline(billed: yearly.billedLabel, remindersOff: notificationsDenied)
+            }
+            if typeSize.isAccessibilitySize, let trialDisclosure {
+                Text(trialDisclosure)
+                    .font(.footnote)
+                    .foregroundStyle(Theme.secondary)
             }
         }
         .task {
@@ -490,7 +511,7 @@ private struct StepDraftRow: View {
             .sensoryFeedback(.selection, trigger: draft.isOn)
             .accessibilityAddTraits(draft.isOn ? .isSelected : [])
             MinuteStepper(minutes: $draft.minutes)
-                .opacity(draft.isOn ? 1 : 0.35)
+                .opacity(draft.isOn ? 1 : 0.6)
                 .disabled(!draft.isOn)
         }
         .padding(.vertical, 10)
@@ -626,6 +647,7 @@ private struct PageDots: View {
         }
         .animation(.snappy, value: current)
         .frame(minWidth: 44, minHeight: 44)
+        .contentShape(Rectangle())
         .accessibilityElement()
         .accessibilityLabel("Step \(current + 1) of \(count)")
     }
@@ -646,7 +668,10 @@ struct OnboardingBottomBar<Above: View>: View {
             above()
             Button(action: primaryAction) {
                 ZStack {
-                    Text(primaryTitle).opacity(isBusy ? 0 : 1)
+                    Text(primaryTitle)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                        .opacity(isBusy ? 0 : 1)
                     if isBusy { ProgressView().tint(Theme.inkInverse) }
                 }
             }
@@ -682,6 +707,8 @@ struct OnboardingLegalFooter: View {
                 .contentShape(Rectangle())
         }
         .font(.caption.weight(.semibold))
+        .lineLimit(1)
+        .minimumScaleFactor(0.5)
         .foregroundStyle(Theme.secondary)
         .frame(maxWidth: .infinity)
         .frame(minHeight: 44)

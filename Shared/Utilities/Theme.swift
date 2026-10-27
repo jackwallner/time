@@ -18,7 +18,7 @@ enum Theme {
     static let surface = Color(light: .init(1, 1, 1), dark: .init(0.098, 0.106, 0.118))
     static let raised = Color(light: .init(0.935, 0.930, 0.912), dark: .init(0.150, 0.158, 0.172))
     static let ink = Color(light: .init(0.071, 0.078, 0.090), dark: .init(0.965, 0.961, 0.945))
-    static let secondary = Color(light: .init(0.43, 0.44, 0.46), dark: .init(0.60, 0.62, 0.65))
+    static let secondary = Color(light: .init(0.35, 0.36, 0.38), dark: .init(0.67, 0.69, 0.72))
     static let hairline = Color(light: .init(0.878, 0.870, 0.847), dark: .init(0.190, 0.200, 0.215))
     /// Text and glyphs drawn on an ink-filled control.
     static let inkInverse = Color(light: .init(0.980, 0.975, 0.960), dark: .init(0.060, 0.065, 0.075))
