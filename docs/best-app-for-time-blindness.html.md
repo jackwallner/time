@@ -6,7 +6,7 @@ Web page: https://jackwallner.com/ios/time/best-app-for-time-blindness.html
 
 ## Best App for Time Blindness
 
-By Jack Wallner · Last updated October 18, 2026
+By Jack Wallner · Last updated October 28, 2026
 
 **Best visual day planner, with an AI co-planner:** Tiimo. **Best for running a routine step by step with a voice calling out each step:** Routinery. **Best for seeing time drain away:** Time Timer and its red disk. **Best for leaving on time when traffic matters:** Lately, which estimates travel time. **Best for a getting-ready routine that learns how long you really take and works back from the door:** Shoes On, the app I make. Time blindness is an informal term for trouble sensing how much time has passed or how long a task will take.
 

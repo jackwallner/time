@@ -6,7 +6,7 @@ Web page: https://jackwallner.com/ios/time/time-blindness-always-late.html
 
 ## Time Blindness: Why You're Always Late and What Helps
 
-By Jack Wallner · Last updated October 18, 2026
+By Jack Wallner · Last updated October 28, 2026
 
 Time blindness is an everyday term that describes difficulty sensing how long things take. It is not a formal diagnosis, though CHADD notes it is discussed as a possible characteristic of ADHD. Part of lateness is universal: people guess too low because they plan for the best case. What helps is replacing guesses with measured times, adding buffer, making time visible, and working backward from a fixed leave time.
 
