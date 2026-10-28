@@ -16,6 +16,8 @@ What it really takes you1 hr 8 min
 
 Start getting ready7:07 to leave at 8:15
 
+## How it works
+
 ### Works backward from the door
 
 Pick the time you need to walk out and the steps before it. Shoes On lays them out in reverse and nudges you when it is time to start.
