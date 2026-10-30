@@ -9,7 +9,11 @@ enum AppGroup {
     }
 
     static var containerURL: URL {
-        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: identifier)
-            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        if let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: identifier) { return url }
+        // Unsigned simulator builds have no App Group; the fallback folder
+        // does not exist until something makes it.
+        let fallback = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        try? FileManager.default.createDirectory(at: fallback, withIntermediateDirectories: true)
+        return fallback
     }
 }

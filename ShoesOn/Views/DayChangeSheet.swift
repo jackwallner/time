@@ -85,8 +85,12 @@ struct DayChangeSheet: View {
                         Text(date.formatted(.dateTime.weekday(.abbreviated)))
                             .font(.caption2.weight(.bold))
                             .textCase(.uppercase)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
                         Text(date.formatted(.dateTime.day()))
                             .font(.headline.monospacedDigit())
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
                         Circle()
                             .fill(departs ? (isOn ? Theme.inkInverse : Theme.ink) : .clear)
                             .frame(width: 5, height: 5)
@@ -126,33 +130,36 @@ struct DayChangeSheet: View {
                 let plan = store.plan(for: routine, leaveAt: leaveAt)
                 SectionLabel(Format.day(day, now: now))
                     .padding(.bottom, 8)
-                HStack(alignment: .firstTextBaseline) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Start")
-                            .font(.footnote.weight(.semibold))
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .firstTextBaseline) {
+                        planTime("Start", plan.alertAt, color: Theme.ink)
+                        Spacer()
+                        Image(systemName: "arrow.right")
+                            .font(.body.weight(.bold))
                             .foregroundStyle(Theme.secondary)
-                        Text(Format.time(plan.alertAt))
-                            .font(.system(.title, design: .rounded).weight(.heavy))
-                            .foregroundStyle(Theme.ink)
-                            .contentTransition(.numericText())
+                        Spacer()
+                        planTime("Out the door", plan.leaveAt, color: Theme.onTrack, alignment: .trailing)
                     }
-                    Spacer()
-                    Image(systemName: "arrow.right")
-                        .font(.body.weight(.bold))
-                        .foregroundStyle(Theme.secondary)
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("Out the door")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(Theme.secondary)
-                        Text(Format.time(plan.leaveAt))
-                            .font(.system(.title, design: .rounded).weight(.heavy))
-                            .foregroundStyle(Theme.onTrack)
-                            .contentTransition(.numericText())
+                    VStack(alignment: .leading, spacing: 12) {
+                        planTime("Start", plan.alertAt, color: Theme.ink)
+                        planTime("Out the door", plan.leaveAt, color: Theme.onTrack)
                     }
                 }
                 .animation(.snappy, value: plan.leaveAt)
             }
+        }
+    }
+
+    private func planTime(_ label: String, _ time: Date, color: Color, alignment: HorizontalAlignment = .leading) -> some View {
+        VStack(alignment: alignment, spacing: 2) {
+            Text(label)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Theme.secondary)
+            Text(Format.time(time))
+                .font(.system(.title, design: .rounded).weight(.heavy))
+                .foregroundStyle(color)
+                .fixedSize(horizontal: true, vertical: false)
+                .contentTransition(.numericText())
         }
     }
 

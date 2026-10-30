@@ -311,7 +311,9 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
     }
 
     private func update(customerInfo: CustomerInfo) {
-        isPro = customerInfo.entitlements.active[RevenueCatConfig.proEntitlement] != nil
+        let pro = customerInfo.entitlements.active[RevenueCatConfig.proEntitlement]
+        isPro = pro != nil
+        if pro?.willRenew != true { NotificationService.shared.cancelTrialReminder() }
     }
 
     #if targetEnvironment(simulator)

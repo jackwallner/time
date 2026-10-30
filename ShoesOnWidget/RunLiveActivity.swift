@@ -165,7 +165,7 @@ private func statusColor(_ state: RunSnapshot, isStale: Bool) -> Color {
 
 @MainActor
 private func doneButton(_ state: RunSnapshot) -> some View {
-    Button(intent: CompleteStepIntent()) {
+    Button(intent: CompleteStepIntent(stepStartedAt: state.stepStartedAt)) {
         Text(state.isLeaving ? "I'm out" : "Done")
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(.black)

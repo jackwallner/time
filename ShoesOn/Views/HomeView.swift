@@ -90,7 +90,7 @@ struct HomeView: View {
             }
             .foregroundStyle(Theme.ink)
         }
-        .accessibilityLabel("Routines")
+        .accessibilityLabel(store.selectedRoutine.map { "Routine, \($0.name)" } ?? "Routines")
     }
 
     private var emptyState: some View {
@@ -349,7 +349,7 @@ private struct NextDepartureCard: View {
             Image(systemName: "ellipsis")
                 .font(.body.weight(.bold))
                 .foregroundStyle(Theme.secondary)
-                .frame(width: 36, height: 28)
+                .frame(minWidth: 44, minHeight: 44)
                 .contentShape(Rectangle())
         }
         .accessibilityLabel("Change a day")

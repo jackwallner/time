@@ -88,7 +88,9 @@ Free forever: one routine with every alert, the Live Activity and all the
 learning. **Shoes On Pro** is a subscription, `com.jackwallner.time.yearly`
 ($9.99, default) and `com.jackwallner.time.monthly` ($1.99), both with a
 one-week free trial and the fleet PPP ladder: more than one routine, and the
-Apple Watch app. No lifetime (it was dropped before launch, 2026-09-22). Never
+Apple Watch app. Without Pro only the first routine runs, alerts and feeds the
+widget (`RoutineStore.activeRoutines`); the rest stay saved behind a lock, so a
+lapsed trial keeps one. No lifetime (it was dropped before launch, 2026-09-22). Never
 move learning or alerts behind Pro. The trial page promises a day-5 reminder;
 `NotificationService.scheduleTrialReminder` is what keeps that promise.
 

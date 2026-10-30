@@ -62,11 +62,37 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     }
 
     static let trialReminderID = "trial.reminder"
+    private static let trialReminderAtKey = "trial.reminder.at"
+    private static let trialReminderBilledKey = "trial.reminder.billed"
 
-    /// The reminder the trial page promises: two days before the trial ends.
-    func scheduleTrialReminder(trialDays: Int, billed: String, now: Date = .now) {
+    /// When the trial page's reminder fires: two days before the trial ends,
+    /// at 10 AM rather than whatever hour the trial began.
+    static func trialReminderDate(trialDays: Int, startedAt: Date, calendar: Calendar = .current) -> Date? {
         let days = max(trialDays - 2, 1)
-        guard let fireAt = Calendar.current.date(byAdding: .day, value: days, to: now) else { return }
+        guard let day = calendar.date(byAdding: .day, value: days, to: startedAt) else { return nil }
+        return calendar.date(bySettingHour: 10, minute: 0, second: 0, of: day)
+    }
+
+    /// The reminder the trial page promises. Remembered, so every reschedule
+    /// puts it back, including the first one after notifications are allowed.
+    func scheduleTrialReminder(trialDays: Int, billed: String, now: Date = .now) {
+        guard let fireAt = Self.trialReminderDate(trialDays: trialDays, startedAt: now) else { return }
+        AppGroup.defaults.set(fireAt, forKey: Self.trialReminderAtKey)
+        AppGroup.defaults.set(billed, forKey: Self.trialReminderBilledKey)
+        addTrialReminder(now: now)
+    }
+
+    /// A cancelled trial does not renew, so there is nothing to remind about.
+    func cancelTrialReminder() {
+        guard AppGroup.defaults.object(forKey: Self.trialReminderAtKey) != nil else { return }
+        AppGroup.defaults.removeObject(forKey: Self.trialReminderAtKey)
+        AppGroup.defaults.removeObject(forKey: Self.trialReminderBilledKey)
+        center.removePendingNotificationRequests(withIdentifiers: [Self.trialReminderID])
+    }
+
+    private func addTrialReminder(now: Date) {
+        guard let fireAt = AppGroup.defaults.object(forKey: Self.trialReminderAtKey) as? Date, fireAt > now,
+              let billed = AppGroup.defaults.string(forKey: Self.trialReminderBilledKey) else { return }
         let content = UNMutableNotificationContent()
         content.title = "Your free trial ends in 2 days"
         content.body = "Shoes On Pro renews at \(billed) unless you cancel in Settings before then."
@@ -91,16 +117,23 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             preferences: preferences,
             now: now
         )
-        rescheduleTask?.cancel()
-        rescheduleTask = Task { await apply(alerts) }
+        // One at a time: a reschedule still adding when the next begins
+        // would put back alerts the newer plan dropped.
+        let previous = rescheduleTask
+        previous?.cancel()
+        rescheduleTask = Task {
+            await previous?.value
+            await apply(alerts)
+        }
+        addTrialReminder(now: now)
     }
 
     private func apply(_ alerts: [PlannedAlert]) async {
         let wanted = Set(alerts.map(\.id)).union([Self.trialReminderID])
         let pending = await center.pendingNotificationRequests().map(\.identifier)
         center.removePendingNotificationRequests(withIdentifiers: pending.filter { !wanted.contains($0) })
-        guard !Task.isCancelled else { return }
         for alert in alerts {
+            guard !Task.isCancelled else { return }
             do {
                 try await center.add(request(for: alert))
             } catch {
@@ -124,6 +157,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             content.userInfo = info
         case .wrapUp, .overrun:
             content.categoryIdentifier = Self.stepCategory
+            if let started = alert.stepStartedAt { content.userInfo = ["stepStartedAt": started.timeIntervalSince1970] }
         case .leaveSoon, .leaveNow:
             break
         }
@@ -157,6 +191,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         let info = response.notification.request.content.userInfo
         let routineID = (info["routineID"] as? String).flatMap(UUID.init)
         let leaveAt = (info["leaveAt"] as? TimeInterval).map(Date.init(timeIntervalSince1970:))
+        let stepStartedAt = (info["stepStartedAt"] as? TimeInterval).map(Date.init(timeIntervalSince1970:))
         nonisolated(unsafe) let done = completionHandler
         Task { @MainActor in
             defer { done() }
@@ -169,7 +204,10 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
                     store.startNextRun()
                 }
             case Self.doneAction:
-                store.completeStep()
+                // A delivered step alert outlives its step; its Done must
+                // never finish the one after.
+                guard let stepStartedAt else { return }
+                store.completeStep(stepStartedAt: stepStartedAt)
             case Self.skipAction:
                 guard let routineID, let leaveAt else { return }
                 store.setChange(DayChange(day: leaveAt, leaveMinuteOfDay: nil), on: leaveAt, routineID: routineID)

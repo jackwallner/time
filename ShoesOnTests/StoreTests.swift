@@ -218,6 +218,30 @@ final class StoreTests: XCTestCase {
         XCTAssertNil(RoutineStore(fileURL: url, now: date(22, 7)).activeRun)
     }
 
+    // MARK: - Done tied to its step
+
+    func testASecondDoneWithinASecondDoesNotFinishTheNextStep() {
+        let store = makeStore()
+        store.startRun(routineID: routine.id, now: date(21, 7, 50))
+        let shower = date(21, 7, 58)
+        store.completeStep(now: shower)
+        store.completeStep(now: shower.addingTimeInterval(0.4))
+        XCTAssertEqual(store.activeRun?.stepIndex, 1)
+        XCTAssertNil(store.activeRun?.steps[1].actualSeconds)
+    }
+
+    func testADoneForAFinishedStepChangesNothing() {
+        let store = makeStore()
+        store.startRun(routineID: routine.id, now: date(21, 7, 50))
+        let showerStarted = store.activeRun!.stepStartedAt
+        store.completeStep(stepStartedAt: showerStarted, now: date(21, 7, 58))
+        XCTAssertEqual(store.activeRun?.stepIndex, 1)
+        store.completeStep(stepStartedAt: showerStarted, now: date(21, 8, 1))
+        XCTAssertEqual(store.activeRun?.stepIndex, 1)
+        store.completeStep(stepStartedAt: store.activeRun!.stepStartedAt, now: date(21, 8, 2))
+        XCTAssertEqual(store.activeRun?.isLeaving, true)
+    }
+
     // MARK: - Pro lapsed
 
     private func makeStoreWithTwoRoutines(isPro: Bool) -> (RoutineStore, Routine) {

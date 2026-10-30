@@ -56,6 +56,8 @@ struct PaywallView: View {
             if !typeSize.isAccessibilitySize { purchaseBar }
         }
         .onAppear {
+            // An error from another paywall is not this one's to show.
+            purchases.clearError()
             purchases.trackPaywallImpression(id: surface)
             purchases.reloadProducts()
         }

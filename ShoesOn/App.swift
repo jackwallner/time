@@ -9,6 +9,9 @@ struct ShoesOnApp: App {
 
     init() {
         NotificationService.shared.configure()
+        // At launch, not from a view: a background launch for a Watch
+        // command may never connect a scene.
+        WatchSyncService.shared.start()
         ConversionDiagnostics.recordAppOpen()
         #if DEBUG
         ScreenshotFixtures.applyIfRequested()
@@ -21,10 +24,7 @@ struct ShoesOnApp: App {
                 .environmentObject(store)
                 .environmentObject(settings)
                 .environmentObject(purchases)
-                .task {
-                    WatchSyncService.shared.start()
-                    purchases.start()
-                }
+                .task { purchases.start() }
                 .onChange(of: scenePhase) { _, phase in
                     // Plans move as timings arrive and days pass, so the
                     // rolling alert window is rebuilt whenever the app is seen.

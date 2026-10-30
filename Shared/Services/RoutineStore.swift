@@ -63,6 +63,8 @@ final class RoutineStore: ObservableObject {
     /// A Done this long after both the start and the leave time is clearing a
     /// forgotten run off the screen, not timing a step.
     static let latestTimedSeconds: TimeInterval = 3600
+    /// A second Done or Skip this soon after a step began is a double tap.
+    static let doubleTapSeconds: TimeInterval = 0.6
 
     /// Whether Shoes On Pro is active. Without it only the first routine, the
     /// one setup made, runs and alerts; the others keep their data for when
@@ -263,8 +265,13 @@ final class RoutineStore: ObservableObject {
         startRun(routineID: routine.id, now: now)
     }
 
-    func completeStep(now: Date = .now) {
-        guard let before = liveRun(now: now), !before.isLeaving else { return }
+    /// Finishes the current step. `stepStartedAt`, when given, names the step
+    /// the tap was for (from the Live Activity or a step alert), so a Done
+    /// that arrives after the run has moved on finishes nothing.
+    func completeStep(stepStartedAt: Date? = nil, now: Date = .now) {
+        guard let before = liveRun(now: now), !before.isLeaving,
+              Self.isFor(before, stepStartedAt: stepStartedAt),
+              now.timeIntervalSince(before.stepStartedAt) > Self.doubleTapSeconds else { return }
         var run = before
         let finished = run.completeCurrentStep(at: now)
         let timed = now.timeIntervalSince(max(before.startedAt, before.leaveAt)) < Self.latestTimedSeconds
@@ -287,7 +294,8 @@ final class RoutineStore: ObservableObject {
     }
 
     func skipStep(now: Date = .now) {
-        guard let before = liveRun(now: now), !before.isLeaving else { return }
+        guard let before = liveRun(now: now), !before.isLeaving,
+              now.timeIntervalSince(before.stepStartedAt) > Self.doubleTapSeconds else { return }
         var run = before
         run.skipCurrentStep(at: now)
         mutate { $0.activeRun = run }
@@ -340,6 +348,11 @@ final class RoutineStore: ObservableObject {
             state.lastFinished = finished
         }
         return finished
+    }
+
+    static func isFor(_ run: ActiveRun, stepStartedAt: Date?) -> Bool {
+        guard let stepStartedAt else { return true }
+        return abs(run.stepStartedAt.timeIntervalSince(stepStartedAt)) < 0.5
     }
 
     /// The run in progress, unless it was left open for hours.

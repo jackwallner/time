@@ -401,8 +401,9 @@ struct MinuteStepper: View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(.footnote.weight(.bold))
-                .frame(width: 32, height: 32)
+                .frame(width: 44, height: 44)
                 .foregroundStyle(enabled ? Theme.ink : Theme.secondary.opacity(0.4))
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(!enabled)

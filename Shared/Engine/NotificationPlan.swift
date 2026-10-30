@@ -22,6 +22,9 @@ struct PlannedAlert: Hashable, Sendable {
     /// The departure a get-ready alert is for, so it can be skipped from the
     /// notification itself.
     var leaveAt: Date?
+    /// When the step a run alert is about began, so its Done finishes only
+    /// that step.
+    var stepStartedAt: Date?
 }
 
 struct AlertPreferences: Sendable {
@@ -161,7 +164,8 @@ enum NotificationPlan {
                     kind: .wrapUp,
                     fireAt: wrapAt,
                     title: headsUp ? "\(headsUpMinutes) min left: \(step.name)" : "Wrap up: \(step.name)",
-                    body: "Next: \(next). Leave at \(leave)."
+                    body: "Next: \(next). Leave at \(leave).",
+                    stepStartedAt: run.stepStartedAt
                 ))
             }
             let overrunAt = run.stepEndsAt.addingTimeInterval(TimeInterval(overrunGraceMinutes * 60))
@@ -172,7 +176,8 @@ enum NotificationPlan {
                     kind: .overrun,
                     fireAt: overrunAt,
                     title: "Still on \(step.name)?",
-                    body: "\(status.label). Leave at \(leave)."
+                    body: "\(status.label). Leave at \(leave).",
+                    stepStartedAt: run.stepStartedAt
                 ))
             }
         }

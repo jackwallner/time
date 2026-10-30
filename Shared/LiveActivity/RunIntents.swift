@@ -9,16 +9,27 @@ struct CompleteStepIntent: LiveActivityIntent {
     static let description = IntentDescription("Marks the current step of your routine as done.")
     static let openAppWhenRun = false
 
+    /// When the step on screen began, as seconds since 1970, so a second tap
+    /// or a late one never finishes the step after it. Nil from Siri.
+    @Parameter(title: "Step started")
+    var stepStartedAt: Double?
+
     init() {}
+
+    init(stepStartedAt: Date) {
+        self.stepStartedAt = stepStartedAt.timeIntervalSince1970
+    }
 
     @MainActor
     func perform() async throws -> some IntentResult {
         #if !WIDGET_EXTENSION
         let store = RoutineStore.shared
-        if store.activeRun?.isLeaving == true {
+        let step = stepStartedAt.map(Date.init(timeIntervalSince1970:))
+        guard let run = store.activeRun, RoutineStore.isFor(run, stepStartedAt: step) else { return .result() }
+        if run.isLeaving {
             store.finishRun()
         } else {
-            store.completeStep()
+            store.completeStep(stepStartedAt: step)
         }
         #endif
         return .result()

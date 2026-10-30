@@ -319,7 +319,7 @@ private struct ActiveRunScreen: View {
                 Button("I'm out the door") { withAnimation(.smooth) { _ = store.finishRun() } }
                     .buttonStyle(.primary(fill: .white, text: .black))
             } else {
-                Button("Done") { advance(store.completeStep) }
+                Button("Done") { advance { store.completeStep(now: $0) } }
                     .buttonStyle(.primary(fill: .white, text: .black))
             }
             // Right under the thumb that just tapped Done, in the slot the

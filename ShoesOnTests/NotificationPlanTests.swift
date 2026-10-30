@@ -70,6 +70,25 @@ final class NotificationPlanTests: XCTestCase {
         XCTAssertFalse(result.contains { $0.kind == .getReady && calendar.isDate($0.fireAt, inSameDayAs: now) })
     }
 
+    /// A step alert's Done must only finish the step it was about.
+    func testStepAlertsNameTheirStep() {
+        let now = date(21, 7, 30)
+        let plan = Planner.plan(routine, leaveAt: date(21, 8, 15), calibration: Calibration(basePace: 1.5, stepHistory: [], departures: []))
+        let run = ActiveRun(plan: plan, routineName: routine.name, startedAt: now, alertAt: nil)
+        let steps = alerts(run: run, now: now).filter { $0.kind == .wrapUp || $0.kind == .overrun }
+        XCTAssertEqual(steps.count, 2)
+        XCTAssertTrue(steps.allSatisfy { $0.stepStartedAt == run.stepStartedAt })
+    }
+
+    /// The trial reminder lands two days before the end, in the morning,
+    /// whatever hour the trial began.
+    @MainActor
+    func testTrialReminderIsTwoDaysBeforeTheEndAtTenInTheMorning() {
+        let startedAt = date(21, 2, 14)
+        XCTAssertEqual(NotificationService.trialReminderDate(trialDays: 7, startedAt: startedAt, calendar: calendar), date(26, 10, 0))
+        XCTAssertEqual(NotificationService.trialReminderDate(trialDays: 3, startedAt: startedAt, calendar: calendar), date(22, 10, 0))
+    }
+
     func testShortStepsGetAWrapUpWhenTimeIsUp() {
         let short = Routine(name: "Quick", leaveHour: 8, leaveMinute: 15, weekdays: [2], steps: [RoutineStep(name: "Shoes", guessMinutes: 3)])
         let plan = Planner.plan(short, leaveAt: date(21, 8, 15), calibration: Calibration(basePace: 1, stepHistory: [], departures: []))
