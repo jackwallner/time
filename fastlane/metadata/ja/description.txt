@@ -23,4 +23,4 @@ Shoes On Pro は月額または年額のサブスクリプションです。新�
 アカウント不要：ルーティンと記録は iPhone と Apple Watch の中だけに保存されます。Shoes On は計画のための道具で、ADHD などの診断や治療は行いません。アプリ本体は英語です。
 
 利用規約（Apple 標準 EULA）: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-プライバシーポリシー: https://jackwallner.github.io/time/privacy-policy.html
+プライバシーポリシー: https://jackwallner.com/ios/time/privacy-policy.html

@@ -23,4 +23,4 @@ Shoes On Pro aylık veya yıllık bir aboneliktir. Yeni aboneler bir haftalık �
 Hesap yok: rutinlerin ve sürelerin iPhone ve Apple Watch'unda kalır. Shoes On bir planlama yardımcısıdır. DEHB'yi veya başka bir durumu teşhis etmez ya da tedavi etmez. Uygulamanın kendisi İngilizcedir.
 
 Kullanım Koşulları (Apple Standart EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Gizlilik Politikası: https://jackwallner.github.io/time/privacy-policy.html
+Gizlilik Politikası: https://jackwallner.com/ios/time/privacy-policy.html

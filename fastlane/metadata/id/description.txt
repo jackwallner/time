@@ -23,4 +23,4 @@ Shoes On Pro adalah langganan bulanan atau tahunan. Pelanggan baru mendapat uji 
 Tanpa akun: rutinitas dan waktumu tetap di iPhone dan Apple Watch. Shoes On adalah alat bantu perencanaan. Aplikasi ini tidak mendiagnosis atau mengobati ADHD atau kondisi lain. Aplikasinya berbahasa Inggris.
 
 Ketentuan Penggunaan (EULA Standar Apple): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Kebijakan Privasi: https://jackwallner.github.io/time/privacy-policy.html
+Kebijakan Privasi: https://jackwallner.com/ios/time/privacy-policy.html

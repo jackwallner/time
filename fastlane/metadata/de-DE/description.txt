@@ -23,4 +23,4 @@ Shoes On Pro gibt es als Monats- oder Jahresabo. Neue Abonnenten erhalten eine e
 Kein Konto: Routinen und Zeiten bleiben auf deinem iPhone und deiner Apple Watch. Shoes On ist eine Planungshilfe. Die App stellt keine Diagnosen und behandelt weder ADHS noch andere Erkrankungen. Die App selbst ist auf Englisch.
 
 Nutzungsbedingungen (Apple Standard-EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Datenschutzerklärung: https://jackwallner.github.io/time/privacy-policy.html
+Datenschutzerklärung: https://jackwallner.com/ios/time/privacy-policy.html

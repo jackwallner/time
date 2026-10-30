@@ -23,4 +23,4 @@ Shoes On Pro மாதாந்திர அல்லது ஆண்டு ச�
 கணக்கு தேவையில்லை: உங்கள் வழக்கங்களும் நேரங்களும் உங்கள் iPhone மற்றும் Apple Watch-இல் மட்டுமே இருக்கும். Shoes On திட்டமிடலுக்கான உதவி. இது ADHD அல்லது வேறு எந்த நிலையையும் கண்டறிவதில்லை, சிகிச்சையளிப்பதில்லை. ஆப் ஆங்கிலத்தில் உள்ளது.
 
 பயன்பாட்டு விதிமுறைகள் (Apple நிலையான EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-தனியுரிமைக் கொள்கை: https://jackwallner.github.io/time/privacy-policy.html
+தனியுரிமைக் கொள்கை: https://jackwallner.com/ios/time/privacy-policy.html

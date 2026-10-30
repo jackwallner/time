@@ -23,4 +23,4 @@ Shoes On Pro ਮਾਸਿਕ ਜਾਂ ਸਾਲਾਨਾ ਸਬਸਕ੍ਰਿ�
 ਕੋਈ ਖਾਤਾ ਨਹੀਂ: ਤੁਹਾਡੀਆਂ ਰੁਟੀਨਾਂ ਅਤੇ ਸਮੇਂ ਤੁਹਾਡੇ iPhone ਅਤੇ Apple Watch 'ਤੇ ਹੀ ਰਹਿੰਦੇ ਹਨ। Shoes On ਯੋਜਨਾਬੰਦੀ ਦਾ ਸਾਧਨ ਹੈ। ਇਹ ADHD ਜਾਂ ਕਿਸੇ ਹੋਰ ਸਥਿਤੀ ਦਾ ਨਿਦਾਨ ਜਾਂ ਇਲਾਜ ਨਹੀਂ ਕਰਦੀ। ਐਪ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਹੈ।
 
 ਵਰਤੋਂ ਦੀਆਂ ਸ਼ਰਤਾਂ (Apple ਮਿਆਰੀ EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-ਪਰਦੇਦਾਰੀ ਨੀਤੀ: https://jackwallner.github.io/time/privacy-policy.html
+ਪਰਦੇਦਾਰੀ ਨੀਤੀ: https://jackwallner.com/ios/time/privacy-policy.html

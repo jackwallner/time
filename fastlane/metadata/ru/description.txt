@@ -23,4 +23,4 @@ Shoes On Pro это ежемесячная или годовая подписк�
 Без аккаунта: рутины и время остаются на вашем iPhone и Apple Watch. Shoes On это помощник для планирования. Он не диагностирует и не лечит СДВГ или другие состояния. Само приложение на английском языке.
 
 Условия использования (стандартное лицензионное соглашение Apple): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Политика конфиденциальности: https://jackwallner.github.io/time/privacy-policy.html
+Политика конфиденциальности: https://jackwallner.com/ios/time/privacy-policy.html

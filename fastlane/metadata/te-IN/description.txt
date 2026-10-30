@@ -23,4 +23,4 @@ Shoes On Pro నెలవారీ లేదా వార్షిక సబ్�
 ఖాతా అవసరం లేదు: మీ దినచర్యలు మరియు సమయాలు మీ iPhone మరియు Apple Watch‌లోనే ఉంటాయి. Shoes On ప్లానింగ్‌కు సహాయకం. ఇది ADHD లేదా ఇతర ఏ స్థితినీ నిర్ధారించదు, చికిత్స చేయదు. యాప్ ఇంగ్లీష్‌లో ఉంది.
 
 వినియోగ నిబంధనలు (Apple ప్రామాణిక EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-గోప్యతా విధానం: https://jackwallner.github.io/time/privacy-policy.html
+గోప్యతా విధానం: https://jackwallner.com/ios/time/privacy-policy.html

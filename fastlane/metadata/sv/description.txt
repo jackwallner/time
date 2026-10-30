@@ -23,4 +23,4 @@ Shoes On Pro är en månads- eller årsprenumeration. Nya prenumeranter får en 
 Inget konto: dina rutiner och tider stannar på din iPhone och Apple Watch. Shoes On är ett planeringsstöd. Den ställer inga diagnoser och behandlar inte ADHD eller andra tillstånd. Själva appen är på engelska.
 
 Användarvillkor (Apples standard-EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Integritetspolicy: https://jackwallner.github.io/time/privacy-policy.html
+Integritetspolicy: https://jackwallner.com/ios/time/privacy-policy.html

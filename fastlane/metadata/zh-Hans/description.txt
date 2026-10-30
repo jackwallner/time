@@ -23,4 +23,4 @@ Shoes On Pro 为按月或按年订阅。新订阅者可免费试用一周。除�
 无需账户：你的流程和用时只保存在 iPhone 和 Apple Watch 上。Shoes On 是计划辅助工具，不诊断也不治疗 ADHD 或任何其他疾病。App 本身为英文。
 
 使用条款（Apple 标准 EULA）: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-隐私政策: https://jackwallner.github.io/time/privacy-policy.html
+隐私政策: https://jackwallner.com/ios/time/privacy-policy.html

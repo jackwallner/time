@@ -1,4 +1,6 @@
-Ten minutes turns into fifteen. Twenty turns into thirty-five. If your guesses run short, a plan built on them is late before it starts. Shoes On plans with how long things really take you.
+Shoes On is a leave-on-time planner for time blindness. Set when you need to walk out the door, and it works backward through your routine and tells you when to start, using how long each step really takes you. Your first routine is free with every alert, and there is no account.
+
+Ten minutes turns into fifteen. Twenty turns into thirty-five. If your guesses run short, a plan built on them is late before it starts.
 
 SET THE TIME YOU LEAVE
 Pick when you need to walk out the door and the steps before it: shower, get dressed, breakfast, pack your bag, shoes and keys. Shoes On works backward from the door and tells you when to start.
@@ -26,4 +28,4 @@ Shoes On Pro is a monthly or yearly subscription. New subscribers get a one-week
 No account: your routines and timings stay on your iPhone and Apple Watch. Shoes On is a planning aid. It does not diagnose or treat ADHD or any other condition.
 
 Terms of Use (Apple Standard EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Privacy Policy: https://jackwallner.github.io/time/privacy-policy.html
+Privacy Policy: https://jackwallner.com/ios/time/privacy-policy.html

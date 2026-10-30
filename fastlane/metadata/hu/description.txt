@@ -23,4 +23,4 @@ A Shoes On Pro havi vagy éves előfizetés. Az új előfizetők egyhetes ingyen
 Nincs fiók: a rutinjaid és időid az iPhone-odon és az Apple Watchodon maradnak. A Shoes On tervezési segédeszköz. Nem diagnosztizál és nem kezel ADHD-t vagy más állapotot. Maga az app angol nyelvű.
 
 Felhasználási feltételek (Apple szabványos EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Adatvédelmi szabályzat: https://jackwallner.github.io/time/privacy-policy.html
+Adatvédelmi szabályzat: https://jackwallner.com/ios/time/privacy-policy.html

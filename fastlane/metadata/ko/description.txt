@@ -23,4 +23,4 @@ Shoes On Pro는 월간 또는 연간 구독입니다. 신규 구독자는 1주�
 계정 없음: 루틴과 기록은 iPhone과 Apple Watch에만 저장됩니다. Shoes On은 계획을 돕는 도구이며 ADHD 등 어떤 질환도 진단하거나 치료하지 않습니다. 앱 자체는 영어입니다.
 
 이용 약관(Apple 표준 EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-개인정보 처리방침: https://jackwallner.github.io/time/privacy-policy.html
+개인정보 처리방침: https://jackwallner.com/ios/time/privacy-policy.html

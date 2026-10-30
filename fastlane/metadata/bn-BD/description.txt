@@ -23,4 +23,4 @@ Shoes On Pro একটি মাসিক বা বার্ষিক সাব
 কোনো অ্যাকাউন্ট নেই: আপনার রুটিন ও সময় আপনার iPhone ও Apple Watch-এই থাকে। Shoes On পরিকল্পনার সহায়ক। এটি ADHD বা অন্য কোনো অবস্থার রোগনির্ণয় বা চিকিৎসা করে না। অ্যাপটি ইংরেজিতে।
 
 ব্যবহারের শর্তাবলি (Apple স্ট্যান্ডার্ড EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-গোপনীয়তা নীতি: https://jackwallner.github.io/time/privacy-policy.html
+গোপনীয়তা নীতি: https://jackwallner.com/ios/time/privacy-policy.html

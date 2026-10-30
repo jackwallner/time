@@ -23,4 +23,4 @@ Shoes On Pro je mjesečna ili godišnja pretplata. Novi pretplatnici dobivaju be
 Bez računa: rutine i vremena ostaju na tvom iPhoneu i Apple Watchu. Shoes On je pomoć pri planiranju. Ne postavlja dijagnoze i ne liječi ADHD ni druga stanja. Sama aplikacija je na engleskom.
 
 Uvjeti korištenja (Appleov standardni EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Pravila privatnosti: https://jackwallner.github.io/time/privacy-policy.html
+Pravila privatnosti: https://jackwallner.com/ios/time/privacy-policy.html

@@ -23,4 +23,4 @@ Shoes On Pro ಮಾಸಿಕ ಅಥವಾ ವಾರ್ಷಿಕ ಚಂದಾದ�
 ಖಾತೆ ಇಲ್ಲ: ನಿಮ್ಮ ದಿನಚರಿಗಳು ಮತ್ತು ಸಮಯಗಳು ನಿಮ್ಮ iPhone ಮತ್ತು Apple Watch ನಲ್ಲೇ ಇರುತ್ತವೆ. Shoes On ಯೋಜನೆಗೆ ಸಹಾಯಕ. ಇದು ADHD ಅಥವಾ ಬೇರೆ ಯಾವುದೇ ಸ್ಥಿತಿಯನ್ನು ಪತ್ತೆ ಮಾಡುವುದಿಲ್ಲ ಅಥವಾ ಚಿಕಿತ್ಸೆ ನೀಡುವುದಿಲ್ಲ. ಆ್ಯಪ್ ಇಂಗ್ಲಿಷ್ ನಲ್ಲಿದೆ.
 
 ಬಳಕೆಯ ನಿಯಮಗಳು (Apple ಪ್ರಮಾಣಿತ EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-ಗೌಪ್ಯತಾ ನೀತಿ: https://jackwallner.github.io/time/privacy-policy.html
+ಗೌಪ್ಯತಾ ನೀತಿ: https://jackwallner.com/ios/time/privacy-policy.html

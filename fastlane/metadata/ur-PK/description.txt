@@ -23,4 +23,4 @@ Shoes On Pro ماہانہ یا سالانہ سبسکرپشن ہے۔ نئے سب�
 کوئی اکاؤنٹ نہیں: آپ کی روٹینز اور اوقات آپ کے iPhone اور Apple Watch پر ہی رہتے ہیں۔ Shoes On منصوبہ بندی کا مددگار ہے۔ یہ ADHD یا کسی اور حالت کی تشخیص یا علاج نہیں کرتی۔ ایپ انگریزی میں ہے۔
 
 استعمال کی شرائط (Apple معیاری EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-رازداری کی پالیسی: https://jackwallner.github.io/time/privacy-policy.html
+رازداری کی پالیسی: https://jackwallner.com/ios/time/privacy-policy.html
