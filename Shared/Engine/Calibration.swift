@@ -54,11 +54,14 @@ struct Calibration: Sendable {
 
     func estimate(for step: RoutineStep) -> StepEstimate {
         let prior = Double(max(step.guessMinutes, 1)) * pace
+        // Bounded like the pace, so one step left running for hours cannot
+        // take over its plan.
+        let longest = Double(max(step.guessMinutes, 1)) * Self.paceRange.upperBound
         let timed = stepHistory
             .filter { $0.stepID == step.id }
             .sorted { $0.date > $1.date }
             .prefix(Self.stepWindow)
-            .map { $0.actualSeconds / 60 }
+            .map { min($0.actualSeconds / 60, longest) }
         guard !timed.isEmpty else {
             return StepEstimate(guessMinutes: step.guessMinutes, minutes: Self.roundUp(prior), source: .pace)
         }

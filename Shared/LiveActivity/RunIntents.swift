@@ -41,7 +41,7 @@ struct StartRunIntent: LiveActivityIntent {
     func perform() async throws -> some IntentResult {
         #if !WIDGET_EXTENSION
         let store = RoutineStore.shared
-        if store.activeRun == nil { store.startNextRun() }
+        store.startNextRun()
         #endif
         return .result()
     }
@@ -57,7 +57,7 @@ struct StartRoutineIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult {
         let store = RoutineStore.shared
-        if store.activeRun == nil { store.startNextRun() }
+        store.startNextRun()
         return .result()
     }
 }

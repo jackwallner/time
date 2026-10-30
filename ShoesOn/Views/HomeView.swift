@@ -57,10 +57,18 @@ struct HomeView: View {
         Menu {
             ForEach(store.routines) { routine in
                 Button {
-                    store.select(routine.id)
+                    // Without Pro the extra routines keep their data but wait
+                    // behind the paywall.
+                    if store.isLocked(routine.id) {
+                        showPaywall = true
+                    } else {
+                        store.select(routine.id)
+                    }
                 } label: {
                     if routine.id == store.selectedRoutine?.id {
                         Label(routine.name, systemImage: "checkmark")
+                    } else if store.isLocked(routine.id) {
+                        Label(routine.name, systemImage: "lock.fill")
                     } else {
                         Text(routine.name)
                     }

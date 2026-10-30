@@ -84,7 +84,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             stepNudges: settings.stepNudges
         )
         let alerts = NotificationPlan.alerts(
-            routines: store.routines,
+            routines: store.activeRoutines,
             calibration: store.calibration,
             departures: store.state.departures,
             activeRun: store.activeRun,

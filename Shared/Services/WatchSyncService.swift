@@ -51,7 +51,7 @@ final class WatchSyncService: NSObject, WCSessionDelegate, @unchecked Sendable {
         // The Watch is a Pro surface; a stale free Watch cannot drive runs.
         guard StoreService.shared.isPro else { return Self.encode(store.watchPayload) }
         switch command {
-        case .start: if store.activeRun == nil { store.startNextRun() }
+        case .start: store.startNextRun()
         case .completeStep: store.completeStep()
         case .skipStep: store.skipStep()
         case .leave: store.finishRun()

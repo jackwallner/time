@@ -148,6 +148,121 @@ final class StoreTests: XCTestCase {
             XCTAssertNil(store.activeRun)
         }
     }
+
+    // MARK: - A forgotten run
+
+    /// Start 7:50, Shower done at 8:00, walk out without a tap, then clear the
+    /// run at 10:30. Tuesday's plan must not grow by the hours it sat open.
+    func testAStepLeftRunningForHoursDoesNotTakeOverItsPlan() {
+        let store = makeStore()
+        let before = store.plan(for: routine, leaveAt: date(22, 8, 15)).alertAt
+        store.startRun(routineID: routine.id, now: date(21, 7, 50))
+        store.completeStep(now: date(21, 8))
+        store.completeStep(now: date(21, 10, 30))
+        store.cancelRun()
+        let shoes = store.calibration.estimate(for: routine.steps[1])
+        XCTAssertLessThanOrEqual(shoes.minutes, 6, "Shoes (guess 5) is now planned at \(shoes.minutes) min")
+        let after = store.plan(for: routine, leaveAt: date(22, 8, 15)).alertAt
+        XCTAssertEqual(after.timeIntervalSince(before), 0, accuracy: 60, "Tuesday's alert moved from \(before) to \(after)")
+    }
+
+    /// A timing already stored from an older build is bounded too.
+    func testOneHugeTimingIsBoundedInThePlan() {
+        let step = routine.steps[1]
+        let calibration = Calibration(
+            basePace: 1,
+            stepHistory: [StepRecord(stepID: step.id, routineID: routine.id, guessMinutes: 5, actualSeconds: 24 * 3600, date: date(21, 8))],
+            departures: []
+        )
+        XCTAssertLessThanOrEqual(calibration.estimate(for: step).minutes, 15)
+    }
+
+    func testARealLongStepStillTeaches() {
+        let store = makeStore()
+        store.startRun(routineID: routine.id, now: date(21, 7, 50))
+        store.completeStep(now: date(21, 8, 10))
+        XCTAssertEqual(store.state.stepHistory.last?.actualSeconds, 20 * 60)
+        XCTAssertGreaterThan(store.calibration.estimate(for: routine.steps[0]).minutes, 10)
+    }
+
+    // MARK: - A run left open overnight
+
+    func testARunLeftOpenOvernightDoesNotBlockTheNextMorning() {
+        let store = makeStore()
+        store.startRun(routineID: routine.id, now: date(21, 7, 50))
+        store.startNextRun(now: date(22, 7, 55))
+        XCTAssertEqual(store.activeRun?.leaveAt, date(22, 8, 15))
+
+        let other = makeStore()
+        other.startRun(routineID: routine.id, now: date(21, 7, 50))
+        other.startRunFromAlert(routineID: routine.id, leaveAt: date(22, 8, 15), now: date(22, 8))
+        XCTAssertEqual(other.activeRun?.leaveAt, date(22, 8, 15))
+    }
+
+    func testADoneOnYesterdaysRunClosesItWithoutTimingAStep() {
+        let store = makeStore()
+        store.startRun(routineID: routine.id, now: date(21, 7, 50))
+        store.completeStep(now: date(22, 7, 50))
+        XCTAssertNil(store.activeRun)
+        XCTAssertTrue(store.state.stepHistory.isEmpty)
+        XCTAssertNil(store.finishRun(now: date(22, 7, 51)))
+        XCTAssertTrue(store.state.departures.isEmpty)
+    }
+
+    func testAnAbandonedRunIsGoneAtLaunch() {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("store-\(UUID().uuidString).json")
+        let store = RoutineStore(fileURL: url)
+        store.save(routine)
+        store.startRun(routineID: routine.id, now: date(21, 7, 50))
+        XCTAssertNotNil(RoutineStore(fileURL: url, now: date(21, 9)).activeRun)
+        XCTAssertNil(RoutineStore(fileURL: url, now: date(22, 7)).activeRun)
+    }
+
+    // MARK: - Pro lapsed
+
+    private func makeStoreWithTwoRoutines(isPro: Bool) -> (RoutineStore, Routine) {
+        let store = makeStore()
+        let gym = Routine(
+            name: "Gym",
+            leaveHour: 7,
+            leaveMinute: 0,
+            weekdays: [2, 3, 4, 5, 6],
+            steps: [RoutineStep(name: "Bag", guessMinutes: 5)]
+        )
+        store.save(gym)
+        store.hasPro = { isPro }
+        return (store, gym)
+    }
+
+    func testWithoutProOnlyTheFirstRoutineAlertsAndRuns() {
+        let (store, gym) = makeStoreWithTwoRoutines(isPro: false)
+        XCTAssertEqual(store.activeRoutines.map(\.id), [routine.id])
+        XCTAssertTrue(store.isLocked(gym.id))
+        XCTAssertEqual(store.selectedRoutine?.id, routine.id)
+        XCTAssertFalse(store.upcomingDepartures(now: date(21, 6)).contains { $0.routine.id == gym.id })
+        XCTAssertEqual(store.nextDeparture(now: date(21, 6))?.routine.id, routine.id)
+        let alerts = NotificationPlan.alerts(
+            routines: store.activeRoutines,
+            calibration: store.calibration,
+            departures: [],
+            activeRun: nil,
+            preferences: AlertPreferences(startAlerts: true, leaveAlerts: true, stepNudges: true),
+            now: date(21, 6)
+        )
+        XCTAssertFalse(alerts.contains { $0.routineID == gym.id })
+        store.startRun(routineID: gym.id, now: date(21, 6, 50))
+        XCTAssertNil(store.activeRun)
+        store.startRun(routineID: routine.id, now: date(21, 7, 50))
+        XCTAssertEqual(store.activeRun?.routineID, routine.id)
+    }
+
+    func testProBringsEveryRoutineBack() {
+        let (store, gym) = makeStoreWithTwoRoutines(isPro: true)
+        XCTAssertEqual(store.activeRoutines.count, 2)
+        XCTAssertFalse(store.isLocked(gym.id))
+        XCTAssertEqual(store.selectedRoutine?.id, gym.id)
+        XCTAssertEqual(store.nextDeparture(now: date(21, 6))?.routine.id, gym.id)
+    }
 }
 
 /// `-FixedNow` for captures: the time on the latest weekday, never a weekend.

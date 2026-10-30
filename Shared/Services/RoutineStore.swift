@@ -60,8 +60,16 @@ final class RoutineStore: ObservableObject {
     private static let departureLimit = 200
     /// A Done tapped this quickly was a tap-through, not a timing.
     static let minimumTimedSeconds: TimeInterval = 15
+    /// A Done this long after both the start and the leave time is clearing a
+    /// forgotten run off the screen, not timing a step.
+    static let latestTimedSeconds: TimeInterval = 3600
 
-    init(fileURL: URL = AppGroup.containerURL.appendingPathComponent("shoeson-state.json")) {
+    /// Whether Shoes On Pro is active. Without it only the first routine, the
+    /// one setup made, runs and alerts; the others keep their data for when
+    /// Pro comes back.
+    var hasPro: @MainActor () -> Bool = { StoreService.shared.isPro }
+
+    init(fileURL: URL = AppGroup.containerURL.appendingPathComponent("shoeson-state.json"), now: Date = .now) {
         self.fileURL = fileURL
         if let data = try? Data(contentsOf: fileURL),
            let decoded = try? JSONDecoder().decode(PersistedState.self, from: data) {
@@ -69,6 +77,7 @@ final class RoutineStore: ObservableObject {
         } else {
             state = PersistedState()
         }
+        if state.activeRun?.isAbandoned(now: now) == true { state.activeRun = nil }
     }
 
     // MARK: - Reading
@@ -76,8 +85,18 @@ final class RoutineStore: ObservableObject {
     var routines: [Routine] { state.routines }
     var activeRun: ActiveRun? { state.activeRun }
 
+    /// The routines that run and alert: all of them with Pro, else the first.
+    var activeRoutines: [Routine] {
+        hasPro() ? state.routines : Array(state.routines.prefix(1))
+    }
+
+    func isLocked(_ routineID: UUID) -> Bool {
+        !activeRoutines.contains { $0.id == routineID }
+    }
+
     var selectedRoutine: Routine? {
-        state.routines.first { $0.id == state.selectedRoutineID } ?? state.routines.first
+        let active = activeRoutines
+        return active.first { $0.id == state.selectedRoutineID } ?? active.first
     }
 
     var calibration: Calibration {
@@ -108,7 +127,7 @@ final class RoutineStore: ObservableObject {
 
     /// The soonest departure across every routine.
     func nextDeparture(now: Date = .now) -> (routine: Routine, plan: DeparturePlan)? {
-        state.routines
+        activeRoutines
             .compactMap { routine in nextPlan(for: routine, now: now).map { (routine, $0) } }
             .min { $0.1.leaveAt < $1.1.leaveAt }
     }
@@ -119,7 +138,7 @@ final class RoutineStore: ObservableObject {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: now)
         var found: [(routine: Routine, plan: DeparturePlan)] = []
-        for routine in state.routines {
+        for routine in activeRoutines {
             for offset in 0...NotificationPlan.horizonDays {
                 guard let day = calendar.date(byAdding: .day, value: offset, to: today),
                       routine.departs(on: day) else { continue }
@@ -207,7 +226,8 @@ final class RoutineStore: ObservableObject {
     }
 
     func startRun(routineID: UUID, now: Date = .now) {
-        guard state.activeRun == nil, let routine = routine(id: routineID) else { return }
+        // A run left open for hours does not block the next morning's start.
+        guard openRun(now: now) == nil, !isLocked(routineID), let routine = routine(id: routineID) else { return }
         let target = runTarget(for: routine, now: now)
         let plan = plan(for: routine, leaveAt: target.leaveAt)
         let answersAlert = !target.isPractice && routine.departs(on: target.leaveAt) && AppSettings.shared.startAlerts
@@ -229,7 +249,7 @@ final class RoutineStore: ObservableObject {
     /// nothing once that departure is under way, made or gone, so an old alert
     /// opened from Notification Centre at noon only opens the app.
     func startRunFromAlert(routineID: UUID, leaveAt: Date, now: Date = .now) {
-        guard state.activeRun == nil, leaveAt > now,
+        guard openRun(now: now) == nil, leaveAt > now,
               let routine = routine(id: routineID),
               nextPlan(for: routine, now: now)?.leaveAt == leaveAt,
               !state.departures.contains(where: { $0.routineID == routineID && $0.target == leaveAt })
@@ -244,13 +264,14 @@ final class RoutineStore: ObservableObject {
     }
 
     func completeStep(now: Date = .now) {
-        guard let before = state.activeRun, !before.isLeaving else { return }
+        guard let before = liveRun(now: now), !before.isLeaving else { return }
         var run = before
         let finished = run.completeCurrentStep(at: now)
+        let timed = now.timeIntervalSince(max(before.startedAt, before.leaveAt)) < Self.latestTimedSeconds
         var recorded: UUID?
         mutate { state in
             state.activeRun = run
-            if let finished, let seconds = finished.actualSeconds, seconds >= Self.minimumTimedSeconds {
+            if timed, let finished, let seconds = finished.actualSeconds, seconds >= Self.minimumTimedSeconds {
                 state.stepHistory.append(StepRecord(
                     stepID: finished.id,
                     routineID: run.routineID,
@@ -266,7 +287,7 @@ final class RoutineStore: ObservableObject {
     }
 
     func skipStep(now: Date = .now) {
-        guard let before = state.activeRun, !before.isLeaving else { return }
+        guard let before = liveRun(now: now), !before.isLeaving else { return }
         var run = before
         run.skipCurrentStep(at: now)
         mutate { $0.activeRun = run }
@@ -303,7 +324,7 @@ final class RoutineStore: ObservableObject {
     /// The user walked out. Records the departure and hands back the summary.
     @discardableResult
     func finishRun(now: Date = .now) -> FinishedRun? {
-        guard let run = state.activeRun else { return nil }
+        guard let run = liveRun(now: now) else { return nil }
         let departure = DepartureRecord(
             routineID: run.routineID,
             target: run.leaveAt,
@@ -319,6 +340,22 @@ final class RoutineStore: ObservableObject {
             state.lastFinished = finished
         }
         return finished
+    }
+
+    /// The run in progress, unless it was left open for hours.
+    private func openRun(now: Date) -> ActiveRun? {
+        state.activeRun.flatMap { $0.isAbandoned(now: now) ? nil : $0 }
+    }
+
+    /// The run in progress for a Done, Skip or leave. One left open for hours
+    /// is closed instead, so a tap on yesterday's run never times a step.
+    private func liveRun(now: Date) -> ActiveRun? {
+        if let run = openRun(now: now) { return run }
+        if state.activeRun != nil {
+            lastStepUndo = nil
+            mutate { $0.activeRun = nil }
+        }
+        return nil
     }
 
     func cancelRun() {
@@ -402,7 +439,7 @@ final class RoutineStore: ObservableObject {
         }
         return WatchPayload(
             isPro: StoreService.shared.isPro,
-            run: state.activeRun.map(RunSnapshot.init(run:)),
+            run: openRun(now: .now).map(RunSnapshot.init(run:)),
             next: next,
             upcoming: upcomingSnapshots(),
             sentAt: .now
