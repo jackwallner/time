@@ -23,6 +23,14 @@ enum ScreenshotFixtures {
             AppSettings.shared.hasCompletedSetup = false
             RoutineStore.shared.replaceState(PersistedState())
         }
+        if let seconds = ScreenshotConfig.value(after: "-StartRunAfter").flatMap(Double.init) {
+            // Stands in for a tapped get-ready alert or the Lock Screen Start
+            // control, which begin a run while the app is open.
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(seconds))
+                RoutineStore.shared.startNextRun()
+            }
+        }
         guard ScreenshotConfig.has("-SeedScreenshotData") else { return }
         AppSettings.shared.hasCompletedSetup = true
         RoutineStore.shared.replaceState(state(screen: ScreenshotConfig.value(after: "-Screen"), now: now))
@@ -54,7 +62,8 @@ enum ScreenshotFixtures {
         state.pace = .halfOver
 
         // Twelve past mornings, each step a little around its real time.
-        let wobble: [Double] = [0.9, 1.1, 1.0, 1.2, 0.95, 1.05, 0.85, 1.15, 1.0, 0.9, 1.1, 1.0]
+        // `-NoHistory` keeps the routine and drops them: a first week.
+        let wobble: [Double] = ScreenshotConfig.has("-NoHistory") ? [] : [0.9, 1.1, 1.0, 1.2, 0.95, 1.05, 0.85, 1.15, 1.0, 0.9, 1.1, 1.0]
         let lateness: [Double] = [-3, 0.5, 11, -1, 0, 6, -2, 0.2, -4, 1, 0, -2]
         let pastWeekdays = (1...30)
             .compactMap { calendar.date(byAdding: .day, value: -$0, to: now) }
@@ -94,6 +103,21 @@ enum ScreenshotFixtures {
         switch screen {
         case "run":
             state.activeRun = midRun(routine: routine, calibration: calibration, now: now)
+        case "overdue":
+            // Pulled away mid-breakfast: the step began 50 minutes ago and the
+            // leave time passed 20 minutes ago.
+            var run = midRun(routine: routine, calibration: calibration, now: now)
+            run.startedAt = now.addingTimeInterval(-90 * 60)
+            run.stepStartedAt = now.addingTimeInterval(-50 * 60)
+            run.leaveAt = now.addingTimeInterval(-20 * 60)
+            state.activeRun = run
+        case "stale":
+            // A run nobody closed: 4 hours past its leave time.
+            var run = midRun(routine: routine, calibration: calibration, now: now)
+            run.startedAt = now.addingTimeInterval(-5 * 3600)
+            run.stepStartedAt = now.addingTimeInterval(-4 * 3600 - 10 * 60)
+            run.leaveAt = now.addingTimeInterval(-4 * 3600)
+            state.activeRun = run
         case "leaving":
             var run = midRun(routine: routine, calibration: calibration, now: now)
             let took: [Double] = [17, 8, 6]
