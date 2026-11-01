@@ -60,6 +60,15 @@ final class RoutineStore: ObservableObject {
     private static let departureLimit = 200
     /// A Done tapped this quickly was a tap-through, not a timing.
     static let minimumTimedSeconds: TimeInterval = 15
+    /// A step done in under this share of its guess was being tried out,
+    /// not timed: a curious first run would otherwise pull tomorrow's plan.
+    static let minimumTimedShare = 0.25
+
+    /// Whether a Done after `seconds` on a step guessed at `guessMinutes`
+    /// is a real timing worth learning from.
+    static func isTiming(_ seconds: TimeInterval, guessMinutes: Int) -> Bool {
+        seconds >= max(minimumTimedSeconds, minimumTimedShare * Double(guessMinutes) * 60)
+    }
     /// A Done this long after both the start and the leave time is clearing a
     /// forgotten run off the screen, not timing a step.
     static let latestTimedSeconds: TimeInterval = 3600
@@ -278,7 +287,7 @@ final class RoutineStore: ObservableObject {
         var recorded: UUID?
         mutate { state in
             state.activeRun = run
-            if timed, let finished, let seconds = finished.actualSeconds, seconds >= Self.minimumTimedSeconds {
+            if timed, let finished, let seconds = finished.actualSeconds, Self.isTiming(seconds, guessMinutes: finished.guessMinutes) {
                 state.stepHistory.append(StepRecord(
                     stepID: finished.id,
                     routineID: run.routineID,

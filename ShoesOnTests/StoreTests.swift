@@ -41,6 +41,18 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(store.nextPlan(for: routine, now: date(21, 21, 14))?.leaveAt, date(22, 8, 15))
     }
 
+    func testATryOutFarUnderTheGuessTeachesNothing() {
+        let store = makeStore()
+        store.startRun(routineID: routine.id, now: date(21, 21))
+        let started = store.activeRun?.stepStartedAt ?? date(21, 21)
+        // 20 s on a 10 minute shower is poking at the app, not a timing.
+        store.completeStep(now: started.addingTimeInterval(20))
+        XCTAssertTrue(store.state.stepHistory.isEmpty)
+        XCTAssertFalse(RoutineStore.isTiming(149, guessMinutes: 10))
+        XCTAssertTrue(RoutineStore.isTiming(150, guessMinutes: 10))
+        XCTAssertTrue(RoutineStore.isTiming(15, guessMinutes: 1))
+    }
+
     func testARunNearTheStartAimsForTheDeparture() {
         let store = makeStore()
         store.startRun(routineID: routine.id, now: date(21, 7, 50))
