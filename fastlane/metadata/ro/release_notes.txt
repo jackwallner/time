@@ -1,0 +1,1 @@
+Your plan learns only from real timings: a quick try-out or a run left open no longer moves tomorrow's start. Done always marks the step on screen, the trial reminder stays set, and buttons are easier to tap.
