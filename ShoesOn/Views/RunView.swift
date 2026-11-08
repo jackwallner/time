@@ -338,7 +338,7 @@ private struct ActiveRunScreen: View {
                     .buttonStyle(.secondary(.white))
                     .transition(.handOff)
                 } else if !run.isLeaving {
-                    Button("Skip this step") { advance(store.skipStep) }
+                    Button("Skip this step") { advance { store.skipStep(now: $0) } }
                         .buttonStyle(.secondary(.white))
                         .transition(.handOff)
                 }

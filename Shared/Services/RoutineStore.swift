@@ -302,8 +302,9 @@ final class RoutineStore: ObservableObject {
         lastStepUndo = StepUndo(before: before, after: run, recordedStepID: recorded, kind: .done, stepName: finished?.name ?? "")
     }
 
-    func skipStep(now: Date = .now) {
+    func skipStep(stepStartedAt: Date? = nil, now: Date = .now) {
         guard let before = liveRun(now: now), !before.isLeaving,
+              Self.isFor(before, stepStartedAt: stepStartedAt),
               now.timeIntervalSince(before.stepStartedAt) > Self.doubleTapSeconds else { return }
         var run = before
         run.skipCurrentStep(at: now)
@@ -357,6 +358,20 @@ final class RoutineStore: ObservableObject {
             state.lastFinished = finished
         }
         return finished
+    }
+
+    /// A tap on the Watch. `stepStartedAt` names the step on its screen, so a
+    /// Done queued while the phone was away, or sent again after a reply
+    /// timed out, never finishes the step after it.
+    func perform(_ command: WatchCommand, stepStartedAt: Date? = nil, now: Date = .now) {
+        switch command {
+        case .start: startNextRun(now: now)
+        case .completeStep: completeStep(stepStartedAt: stepStartedAt, now: now)
+        case .skipStep: skipStep(stepStartedAt: stepStartedAt, now: now)
+        case .leave:
+            guard let run = activeRun, Self.isFor(run, stepStartedAt: stepStartedAt) else { return }
+            finishRun(now: now)
+        }
     }
 
     static func isFor(_ run: ActiveRun, stepStartedAt: Date?) -> Bool {
