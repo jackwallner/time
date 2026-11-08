@@ -254,6 +254,27 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(store.activeRun?.isLeaving, true)
     }
 
+    /// Two Watch taps queued while the phone was away arrive together; only
+    /// the step that was on the Watch moves on.
+    func testAWatchTapSentTwiceMovesOnOneStep() {
+        let store = makeStore()
+        store.startRun(routineID: routine.id, now: date(21, 7, 50))
+        let showerStarted = store.activeRun!.stepStartedAt
+        store.perform(.completeStep, stepStartedAt: showerStarted, now: date(21, 7, 58))
+        store.perform(.completeStep, stepStartedAt: showerStarted, now: date(21, 7, 59))
+        XCTAssertEqual(store.activeRun?.stepIndex, 1)
+        store.perform(.skipStep, stepStartedAt: showerStarted, now: date(21, 8))
+        XCTAssertEqual(store.activeRun?.stepIndex, 1)
+        let shoesStarted = store.activeRun!.stepStartedAt
+        store.perform(.skipStep, stepStartedAt: shoesStarted, now: date(21, 8, 1))
+        XCTAssertEqual(store.activeRun?.isLeaving, true)
+        store.perform(.leave, stepStartedAt: showerStarted, now: date(21, 8, 2))
+        XCTAssertNotNil(store.activeRun)
+        store.perform(.leave, stepStartedAt: store.activeRun!.stepStartedAt, now: date(21, 8, 3))
+        XCTAssertNil(store.activeRun)
+        XCTAssertEqual(store.state.departures.count, 1)
+    }
+
     // MARK: - Pro lapsed
 
     private func makeStoreWithTwoRoutines(isPro: Bool) -> (RoutineStore, Routine) {

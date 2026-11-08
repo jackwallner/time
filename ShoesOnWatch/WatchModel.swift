@@ -45,9 +45,9 @@ final class WatchModel: ObservableObject {
         WidgetCenter.shared.reloadAllTimelines()
     }
 
-    func send(_ command: WatchCommand) {
+    func send(_ command: WatchCommand, stepStartedAt: Date? = nil) {
         isSending = true
-        WatchSyncService.shared.send(command)
+        WatchSyncService.shared.send(command, stepStartedAt: stepStartedAt)
         Task {
             try? await Task.sleep(for: .seconds(4))
             isSending = false

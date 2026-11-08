@@ -12,6 +12,7 @@ final class WatchSyncService: NSObject, WCSessionDelegate, @unchecked Sendable {
 
     private static let payloadKey = "payload"
     private static let commandKey = "command"
+    private static let stepKey = "stepStartedAt"
 
     private override init() {
         super.init()
@@ -46,17 +47,16 @@ final class WatchSyncService: NSObject, WCSessionDelegate, @unchecked Sendable {
     }
 
     @MainActor
-    private func handle(_ command: WatchCommand) -> [String: Any] {
+    private func handle(_ command: WatchCommand, stepStartedAt: Date?) -> [String: Any] {
         let store = RoutineStore.shared
         // The Watch is a Pro surface; a stale free Watch cannot drive runs.
         guard StoreService.shared.isPro else { return Self.encode(store.watchPayload) }
-        switch command {
-        case .start: store.startNextRun()
-        case .completeStep: store.completeStep()
-        case .skipStep: store.skipStep()
-        case .leave: store.finishRun()
-        }
+        store.perform(command, stepStartedAt: stepStartedAt)
         return Self.encode(store.watchPayload)
+    }
+
+    private static func stepStartedAt(in message: [String: Any]) -> Date? {
+        (message[stepKey] as? String).flatMap(TimeInterval.init).map(Date.init(timeIntervalSince1970:))
     }
 
     func session(
@@ -68,13 +68,15 @@ final class WatchSyncService: NSObject, WCSessionDelegate, @unchecked Sendable {
             replyHandler([:])
             return
         }
+        let step = Self.stepStartedAt(in: message)
         let reply = SendableReply(handler: replyHandler)
-        Task { @MainActor in reply.handler(self.handle(command)) }
+        Task { @MainActor in reply.handler(self.handle(command, stepStartedAt: step)) }
     }
 
     func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
         guard let raw = userInfo[Self.commandKey] as? String, let command = WatchCommand(rawValue: raw) else { return }
-        Task { @MainActor in _ = self.handle(command) }
+        let step = Self.stepStartedAt(in: userInfo)
+        Task { @MainActor in _ = self.handle(command, stepStartedAt: step) }
     }
 
     func sessionDidBecomeInactive(_ session: WCSession) {}
@@ -84,10 +86,13 @@ final class WatchSyncService: NSObject, WCSessionDelegate, @unchecked Sendable {
     #if os(watchOS)
     /// Sends a command, preferring a live message so the reply updates the
     /// screen at once; falls back to a queued transfer when the phone is away.
-    func send(_ command: WatchCommand) {
+    /// `stepStartedAt` is the step on screen, so a repeat finishes nothing.
+    func send(_ command: WatchCommand, stepStartedAt: Date? = nil) {
         let session = WCSession.default
         guard session.activationState == .activated else { return }
-        let message = [Self.commandKey: command.rawValue]
+        var fields = [Self.commandKey: command.rawValue]
+        if let stepStartedAt { fields[Self.stepKey] = String(stepStartedAt.timeIntervalSince1970) }
+        let message = fields
         guard session.isReachable else {
             session.transferUserInfo(message)
             return

@@ -106,7 +106,7 @@ private struct WatchRunView: View {
                     .foregroundStyle(Theme.color(for: status))
                 Spacer(minLength: 2)
                 Button(run.isLeaving ? "I'm out" : "Done") {
-                    model.send(run.isLeaving ? .leave : .completeStep)
+                    model.send(run.isLeaving ? .leave : .completeStep, stepStartedAt: run.stepStartedAt)
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(Theme.onTrack)
@@ -121,7 +121,7 @@ private struct WatchRunView: View {
             if !run.isLeaving {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        model.send(.skipStep)
+                        model.send(.skipStep, stepStartedAt: run.stepStartedAt)
                     } label: {
                         Image(systemName: "forward.end")
                     }
