@@ -6,11 +6,11 @@ Web page: https://jackwallner.com/ios/time/best-app-for-time-blindness.html
 
 ## Best App for Time Blindness
 
-By Jack Wallner · Last updated November 11, 2026
+By Jack Wallner · Last updated November 12, 2026
 
 **Best visual day planner, with an AI co-planner:** Tiimo. **Best for running a routine step by step with a voice calling out each step:** Routinery. **Best for seeing time drain away:** Time Timer and its red disk. **Best for leaving on time when traffic matters:** Lately, which estimates travel time. **Best for a getting-ready routine that learns how long you really take and works back from the door:** Shoes On, the app I make. Time blindness is an informal term for trouble sensing how much time has passed or how long a task will take.
 
-**How we compared (November 11, 2026):** I read each app's US App Store listing and pulled its rating, rating count, supported devices, purchase types and last update from Apple's store data. I did not install or subscribe to the other apps, so what I say about them comes from their own listings. Shoes On's entry comes from its code and listing. Prices are left out on purpose, because they vary by region and change.
+**How we compared (November 12, 2026):** I read each app's US App Store listing and pulled its rating, rating count, supported devices, purchase types and last update from Apple's store data. I did not install or subscribe to the other apps, so what I say about them comes from their own listings. Shoes On's entry comes from its code and listing. Prices are left out on purpose, because they vary by region and change.
 
 **Disclosure:** Jack Wallner makes Shoes On: Time Blindness Coach, one of the apps below, so read its entry with that in mind.
 
@@ -22,13 +22,13 @@ Tiimo plans the whole day, Routinery runs a routine step by step, Time Timer sho
 
 | App | Best for | Price model | Apple Watch | iPad | Account | Rating (count) | Last updated |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [Tiimo: To-Do List Planner](https://apps.apple.com/us/app/tiimo-to-do-list-planner/id1480220328) | A visual daily schedule and to-do list | Free + subscription | Yes | Yes | Not stated | 4.60 (21,536) | Oct 21, 2026 |
-| [Routinery (Routine Planner, Habit Tracker)](https://apps.apple.com/us/app/routine-planner-habit-tracker/id1450486923) | Routines run step by step with voice | Free with ads + subscription | Yes | Yes | None (per listing) | 4.71 (18,203) | Nov 7, 2026 |
-| [Time Timer](https://apps.apple.com/us/app/time-timer/id332520417) | A visual countdown disk | Free + premium upgrade | Yes | Yes | Not stated | 4.60 (14,630) | Mar 20, 2026 |
+| [Tiimo: To-Do List Planner](https://apps.apple.com/us/app/tiimo-to-do-list-planner/id1480220328) | A visual daily schedule and to-do list | Free + subscription | Yes | Yes | Not stated | 4.60 (21,555) | Nov 12, 2026 |
+| [Routinery (Routine Planner, Habit Tracker)](https://apps.apple.com/us/app/routine-planner-habit-tracker/id1450486923) | Routines run step by step with voice | Free with ads + subscription | Yes | Yes | None (per listing) | 4.71 (18,202) | Nov 12, 2026 |
+| [Time Timer](https://apps.apple.com/us/app/time-timer/id332520417) | A visual countdown disk | Free + premium upgrade | Yes | Yes | Not stated | 4.60 (14,631) | Mar 20, 2026 |
 | [Lately: Be On Time](https://apps.apple.com/us/app/lately-be-on-time/id6740748815) | Leave times with travel and traffic estimates | Free + subscription or lifetime | Yes | Yes | Not stated | 4.55 (47) | Nov 5, 2026 |
 | [Shoes On: Time Blindness Coach](https://apps.apple.com/us/app/shoes-on-time-blindness-coach/id6814953557?pt=128748779&ct=jw-time-best-app-for-time-blindness&mt=8) | Getting-ready routines that learn your real pace | Free + subscription | Yes (Pro) | No | None | No ratings yet | Nov 1, 2026 |
 
-Ratings and counts are US App Store figures as of November 11, 2026. Apple Watch and iPad show the devices each listing supports. "Not stated" means the listing does not say whether an account is needed. Price models describe the structure only.
+Ratings and counts are US App Store figures as of November 12, 2026. Apple Watch and iPad show the devices each listing supports. "Not stated" means the listing does not say whether an account is needed. Price models describe the structure only.
 
 ## Tiimo: To-Do List Planner
 
@@ -102,4 +102,4 @@ Related: [Time Blindness: Why You&#x27;re Always Late and What Helps](https://ja
 - [Lately: Be On Time on the App Store](https://apps.apple.com/us/app/lately-be-on-time/id6740748815)
 - [Shoes On: Time Blindness Coach on the App Store](https://apps.apple.com/us/app/shoes-on-time-blindness-coach/id6814953557?pt=128748779&ct=jw-time-best-app-for-time-blindness&mt=8)
 
-Shoes On is an independent app and is not affiliated with any app compared here. It is a planning aid. App details were checked on November 11, 2026 and may change.
+Shoes On is an independent app and is not affiliated with any app compared here. It is a planning aid. App details were checked on November 12, 2026 and may change.
