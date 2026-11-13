@@ -114,8 +114,10 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
     private var impressionsThisSession: Set<String> = []
 
     private override init() {
+        // Seed the cache before super.init so didSet never runs inside the
+        // shared singleton's own first-use initialization.
+        _isPro = Published(initialValue: AppGroup.defaults.bool(forKey: Self.cachedProKey))
         super.init()
-        isPro = defaults.bool(forKey: Self.cachedProKey)
     }
 
     var yearly: Package? { packages.first { $0.plan == .yearly } }
