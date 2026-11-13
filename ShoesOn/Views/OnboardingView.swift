@@ -19,6 +19,7 @@ struct OnboardingView: View {
     @State private var notificationsDenied = false
     @FocusState private var customStepFocused: Bool
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     static let pageCount = 6
 
@@ -51,7 +52,7 @@ struct OnboardingView: View {
             GeometryReader { proxy in
                 HStack(spacing: 0) {
                     ForEach(0..<Self.pageCount, id: \.self) { index in
-                        pageScroller(index)
+                        pageScroller(index, height: proxy.size.height)
                             .frame(width: proxy.size.width, height: proxy.size.height)
                     }
                 }
@@ -59,8 +60,9 @@ struct OnboardingView: View {
             }
             .clipped()
         }
+        .readableColumn()
         .background(Theme.background.ignoresSafeArea())
-        .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar }
+        .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar.readableColumn() }
         .onChange(of: page) { _, newPage in
             furthestPage = max(furthestPage, newPage)
             if newPage == Self.pageCount - 1 {
@@ -177,7 +179,7 @@ struct OnboardingView: View {
 
     /// Pages ahead of the furthest one reached stay empty until reached, so
     /// the reveal plays its bars as it slides in, not offscreen in advance.
-    private func pageScroller(_ index: Int) -> some View {
+    private func pageScroller(_ index: Int, height: CGFloat) -> some View {
         ScrollView {
             if index <= max(furthestPage, page) {
                 content(index)
@@ -185,6 +187,9 @@ struct OnboardingView: View {
                     .padding(.top, 8)
                     .padding(.bottom, 24)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    // A tall regular-width screen centres the page rather than
+                    // leaving it hanging from the top.
+                    .frame(minHeight: sizeClass == .regular ? height : 0, alignment: .center)
             }
         }
         .scrollDismissesKeyboard(.interactively)

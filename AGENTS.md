@@ -122,6 +122,7 @@ portfolio entry lives in `~/portfolio/docs/projects.json`, slug `time`.
 | File | Covers | Read when |
 |---|---|---|
 | `.claude/rules/store-and-release.md` | ASC/RC setup commands, screenshots, launch args | Touching store, scripts, fastlane, screenshot fixtures |
+| `.claude/rules/ipad-layout.md` | iPad support: split panes, readable column, Live Activity rules, proof recipe | Touching views, App.swift, Info.plist orientations |
 | `.claude/rules/android.md` | Android port: layout, iOS differences, build/test on jmbp/jmbp2, keys, Play state | Touching `android/**` |
 
 ---

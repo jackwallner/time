@@ -8,6 +8,7 @@ struct PaywallView: View {
     @EnvironmentObject private var purchases: StoreService
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.horizontalSizeClass) private var sizeClass
     let surface: String
     @State private var selection: PlanKind = ScreenshotConfig.value(after: "-PaywallSnapshot") == "monthly" ? .monthly : .yearly
 
@@ -23,6 +24,7 @@ struct PaywallView: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
+            GeometryReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 8) {
@@ -47,13 +49,17 @@ struct PaywallView: View {
                 .padding(.top, 4)
                 .padding(.bottom, 16)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                // A tall regular-width screen centres the plans.
+                .frame(minHeight: sizeClass == .regular ? proxy.size.height : 0, alignment: .center)
                 // Pinned, the bar would cover most of the page at these sizes.
                 if typeSize.isAccessibilitySize { purchaseBar }
             }
+            }
         }
+        .readableColumn()
         .background(Theme.background.ignoresSafeArea())
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            if !typeSize.isAccessibilitySize { purchaseBar }
+            if !typeSize.isAccessibilitySize { purchaseBar.readableColumn() }
         }
         .onAppear {
             // An error from another paywall is not this one's to show.

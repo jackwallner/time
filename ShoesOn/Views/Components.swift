@@ -409,3 +409,11 @@ struct MinuteStepper: View {
         .disabled(!enabled)
     }
 }
+
+extension View {
+    /// Keeps a screen to a comfortable reading width, centred, so a wide
+    /// display shows a phone-width column rather than a stretched phone.
+    func readableColumn(_ width: CGFloat = 560) -> some View {
+        frame(maxWidth: width).frame(maxWidth: .infinity)
+    }
+}

@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 @main
 struct ShoesOnApp: App {
@@ -58,19 +59,23 @@ private struct RootView: View {
             .animation(.smooth, value: settings.hasCompletedSetup)
     }
 
+    @ViewBuilder private var setup: some View {
+        if resumesAtOffer { OnboardingView.resumingOffer } else { OnboardingView() }
+    }
+
     @ViewBuilder private var content: some View {
         if ScreenshotConfig.has("-PaywallSnapshot") {
             PaywallView(surface: "shoeson_snapshot")
         } else if let page = ScreenshotConfig.value(after: "-OnboardingPage").flatMap(Int.init) {
             OnboardingView(startPage: page)
         } else if !settings.hasCompletedSetup {
-            // Unfolded, setup keeps to the leading pane, clear of the fold.
-            FoldSplit { _ in
-                if resumesAtOffer { OnboardingView.resumingOffer } else { OnboardingView() }
-            } secondary: {
-                SetupMark()
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                setup.background(Theme.background.ignoresSafeArea())
+            } else {
+                // Unfolded, setup keeps to the leading pane, clear of the fold.
+                FoldSplit { _ in setup } secondary: { SetupMark() }
+                    .background(Theme.background.ignoresSafeArea())
             }
-            .background(Theme.background.ignoresSafeArea())
         } else {
             // Presented from a wrapper, not from Home itself, so a run that
             // starts while a Home sheet is open still comes up on top. As its

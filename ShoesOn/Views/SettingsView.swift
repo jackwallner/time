@@ -95,7 +95,8 @@ struct SettingsView: View {
     /// Re-read on return from the Settings app, so the fix shows at once.
     private func refreshPermissions() async {
         notificationsDenied = await NotificationService.shared.authorizationStatus() == .denied
-        liveActivitiesOff = !ActivityAuthorizationInfo().areActivitiesEnabled
+        // iPad has no Lock Screen run, so there is nothing to turn on.
+        liveActivitiesOff = UIDevice.current.userInterfaceIdiom == .phone && !ActivityAuthorizationInfo().areActivitiesEnabled
     }
 
     private var alertsSection: some View {
