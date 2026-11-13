@@ -42,6 +42,11 @@ migrate to `6814953557` at launch.
 - App Store set: `app-store/screenshots.json`, rendered with
   `~/ios/appstore-screenshots/bin/shotflow`. `-FixedNow HH:mm` (DEBUG,
   `AppClock`) pins the clock so captures read as a morning.
+- iPad set (13-inch, 2064x2752): `app-store/screenshots-ipad.json` over `app-store/raw-ipad/`
+  (captured on an iPad Pro 13-inch M5 with `gh-sim launch --device ... --screen`, the
+  same args as the Duo set), rendered to `rendered-ipad/`, copied as `ipad-*.png` into
+  `fastlane/screenshots/en-US/`, synced with `--only-type APP_IPAD_PRO_3GEN_129`.
+  Only en-US has screenshots on the live listing.
 - Paywall review renders: `ScreenshotUITests.testPaywallShowsEachPlanPrice`,
   one per product, under StoreKit Testing.
 - Sync with `~/ios/appstore-screenshots/bin/asc-sync-screenshots`, never a

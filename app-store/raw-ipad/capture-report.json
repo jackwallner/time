@@ -1,0 +1,131 @@
+{
+ "status": "ok",
+ "manifest": "/Users/jackwallner/time/app-store/screenshots-ipad.json",
+ "app": "shoeson",
+ "mode": "generic",
+ "lease": "gh-sim",
+ "output": "/Users/jackwallner/time/app-store/raw-ipad",
+ "proof_only": false,
+ "checkout_options": [
+  "--slot",
+  "1"
+ ],
+ "lease_checked_in": true,
+ "screenshots": [
+  "01_home.png",
+  "02_reveal.png",
+  "03_run.png",
+  "04_summary.png",
+  "05_leaving.png",
+  "06_pace.png"
+ ],
+ "screenshot_records": [
+  {
+   "name": "01_home.png",
+   "path": "/Users/jackwallner/time/app-store/raw-ipad/01_home.png",
+   "size": [
+    2064,
+    2752
+   ],
+   "mode": "RGBA",
+   "sha256": "00a53697913b278eedf0a4bfcceddde31ff15b62d4e9374939a1f6ee89d34ada"
+  },
+  {
+   "name": "02_reveal.png",
+   "path": "/Users/jackwallner/time/app-store/raw-ipad/02_reveal.png",
+   "size": [
+    2064,
+    2752
+   ],
+   "mode": "RGBA",
+   "sha256": "276545464e95b7612685e1082776b88bdec6877d301bbffa51c4f709df7649b2"
+  },
+  {
+   "name": "03_run.png",
+   "path": "/Users/jackwallner/time/app-store/raw-ipad/03_run.png",
+   "size": [
+    2064,
+    2752
+   ],
+   "mode": "RGBA",
+   "sha256": "243025211cc53367dff21aabf0219f946747c764b37c0b5336120f1ef9ac7fb2"
+  },
+  {
+   "name": "04_summary.png",
+   "path": "/Users/jackwallner/time/app-store/raw-ipad/04_summary.png",
+   "size": [
+    2064,
+    2752
+   ],
+   "mode": "RGBA",
+   "sha256": "e629c924b2843bbaedcffdde37a7a287c5056e44561f2aa70fefcbe44a4d826e"
+  },
+  {
+   "name": "05_leaving.png",
+   "path": "/Users/jackwallner/time/app-store/raw-ipad/05_leaving.png",
+   "size": [
+    2064,
+    2752
+   ],
+   "mode": "RGBA",
+   "sha256": "32796f8ea379ac2e724ffc2aac1b59ae030b19641b27a69109eaf94d9636e8a5"
+  },
+  {
+   "name": "06_pace.png",
+   "path": "/Users/jackwallner/time/app-store/raw-ipad/06_pace.png",
+   "size": [
+    2064,
+    2752
+   ],
+   "mode": "RGBA",
+   "sha256": "2e630f178ac6d778d7364985441c596cbc579477d2caeb4d4d0d4abd8fa923da"
+  }
+ ],
+ "flows": [
+  {
+   "id": "home",
+   "screenshots": [
+    "01_home.png"
+   ]
+  },
+  {
+   "id": "reveal",
+   "screenshots": [
+    "02_reveal.png"
+   ]
+  },
+  {
+   "id": "run",
+   "screenshots": [
+    "03_run.png"
+   ]
+  },
+  {
+   "id": "summary",
+   "screenshots": [
+    "04_summary.png"
+   ]
+  },
+  {
+   "id": "leaving",
+   "screenshots": [
+    "05_leaving.png"
+   ]
+  },
+  {
+   "id": "pace",
+   "screenshots": [
+    "06_pace.png"
+   ]
+  }
+ ],
+ "app_repo": {
+  "path": "~/time",
+  "git_commit": "9fc4d17a43e2e32edf677e205454f2ee465aa91f"
+ },
+ "device": {
+  "name": "iPad Pro 13-inch (M5)",
+  "runtime": "iOS 27.2",
+  "captured_by": "gh-sim launch on a GitHub Mac, run time-mbair566b-1112-231253-25145"
+ }
+}
