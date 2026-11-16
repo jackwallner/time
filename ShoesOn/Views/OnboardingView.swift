@@ -296,9 +296,10 @@ struct OnboardingView: View {
                         .focused($customStepFocused)
                         .submitLabel(.done)
                         .onSubmit(addCustom)
-                    Button("Add", action: addCustom)
-                        .font(.body.weight(.semibold))
-                        .disabled(customName.trimmingCharacters(in: .whitespaces).isEmpty)
+                    if !customName.trimmingCharacters(in: .whitespaces).isEmpty {
+                        Button("Add", action: addCustom)
+                            .font(.body.weight(.semibold))
+                    }
                 }
                 .padding(.vertical, 14)
             }
