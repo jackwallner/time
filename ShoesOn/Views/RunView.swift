@@ -357,8 +357,8 @@ private struct ActiveRunScreen: View {
 
     /// A second Done from a double tap would skip a step the user never did.
     private func advance(_ action: (Date) -> Void) {
-        guard Date.now.timeIntervalSince(run.stepStartedAt) > 0.6 else { return }
-        withAnimation(.smooth) { action(.now) }
+        guard AppClock.now.timeIntervalSince(run.stepStartedAt) > 0.6 else { return }
+        withAnimation(.smooth) { action(AppClock.now) }
     }
 
     /// "12:04" counting down, "1:36:57" past an hour, or "+3:10" once over.

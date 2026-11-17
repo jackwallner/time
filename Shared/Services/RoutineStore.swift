@@ -123,7 +123,7 @@ final class RoutineStore: ObservableObject {
     }
 
     /// The next scheduled departure, or nil when the routine has no days.
-    func nextPlan(for routine: Routine, now: Date = .now) -> DeparturePlan? {
+    func nextPlan(for routine: Routine, now: Date = AppClock.now) -> DeparturePlan? {
         var after = now
         // Past any departure already made, so leaving early for 8:15 at 8:05
         // moves the card on to the next one.
@@ -137,7 +137,7 @@ final class RoutineStore: ObservableObject {
     }
 
     /// The soonest departure across every routine.
-    func nextDeparture(now: Date = .now) -> (routine: Routine, plan: DeparturePlan)? {
+    func nextDeparture(now: Date = AppClock.now) -> (routine: Routine, plan: DeparturePlan)? {
         activeRoutines
             .compactMap { routine in nextPlan(for: routine, now: now).map { (routine, $0) } }
             .min { $0.1.leaveAt < $1.1.leaveAt }
@@ -145,7 +145,7 @@ final class RoutineStore: ObservableObject {
 
     /// The next departures across every routine, soonest first, as far ahead
     /// as the alerts reach so the widget never goes blank before they do.
-    func upcomingDepartures(now: Date = .now, limit: Int = 12) -> [(routine: Routine, plan: DeparturePlan)] {
+    func upcomingDepartures(now: Date = AppClock.now, limit: Int = 12) -> [(routine: Routine, plan: DeparturePlan)] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: now)
         var found: [(routine: Routine, plan: DeparturePlan)] = []
@@ -204,7 +204,7 @@ final class RoutineStore: ObservableObject {
         mutate { state in
             guard let index = state.routines.firstIndex(where: { $0.id == routineID }) else { return }
             state.routines[index].setChange(change, on: day)
-            state.routines[index].pruneChanges(before: .now)
+            state.routines[index].pruneChanges(before: AppClock.now)
         }
     }
 
@@ -227,7 +227,7 @@ final class RoutineStore: ObservableObject {
     /// well before that departure is due to start, a practice run planned
     /// from now. A practice run at 10 PM must not count as tomorrow's
     /// departure, or it would cancel tomorrow's alerts.
-    func runTarget(for routine: Routine, now: Date = .now) -> (leaveAt: Date, isPractice: Bool) {
+    func runTarget(for routine: Routine, now: Date = AppClock.now) -> (leaveAt: Date, isPractice: Bool) {
         let leave = nextPlan(for: routine, now: now)?.leaveAt ?? routine.leaveTimeForRunStarted(at: now)
         let due = plan(for: routine, leaveAt: leave)
         guard due.alertAt.timeIntervalSince(now) > Self.practiceLeadSeconds else { return (leave, false) }
@@ -236,7 +236,7 @@ final class RoutineStore: ObservableObject {
         return (Date(timeIntervalSinceReferenceDate: minute), true)
     }
 
-    func startRun(routineID: UUID, now: Date = .now) {
+    func startRun(routineID: UUID, now: Date = AppClock.now) {
         // A run left open for hours does not block the next morning's start.
         guard openRun(now: now) == nil, !isLocked(routineID), let routine = routine(id: routineID) else { return }
         let target = runTarget(for: routine, now: now)
@@ -259,7 +259,7 @@ final class RoutineStore: ObservableObject {
     /// A tap on a get-ready alert or its follow-up: the tap is the start. Does
     /// nothing once that departure is under way, made or gone, so an old alert
     /// opened from Notification Centre at noon only opens the app.
-    func startRunFromAlert(routineID: UUID, leaveAt: Date, now: Date = .now) {
+    func startRunFromAlert(routineID: UUID, leaveAt: Date, now: Date = AppClock.now) {
         guard openRun(now: now) == nil, leaveAt > now,
               let routine = routine(id: routineID),
               nextPlan(for: routine, now: now)?.leaveAt == leaveAt,
@@ -269,7 +269,7 @@ final class RoutineStore: ObservableObject {
     }
 
     /// Starts the soonest routine, for the notification and the Watch.
-    func startNextRun(now: Date = .now) {
+    func startNextRun(now: Date = AppClock.now) {
         guard let routine = nextDeparture(now: now)?.routine ?? selectedRoutine else { return }
         startRun(routineID: routine.id, now: now)
     }
@@ -277,7 +277,7 @@ final class RoutineStore: ObservableObject {
     /// Finishes the current step. `stepStartedAt`, when given, names the step
     /// the tap was for (from the Live Activity or a step alert), so a Done
     /// that arrives after the run has moved on finishes nothing.
-    func completeStep(stepStartedAt: Date? = nil, now: Date = .now) {
+    func completeStep(stepStartedAt: Date? = nil, now: Date = AppClock.now) {
         guard let before = liveRun(now: now), !before.isLeaving,
               Self.isFor(before, stepStartedAt: stepStartedAt),
               now.timeIntervalSince(before.stepStartedAt) > Self.doubleTapSeconds else { return }
@@ -302,7 +302,7 @@ final class RoutineStore: ObservableObject {
         lastStepUndo = StepUndo(before: before, after: run, recordedStepID: recorded, kind: .done, stepName: finished?.name ?? "")
     }
 
-    func skipStep(now: Date = .now) {
+    func skipStep(now: Date = AppClock.now) {
         guard let before = liveRun(now: now), !before.isLeaving,
               now.timeIntervalSince(before.stepStartedAt) > Self.doubleTapSeconds else { return }
         var run = before
@@ -340,7 +340,7 @@ final class RoutineStore: ObservableObject {
 
     /// The user walked out. Records the departure and hands back the summary.
     @discardableResult
-    func finishRun(now: Date = .now) -> FinishedRun? {
+    func finishRun(now: Date = AppClock.now) -> FinishedRun? {
         guard let run = liveRun(now: now) else { return nil }
         let departure = DepartureRecord(
             routineID: run.routineID,
@@ -393,7 +393,7 @@ final class RoutineStore: ObservableObject {
 
     /// Tidies what time has made stale, then pushes everything out. Called
     /// whenever the app comes to the foreground.
-    func refresh(now: Date = .now) {
+    func refresh(now: Date = AppClock.now) {
         let stale = state.activeRun?.isAbandoned(now: now) == true
         let oldSummary = state.lastFinished.map { now.timeIntervalSince($0.departure.left) > 12 * 3600 } ?? false
         let hasPastChanges = state.routines.contains { $0.changes.contains { $0.day < Calendar.current.startOfDay(for: now) } }
@@ -461,10 +461,10 @@ final class RoutineStore: ObservableObject {
         }
         return WatchPayload(
             isPro: StoreService.shared.isPro,
-            run: openRun(now: .now).map(RunSnapshot.init(run:)),
+            run: openRun(now: AppClock.now).map(RunSnapshot.init(run:)),
             next: next,
             upcoming: upcomingSnapshots(),
-            sentAt: .now
+            sentAt: AppClock.now
         )
     }
 
