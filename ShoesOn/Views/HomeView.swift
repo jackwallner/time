@@ -150,7 +150,7 @@ private struct RoutineDashboard: View {
                         isScheduled: next != nil,
                         startTitle: startTitle(now: now),
                         now: now,
-                        onStart: { withAnimation(.smooth) { store.startRun(routineID: routine.id) } },
+                        onStart: { withAnimation(.smooth) { store.startRun(routineID: routine.id, now: AppClock.now) } },
                         onSkip: {
                             withAnimation(.smooth) {
                                 store.setChange(DayChange(day: plan.leaveAt, leaveMinuteOfDay: nil), on: plan.leaveAt, routineID: routine.id)

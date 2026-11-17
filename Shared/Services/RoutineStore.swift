@@ -80,7 +80,7 @@ final class RoutineStore: ObservableObject {
     /// Pro comes back.
     var hasPro: @MainActor () -> Bool = { StoreService.shared.isPro }
 
-    init(fileURL: URL = AppGroup.containerURL.appendingPathComponent("shoeson-state.json"), now: Date = .now) {
+    init(fileURL: URL = AppGroup.containerURL.appendingPathComponent("shoeson-state.json"), now: Date = AppClock.now) {
         self.fileURL = fileURL
         if let data = try? Data(contentsOf: fileURL),
            let decoded = try? JSONDecoder().decode(PersistedState.self, from: data) {
