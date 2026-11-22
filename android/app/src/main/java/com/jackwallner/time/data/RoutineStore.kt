@@ -87,8 +87,11 @@ class RoutineStore(
     /** Set once at launch: alerts, the run notification. */
     var onChange: (RoutineStore) -> Unit = {}
 
-    private fun load(): PersistedState =
-        file.read()?.let { runCatching { StateCodec.decode(it) }.getOrNull() } ?: PersistedState()
+    private fun load(): PersistedState {
+        val loaded = file.read()?.let { runCatching { StateCodec.decode(it) }.getOrNull() } ?: PersistedState()
+        // A run left open for hours is gone by the next launch.
+        return if (loaded.activeRun?.isAbandoned(clock()) == true) loaded.copy(activeRun = null) else loaded
+    }
 
     // MARK: Reading
 
@@ -209,7 +212,8 @@ class RoutineStore(
     }
 
     fun startRun(routineID: UUID, now: Instant = clock()) {
-        if (state.activeRun != null) return
+        // A run left open for hours does not block the next morning's start.
+        if (openRun(now) != null) return
         val routine = routine(routineID) ?: return
         val target = runTarget(routine, now)
         val plan = plan(routine, target.leaveAt)
@@ -230,7 +234,7 @@ class RoutineStore(
      * opened at noon only opens the app.
      */
     fun startRunFromAlert(routineID: UUID, leaveAt: Instant, now: Instant = clock()) {
-        if (state.activeRun != null || leaveAt <= now) return
+        if (openRun(now) != null || leaveAt <= now) return
         val routine = routine(routineID) ?: return
         if (nextPlan(routine, now)?.leaveAt != leaveAt) return
         if (state.departures.any { it.routineID == routineID && it.target == leaveAt }) return
@@ -244,13 +248,16 @@ class RoutineStore(
     }
 
     fun completeStep(now: Instant = clock()) {
-        val before = state.activeRun ?: return
+        val before = liveRun(now) ?: return
         if (before.isLeaving) return
         val (run, finished) = before.completingCurrentStep(now)
+        // A Done this long after both the start and the leave time is clearing
+        // a forgotten run off the screen, not timing a step.
+        val timed = now.secondsSince(maxOf(before.startedAt, before.leaveAt)) < LATEST_TIMED_SECONDS
         var recorded: UUID? = null
         mutate { s ->
             val seconds = finished?.actualSeconds
-            if (finished != null && seconds != null && seconds >= MINIMUM_TIMED_SECONDS) {
+            if (timed && finished != null && seconds != null && isTiming(seconds, finished.guessMinutes)) {
                 recorded = finished.id
                 s.copy(
                     activeRun = run,
@@ -264,7 +271,7 @@ class RoutineStore(
     }
 
     fun skipStep(now: Instant = clock()) {
-        val before = state.activeRun ?: return
+        val before = liveRun(now) ?: return
         if (before.isLeaving) return
         val run = before.skippingCurrentStep(now)
         mutate { it.copy(activeRun = run) }
@@ -301,7 +308,7 @@ class RoutineStore(
 
     /** The user walked out. Records the departure and hands back the summary. */
     fun finishRun(now: Instant = clock()): FinishedRun? {
-        val run = state.activeRun ?: return null
+        val run = liveRun(now) ?: return null
         val departure = DepartureRecord(routineID = run.routineID, target = run.leaveAt, left = now, startDelaySeconds = run.startDelaySeconds)
         val finished = FinishedRun(run, departure)
         lastStepUndo = null
@@ -310,6 +317,22 @@ class RoutineStore(
             s.copy(activeRun = null, departures = departures.takeLast(DEPARTURE_LIMIT), lastFinished = finished)
         }
         return finished
+    }
+
+    /** The run in progress, unless it was left open for hours. */
+    fun openRun(now: Instant = clock()): ActiveRun? = state.activeRun?.takeUnless { it.isAbandoned(now) }
+
+    /**
+     * The run in progress for a Done, Skip or leave. One left open for hours
+     * is closed instead, so a tap on yesterday's run never times a step.
+     */
+    private fun liveRun(now: Instant): ActiveRun? {
+        openRun(now)?.let { return it }
+        if (state.activeRun != null) {
+            lastStepUndo = null
+            mutate { it.copy(activeRun = null) }
+        }
+        return null
     }
 
     fun cancelRun() {
@@ -376,6 +399,17 @@ class RoutineStore(
         const val DEPARTURE_LIMIT = 200
         /** A Done tapped this quickly was a tap-through, not a timing. */
         const val MINIMUM_TIMED_SECONDS = 15.0
+        /**
+         * A step done in under this share of its guess was being tried out, not
+         * timed: a curious first run would otherwise pull tomorrow's plan.
+         */
+        const val MINIMUM_TIMED_SHARE = 0.25
+        /** A Done this long after both the start and the leave time is not a timing. */
+        const val LATEST_TIMED_SECONDS = 3600.0
+
+        /** Whether a Done after `seconds` on a step guessed at `guessMinutes` is a real timing. */
+        fun isTiming(seconds: Double, guessMinutes: Int): Boolean =
+            seconds >= maxOf(MINIMUM_TIMED_SECONDS, MINIMUM_TIMED_SHARE * guessMinutes * 60)
         /** Starting more than this before a departure's start is trying the routine out. */
         const val PRACTICE_LEAD_SECONDS = 3600.0
     }

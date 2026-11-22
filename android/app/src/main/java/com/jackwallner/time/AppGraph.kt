@@ -64,7 +64,7 @@ class AppGraph private constructor(private val context: Context) {
     /** Pushes the current state to every surface that shows it. */
     fun propagate() {
         AlertScheduler.reschedule(context, store.alerts(settings.alertPreferences, AppClock.now()))
-        AlertScheduler.syncRunNotification(context, store.activeRun)
+        AlertScheduler.syncRunNotification(context, store.openRun(AppClock.now()))
         NextStartWidgets.refresh(context)
     }
 

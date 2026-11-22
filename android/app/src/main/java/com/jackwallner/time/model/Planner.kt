@@ -46,11 +46,14 @@ data class Calibration(
 
     fun estimate(step: RoutineStep): StepEstimate {
         val prior = max(step.guessMinutes, 1).toDouble() * pace
+        // Bounded like the pace, so one step left running for hours cannot
+        // take over its plan.
+        val longest = max(step.guessMinutes, 1).toDouble() * PACE_MAX
         val timed = stepHistory
             .filter { it.stepID == step.id }
             .sortedByDescending { it.date }
             .take(STEP_WINDOW)
-            .map { it.actualSeconds / 60 }
+            .map { min(it.actualSeconds / 60, longest) }
         if (timed.isEmpty()) return StepEstimate(step.guessMinutes, roundUp(prior), EstimateSource.Pace)
         // A slow-side percentile, not the mean: planning on the average means
         // being late on half of all mornings.
