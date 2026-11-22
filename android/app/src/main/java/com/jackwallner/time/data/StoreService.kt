@@ -288,7 +288,9 @@ class StoreService(
 
     private fun apply(info: CustomerInfo) {
         val before = isPro
-        entitlementActive = info.entitlements[ENTITLEMENT]?.isActive == true
+        val pro = info.entitlements[ENTITLEMENT]
+        entitlementActive = pro?.isActive == true
+        if (pro?.willRenew != true) TrialReminder.cancel(context)
         defaults.putBoolean(CACHED_PRO, entitlementActive)
         hasSubscriptionHistory = info.allExpirationDatesByProduct.isNotEmpty()
         activeProductId = info.activeSubscriptions.map { it.substringBefore(":") }.sorted().firstOrNull()

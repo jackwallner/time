@@ -14,6 +14,7 @@ import com.jackwallner.time.data.ReviewPromptTracker
 import com.jackwallner.time.data.RoutineStore
 import com.jackwallner.time.data.SharedPreferencesStore
 import com.jackwallner.time.data.StoreService
+import com.jackwallner.time.data.TrialReminder
 import com.jackwallner.time.model.Format
 import java.io.File
 import java.time.Instant
@@ -66,6 +67,7 @@ class AppGraph private constructor(private val context: Context) {
     fun propagate() {
         AlertScheduler.reschedule(context, store.alerts(settings.alertPreferences, AppClock.now()))
         AlertScheduler.syncRunNotification(context, store.openRun(AppClock.now()))
+        TrialReminder.rearm(context, AppClock.now())
         NextStartWidgets.refresh(context)
     }
 

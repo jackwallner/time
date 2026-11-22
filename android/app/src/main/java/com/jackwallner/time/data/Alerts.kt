@@ -279,25 +279,68 @@ class RescheduleReceiver : BroadcastReceiver() {
     }
 }
 
-/** The reminder the trial page promises: two days before the trial ends. */
+/**
+ * The reminder the trial page promises: two days before the trial ends, at
+ * 10 AM. Remembered, so every propagate (including the one after a reboot, which
+ * drops alarms) puts it back, and cancelled once the trial will not renew.
+ */
 object TrialReminder {
     private const val ID = "trial.reminder"
+    private const val AT_KEY = "trial.reminder.at"
+    private const val BILLED_KEY = "trial.reminder.billed"
+
+    /** When the reminder fires: two days before the trial ends, in the morning whatever hour it began. */
+    fun reminderDate(trialDays: Int, startedAt: Instant, zone: ZoneId = ZoneId.systemDefault()): Instant {
+        val day = startedAt.atZone(zone).toLocalDate().plusDays(maxOf(trialDays - 2, 1).toLong())
+        return day.atTime(10, 0).atZone(zone).toInstant()
+    }
+
+    fun body(billed: String) = "Shoes On Pro renews at $billed unless you cancel in Google Play before then."
+
+    fun remember(defaults: KeyValueStore, fireAt: Instant, billed: String) {
+        defaults.putLong(AT_KEY, fireAt.toEpochMilli())
+        defaults.putString(BILLED_KEY, billed)
+    }
+
+    /** The remembered reminder, if it is still ahead. */
+    fun pending(defaults: KeyValueStore, now: Instant): Pair<Instant, String>? {
+        if (!defaults.contains(AT_KEY)) return null
+        val at = Instant.ofEpochMilli(defaults.getLong(AT_KEY))
+        val billed = defaults.getString(BILLED_KEY) ?: return null
+        return if (at > now) at to billed else null
+    }
+
+    /** Forgets the reminder; true when there was one. */
+    fun forget(defaults: KeyValueStore): Boolean {
+        if (!defaults.contains(AT_KEY)) return false
+        defaults.remove(AT_KEY)
+        defaults.remove(BILLED_KEY)
+        return true
+    }
 
     fun schedule(context: Context, trialDays: Int, billed: String, now: Instant = Instant.now()) {
-        val days = maxOf(trialDays - 2, 1)
-        val alert = PlannedAlert(
-            id = ID,
-            kind = PlannedAlert.Kind.LEAVE_SOON,
-            fireAt = now.plusSeconds(days * 86_400L),
-            title = "Your free trial ends in 2 days",
-            body = "Shoes On Pro renews at $billed unless you cancel in Google Play before then.",
-        )
-        val intent = Intent(context, TrialReceiver::class.java).setAction("$ID.fire")
-            .putExtra(AlertScheduler.EXTRA_TITLE, alert.title)
-            .putExtra(AlertScheduler.EXTRA_BODY, alert.body)
-        val pending = PendingIntent.getBroadcast(context, ID.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        context.getSystemService(AlarmManager::class.java).setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alert.fireAt.toEpochMilli(), pending)
+        remember(SharedPreferencesStore(context), reminderDate(trialDays, now), billed)
+        rearm(context, now)
     }
+
+    /** Puts the remembered reminder back; the same alarm replaces itself. */
+    fun rearm(context: Context, now: Instant = Instant.now()) {
+        val (at, billed) = pending(SharedPreferencesStore(context), now) ?: return
+        val intent = Intent(context, TrialReceiver::class.java).setAction("$ID.fire")
+            .putExtra(AlertScheduler.EXTRA_TITLE, "Your free trial ends in 2 days")
+            .putExtra(AlertScheduler.EXTRA_BODY, body(billed))
+        context.getSystemService(AlarmManager::class.java).setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at.toEpochMilli(), pendingIntent(context, intent))
+    }
+
+    /** A cancelled trial does not renew, so there is nothing to remind about. */
+    fun cancel(context: Context) {
+        if (!forget(SharedPreferencesStore(context))) return
+        val intent = Intent(context, TrialReceiver::class.java).setAction("$ID.fire")
+        context.getSystemService(AlarmManager::class.java).cancel(pendingIntent(context, intent))
+    }
+
+    private fun pendingIntent(context: Context, intent: Intent) =
+        PendingIntent.getBroadcast(context, ID.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 }
 
 class TrialReceiver : BroadcastReceiver() {
