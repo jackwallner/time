@@ -23,6 +23,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.UUID
+import kotlin.math.abs
 import kotlin.math.ceil
 
 /** Where the state file lives. A file in the app, or memory in tests. */
@@ -262,9 +263,14 @@ class RoutineStore(
         startRun(routine.id, now)
     }
 
-    fun completeStep(now: Instant = clock()) {
+    /**
+     * Finishes the current step. `stepStartedAt`, when given, names the step
+     * the tap was for (from the run notification or a step alert), so a Done
+     * that arrives after the run has moved on finishes nothing.
+     */
+    fun completeStep(now: Instant = clock(), stepStartedAt: Instant? = null) {
         val before = liveRun(now) ?: return
-        if (before.isLeaving) return
+        if (before.isLeaving || !isFor(before, stepStartedAt) || isDoubleTap(before, now)) return
         val (run, finished) = before.completingCurrentStep(now)
         // A Done this long after both the start and the leave time is clearing
         // a forgotten run off the screen, not timing a step.
@@ -287,7 +293,7 @@ class RoutineStore(
 
     fun skipStep(now: Instant = clock()) {
         val before = liveRun(now) ?: return
-        if (before.isLeaving) return
+        if (before.isLeaving || isDoubleTap(before, now)) return
         val run = before.skippingCurrentStep(now)
         mutate { it.copy(activeRun = run) }
         lastStepUndo = StepUndo(before, run, null, StepUndo.Kind.SKIP, before.currentStep?.name.orEmpty())
@@ -333,6 +339,9 @@ class RoutineStore(
         }
         return finished
     }
+
+    /** A second Done or Skip this soon after a step began is a double tap. */
+    private fun isDoubleTap(run: ActiveRun, now: Instant) = now.secondsSince(run.stepStartedAt) <= DOUBLE_TAP_SECONDS
 
     /** The run in progress, unless it was left open for hours. */
     fun openRun(now: Instant = clock()): ActiveRun? = state.activeRun?.takeUnless { it.isAbandoned(now) }
@@ -414,6 +423,11 @@ class RoutineStore(
         const val DEPARTURE_LIMIT = 200
         /** A Done tapped this quickly was a tap-through, not a timing. */
         const val MINIMUM_TIMED_SECONDS = 15.0
+        const val DOUBLE_TAP_SECONDS = 0.6
+
+        /** Whether a tap naming `stepStartedAt` (null means any) is for the step the run is on. */
+        fun isFor(run: ActiveRun, stepStartedAt: Instant?): Boolean =
+            stepStartedAt == null || abs(run.stepStartedAt.secondsSince(stepStartedAt)) < 0.5
         /**
          * A step done in under this share of its guess was being tried out, not
          * timed: a curious first run would otherwise pull tomorrow's plan.

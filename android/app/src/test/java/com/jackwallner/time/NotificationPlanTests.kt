@@ -87,6 +87,16 @@ class NotificationPlanTests {
         assertFalse(result.any { it.kind == Kind.GET_READY && it.fireAt.isOn(21) })
     }
 
+    /** A step alert's Done must only finish the step it was about. */
+    @Test fun stepAlertsNameTheirStep() {
+        val now = date(21, 7, 30)
+        val plan = Planner.plan(routine, date(21, 8, 15), calibration)
+        val run = ActiveRun.start(plan, routine.name, now, null)
+        val steps = alerts(run = run, now = now).filter { it.kind == Kind.WRAP_UP || it.kind == Kind.OVERRUN }
+        assertEquals(2, steps.size)
+        assertTrue(steps.all { it.stepStartedAt == run.stepStartedAt })
+    }
+
     @Test fun shortStepsGetAWrapUpWhenTimeIsUp() {
         val short = Routine(name = "Quick", leaveHour = 8, leaveMinute = 15, weekdays = setOf(2), steps = listOf(RoutineStep(name = "Shoes", guessMinutes = 3)))
         val plan = Planner.plan(short, date(21, 8, 15), Calibration(1.0, emptyList(), emptyList()))

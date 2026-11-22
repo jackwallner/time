@@ -45,6 +45,8 @@ object AlertScheduler {
     const val EXTRA_BODY = "body"
     const val EXTRA_ROUTINE = "routineID"
     const val EXTRA_LEAVE_AT = "leaveAt"
+    /** When the step a Done is for began, in epoch millis. */
+    const val EXTRA_STEP_STARTED = "stepStartedAt"
 
     const val ACTION_FIRE = "com.jackwallner.time.ALERT"
     const val ACTION_DONE = "com.jackwallner.time.DONE"
@@ -114,6 +116,7 @@ object AlertScheduler {
                 .putExtra(EXTRA_BODY, alert.body)
             alert.routineID?.let { intent.putExtra(EXTRA_ROUTINE, it.toString()) }
             alert.leaveAt?.let { intent.putExtra(EXTRA_LEAVE_AT, it.toEpochMilli()) }
+            alert.stepStartedAt?.let { intent.putExtra(EXTRA_STEP_STARTED, it.toEpochMilli()) }
         }
         return PendingIntent.getBroadcast(context, id.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
@@ -127,6 +130,7 @@ object AlertScheduler {
         val kind = runCatching { PlannedAlert.Kind.valueOf(intent.getStringExtra(EXTRA_KIND).orEmpty()) }.getOrNull() ?: return
         val routineID = intent.getStringExtra(EXTRA_ROUTINE)
         val leaveAt = intent.getLongExtra(EXTRA_LEAVE_AT, 0L)
+        val stepStartedAt = intent.getLongExtra(EXTRA_STEP_STARTED, 0L)
         val isStep = kind == PlannedAlert.Kind.WRAP_UP || kind == PlannedAlert.Kind.OVERRUN
         val builder = NotificationCompat.Builder(context, if (isStep) CHANNEL_STEPS else CHANNEL_ALERTS)
             .setSmallIcon(R.drawable.ic_notification)
@@ -150,7 +154,7 @@ object AlertScheduler {
             }
             PlannedAlert.Kind.WRAP_UP, PlannedAlert.Kind.OVERRUN -> {
                 builder.setContentIntent(openApp(context))
-                builder.addAction(0, "Done, next step", actionIntent(context, ACTION_DONE, null, 0, id))
+                builder.addAction(0, "Done, next step", actionIntent(context, ACTION_DONE, null, 0, id, stepStartedAt))
             }
             else -> builder.setContentIntent(openApp(context))
         }
@@ -171,10 +175,11 @@ object AlertScheduler {
         return PendingIntent.getActivity(context, tag.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
-    private fun actionIntent(context: Context, action: String, routineID: String?, leaveAt: Long, tag: String): PendingIntent {
+    private fun actionIntent(context: Context, action: String, routineID: String?, leaveAt: Long, tag: String, stepStartedAt: Long = 0): PendingIntent {
         val intent = Intent(context, AlertActionReceiver::class.java).setAction(action).putExtra(EXTRA_ALERT_ID, tag)
         routineID?.let { intent.putExtra(EXTRA_ROUTINE, it) }
         if (leaveAt > 0) intent.putExtra(EXTRA_LEAVE_AT, leaveAt)
+        if (stepStartedAt > 0) intent.putExtra(EXTRA_STEP_STARTED, stepStartedAt)
         return PendingIntent.getBroadcast(context, (action + tag).hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
@@ -203,7 +208,7 @@ object AlertScheduler {
         if (step == null) {
             builder.setContentTitle("Shoes on. Time to go.").setContentText(leave)
             builder.setWhen(run.leaveAt.toEpochMilli()).setUsesChronometer(true).setChronometerCountDown(true)
-            builder.addAction(0, "I'm out the door", actionIntent(context, ACTION_DONE, null, 0, "run.leave"))
+            builder.addAction(0, "I'm out the door", actionIntent(context, ACTION_DONE, null, 0, "run.leave", run.stepStartedAt.toEpochMilli()))
         } else {
             builder.setContentTitle(step.name)
                 .setContentText("Step ${run.planStepNumber} of ${run.planStepCount} · $leave")
@@ -213,7 +218,7 @@ object AlertScheduler {
                 .setUsesChronometer(true)
                 .setChronometerCountDown(true)
                 .setProgress(run.planStepCount, run.planStepNumber - 1, false)
-            builder.addAction(0, "Done", actionIntent(context, ACTION_DONE, null, 0, "run.done"))
+            builder.addAction(0, "Done", actionIntent(context, ACTION_DONE, null, 0, "run.done", run.stepStartedAt.toEpochMilli()))
         }
         runCatching { manager.notify(RUN_NOTIFICATION_ID, builder.build()) }
     }
@@ -236,10 +241,14 @@ class AlertActionReceiver : BroadcastReceiver() {
         when (intent.action) {
             AlertScheduler.ACTION_DONE -> {
                 val run = store.activeRun ?: return
+                // A delivered step alert outlives its step; its Done must never
+                // finish the one after.
+                val step = intent.getLongExtra(AlertScheduler.EXTRA_STEP_STARTED, 0L).takeIf { it > 0 }?.let(Instant::ofEpochMilli) ?: return
+                if (!RoutineStore.isFor(run, step)) return
                 if (tag == "run.leave") {
                     if (run.isLeaving) store.finishRun()
                 } else {
-                    store.completeStep()
+                    store.completeStep(stepStartedAt = step)
                 }
             }
             AlertScheduler.ACTION_SKIP_DAY -> {

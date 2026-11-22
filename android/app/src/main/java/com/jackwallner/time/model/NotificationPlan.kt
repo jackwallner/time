@@ -16,6 +16,8 @@ data class PlannedAlert(
     val routineID: UUID? = null,
     /** The departure a get-ready alert is for, so it can be skipped from the alert itself. */
     val leaveAt: Instant? = null,
+    /** When the step a run alert is about began, so its Done finishes only that step. */
+    val stepStartedAt: Instant? = null,
 ) {
     enum class Kind {
         GET_READY,
@@ -159,6 +161,7 @@ object NotificationPlan {
                     fireAt = wrapAt,
                     title = if (headsUp) "$HEADS_UP_MINUTES min left: ${step.name}" else "Wrap up: ${step.name}",
                     body = "Next: $next. Leave at $leave.",
+                    stepStartedAt = run.stepStartedAt,
                 )
             }
             val overrunAt = run.stepEndsAt.plusMinutes(OVERRUN_GRACE_MINUTES)
@@ -170,6 +173,7 @@ object NotificationPlan {
                     fireAt = overrunAt,
                     title = "Still on ${step.name}?",
                     body = "${status.label}. Leave at $leave.",
+                    stepStartedAt = run.stepStartedAt,
                 )
             }
         }
