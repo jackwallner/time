@@ -55,7 +55,7 @@ data class Palette(
             surface = rgb(1.0, 1.0, 1.0),
             raised = rgb(0.935, 0.930, 0.912),
             ink = rgb(0.071, 0.078, 0.090),
-            secondary = rgb(0.43, 0.44, 0.46),
+            secondary = rgb(0.35, 0.36, 0.38),
             hairline = rgb(0.878, 0.870, 0.847),
             inkInverse = rgb(0.980, 0.975, 0.960),
             onTrack = rgb(0.08, 0.43, 0.29),
