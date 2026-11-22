@@ -50,6 +50,7 @@ class AppGraph private constructor(private val context: Context) {
     init {
         AlertScheduler.createChannels(context)
         refreshFormats()
+        store.hasPro = { purchases.isPro }
         store.onChange = { propagate() }
         settings.onAlertsChanged = { propagate() }
         purchases.onProChanged = { propagate() }

@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.PlayArrow
@@ -129,7 +130,7 @@ fun HomeScreen(graph: AppGraph, onOverlay: (Overlay) -> Unit) {
 
     Column(Modifier.fillMaxSize().background(palette.background).statusBarsPadding()) {
         Row(Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            RoutineMenu(graph, ::newRoutine, Modifier.weight(1f))
+            RoutineMenu(graph, ::newRoutine, { onOverlay(Overlay.Paywall("shoeson_new_routine")) }, Modifier.weight(1f))
             Box(
                 Modifier.size(44.dp).clip(CircleShape).clickable(role = Role.Button) { onOverlay(Overlay.Settings) }
                     .semantics { contentDescription = "Settings" }.testTag("settings"),
@@ -151,7 +152,7 @@ fun HomeScreen(graph: AppGraph, onOverlay: (Overlay) -> Unit) {
 }
 
 @Composable
-private fun RoutineMenu(graph: AppGraph, onNew: () -> Unit, modifier: Modifier = Modifier) {
+private fun RoutineMenu(graph: AppGraph, onNew: () -> Unit, onLocked: () -> Unit, modifier: Modifier = Modifier) {
     val palette = LocalPalette.current
     val store = graph.store
     var open by remember { mutableStateOf(false) }
@@ -171,10 +172,18 @@ private fun RoutineMenu(graph: AppGraph, onNew: () -> Unit, modifier: Modifier =
             store.routines.forEach { routine ->
                 DropdownMenuItem(
                     text = { Text(routine.name, style = Type.body(), color = palette.ink) },
-                    leadingIcon = { if (routine.id == store.selectedRoutine?.id) Icon(Icons.Filled.Check, null, tint = palette.ink) else Spacer(Modifier.size(24.dp)) },
+                    leadingIcon = {
+                        when {
+                            routine.id == store.selectedRoutine?.id -> Icon(Icons.Filled.Check, null, tint = palette.ink)
+                            store.isLocked(routine.id) -> Icon(Icons.Filled.Lock, null, tint = palette.secondary, modifier = Modifier.size(20.dp))
+                            else -> Spacer(Modifier.size(24.dp))
+                        }
+                    },
                     onClick = {
                         open = false
-                        store.select(routine.id)
+                        // Without Pro the extra routines keep their data but
+                        // wait behind the paywall.
+                        if (store.isLocked(routine.id)) onLocked() else store.select(routine.id)
                     },
                 )
             }

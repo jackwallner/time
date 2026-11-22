@@ -87,6 +87,13 @@ class RoutineStore(
     /** Set once at launch: alerts, the run notification. */
     var onChange: (RoutineStore) -> Unit = {}
 
+    /**
+     * Whether Shoes On Pro is active. Without it only the first routine, the
+     * one setup made, runs and alerts; the others keep their data for when
+     * Pro comes back.
+     */
+    var hasPro: () -> Boolean = { true }
+
     private fun load(): PersistedState {
         val loaded = file.read()?.let { runCatching { StateCodec.decode(it) }.getOrNull() } ?: PersistedState()
         // A run left open for hours is gone by the next launch.
@@ -98,8 +105,16 @@ class RoutineStore(
     val routines: List<Routine> get() = state.routines
     val activeRun: ActiveRun? get() = state.activeRun
 
+    /** The routines that run and alert: all of them with Pro, else the first. */
+    val activeRoutines: List<Routine> get() = if (hasPro()) state.routines else state.routines.take(1)
+
+    fun isLocked(routineID: UUID): Boolean = activeRoutines.none { it.id == routineID }
+
     val selectedRoutine: Routine?
-        get() = state.routines.firstOrNull { it.id == state.selectedRoutineID } ?: state.routines.firstOrNull()
+        get() {
+            val active = activeRoutines
+            return active.firstOrNull { it.id == state.selectedRoutineID } ?: active.firstOrNull()
+        }
 
     val calibration: Calibration
         get() = Calibration(state.pace.multiplier, state.stepHistory, state.departures)
@@ -124,7 +139,7 @@ class RoutineStore(
 
     /** The soonest departure across every routine. */
     fun nextDeparture(now: Instant = clock()): UpcomingDeparture? =
-        state.routines.mapNotNull { r -> nextPlan(r, now)?.let { UpcomingDeparture(r, it) } }.minByOrNull { it.plan.leaveAt }
+        activeRoutines.mapNotNull { r -> nextPlan(r, now)?.let { UpcomingDeparture(r, it) } }.minByOrNull { it.plan.leaveAt }
 
     /**
      * The next departures across every routine, soonest first, as far ahead
@@ -133,7 +148,7 @@ class RoutineStore(
     fun upcomingDepartures(now: Instant = clock(), limit: Int = 12): List<UpcomingDeparture> {
         val today = now.day(zone())
         val found = mutableListOf<UpcomingDeparture>()
-        for (routine in state.routines) {
+        for (routine in activeRoutines) {
             for (offset in 0L..NotificationPlan.HORIZON_DAYS.toLong()) {
                 val day = today.plusDays(offset)
                 if (!routine.departs(day)) continue
@@ -213,7 +228,7 @@ class RoutineStore(
 
     fun startRun(routineID: UUID, now: Instant = clock()) {
         // A run left open for hours does not block the next morning's start.
-        if (openRun(now) != null) return
+        if (openRun(now) != null || isLocked(routineID)) return
         val routine = routine(routineID) ?: return
         val target = runTarget(routine, now)
         val plan = plan(routine, target.leaveAt)
@@ -384,7 +399,7 @@ class RoutineStore(
     }
 
     fun alerts(preferences: com.jackwallner.time.model.AlertPreferences, now: Instant = clock()) = NotificationPlan.alerts(
-        routines = state.routines,
+        routines = activeRoutines,
         calibration = calibration,
         departures = state.departures,
         activeRun = state.activeRun,
