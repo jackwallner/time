@@ -62,6 +62,8 @@ fun PaywallScreen(graph: AppGraph, surface: String, initialMonthly: Boolean = fa
     val isTrial = selected?.let(purchases::isEligibleForTrial) == true
 
     LaunchedEffect(Unit) {
+        // An error from another paywall is not this one's to show.
+        purchases.clearError()
         purchases.trackPaywallImpression(surface)
         purchases.reloadProducts()
     }
