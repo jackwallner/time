@@ -36,11 +36,11 @@ Skip a routine once or set a different leave time for one date. Your usual plan 
 
 ### See your next start
 
-A Home Screen, Lock Screen, or StandBy widget shows the next start time and counts down during the final hour.
+A Home Screen, Lock Screen, or StandBy widget shows the next start time and counts down during the final hour. A Start Getting Ready control is there for Control Center, the Lock Screen or the Action button.
 
 ### Private and simple
 
-No account. Everything stays on your iPhone. Your first routine is free for good. Shoes On Pro, a monthly or yearly subscription with a one-week free trial, adds every routine and the Apple Watch coach.
+No account. Everything stays on your iPhone. Your first routine is free for good. Shoes On Pro, a monthly or yearly subscription with a one-week free trial, adds every routine, the Apple Watch coach and the watch face complication.
 
 ## Frequently asked questions
 
@@ -66,7 +66,7 @@ Yes. The Apple Watch coach shows your step and pace on your wrist and lets you t
 
 ## Is Shoes On free?
 
-Your first routine is free for good, with every alert, the Lock Screen view, the widget and all the learning. Shoes On Pro adds every routine and the Apple Watch coach, and prices are shown in the app before you buy and vary by region.
+Your first routine is free for good, with every alert, the Lock Screen view, the widget and all the learning. Shoes On Pro adds every routine, the Apple Watch coach and the watch face complication, and prices are shown in the app before you buy and vary by region.
 
 ## Do I need an account?
 
