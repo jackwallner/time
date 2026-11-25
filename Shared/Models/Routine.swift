@@ -23,8 +23,20 @@ struct DayChange: Codable, Hashable, Sendable {
     var day: Date
     /// Minutes after midnight to leave at, or nil when the day is skipped.
     var leaveMinuteOfDay: Int?
+    /// The time zone `day` was set in, so a skipped Wednesday stays Wednesday
+    /// after a flight west. Nil on changes saved before it was kept; those
+    /// read in the current zone, as they always did.
+    var timeZone: String?
 
     var isSkip: Bool { leaveMinuteOfDay == nil }
+
+    /// The start of this change's calendar day in `calendar`.
+    func start(in calendar: Calendar) -> Date {
+        var origin = calendar
+        if let timeZone, let zone = TimeZone(identifier: timeZone) { origin.timeZone = zone }
+        let parts = origin.dateComponents([.year, .month, .day], from: day)
+        return calendar.date(from: parts).map(calendar.startOfDay) ?? day
+    }
 }
 
 /// A departure the user makes on a schedule: when they walk out the door, on
@@ -77,7 +89,7 @@ struct Routine: Codable, Identifiable, Hashable, Sendable {
     var guessTotalMinutes: Int { steps.reduce(0) { $0 + $1.guessMinutes } }
 
     func change(on day: Date, calendar: Calendar = .current) -> DayChange? {
-        changes.first { calendar.isDate($0.day, inSameDayAs: day) }
+        changes.first { calendar.isDate($0.start(in: calendar), inSameDayAs: day) }
     }
 
     /// Whether there is a departure on this day: a scheduled weekday that was
@@ -130,9 +142,10 @@ struct Routine: Codable, Identifiable, Hashable, Sendable {
     /// Replaces any change on that day. A time equal to the usual one on a
     /// scheduled day is no change at all, so it is dropped.
     mutating func setChange(_ change: DayChange?, on day: Date, calendar: Calendar = .current) {
-        changes.removeAll { calendar.isDate($0.day, inSameDayAs: day) }
+        changes.removeAll { calendar.isDate($0.start(in: calendar), inSameDayAs: day) }
         guard var change else { return }
         change.day = calendar.startOfDay(for: day)
+        change.timeZone = calendar.timeZone.identifier
         let usual = leaveHour * 60 + leaveMinute
         let scheduled = weekdays.contains(calendar.component(.weekday, from: day))
         if scheduled && change.leaveMinuteOfDay == usual { return }
@@ -144,13 +157,21 @@ struct Routine: Codable, Identifiable, Hashable, Sendable {
     /// Forgets changes for days already gone.
     mutating func pruneChanges(before now: Date, calendar: Calendar = .current) {
         let today = calendar.startOfDay(for: now)
-        changes.removeAll { $0.day < today }
+        changes.removeAll { $0.start(in: calendar) < today }
     }
 
-    /// Changes from today on, soonest first.
+    /// Changes from today on, soonest first, each dated in `calendar`.
     func upcomingChanges(from now: Date, calendar: Calendar = .current) -> [DayChange] {
         let today = calendar.startOfDay(for: now)
-        return changes.filter { $0.day >= today }.sorted { $0.day < $1.day }
+        return changes
+            .map { change in
+                var local = change
+                local.day = change.start(in: calendar)
+                local.timeZone = calendar.timeZone.identifier
+                return local
+            }
+            .filter { $0.day >= today }
+            .sorted { $0.day < $1.day }
     }
 }
 
