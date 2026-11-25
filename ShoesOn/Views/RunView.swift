@@ -545,9 +545,10 @@ private extension AnyTransition {
 /// time against the guess.
 private struct SummaryScreen: View {
     @EnvironmentObject private var store: RoutineStore
-    @Environment(\.requestReview) private var requestReview
     let finished: FinishedRun
     @State private var shown = false
+    /// Bumped once when this summary shows a good morning.
+    @State private var goodMoment = 0
 
     var body: some View {
         let late = finished.run.isPracticeRun ? 0 : finished.departure.lateSeconds
@@ -589,7 +590,6 @@ private struct SummaryScreen: View {
                     .padding(.horizontal, 20)
                 }
                 Button("Done") {
-                    askForReviewIfEarned()
                     withAnimation(.smooth) { store.dismissSummary() }
                 }
                     .buttonStyle(.primary)
@@ -603,14 +603,13 @@ private struct SummaryScreen: View {
         .sensoryFeedback(.success, trigger: shown)
         .onAppear {
             withAnimation(.spring(duration: 0.9, bounce: 0.2).delay(0.1)) { shown = true }
+            if ReviewPromptService.isGoodMoment(finished, now: AppClock.now) { goodMoment += 1 }
         }
-    }
-
-    /// Asked once they have taken in the win, not over the top of it.
-    private func askForReviewIfEarned() {
-        guard finished.departure.wasOnTime, !finished.run.isPracticeRun else { return }
-        let onTime = store.state.departures.filter(\.wasOnTime).count
-        if ReviewPromptService.shared.shouldAskAfterOnTimeDeparture(onTimeCount: onTime) { requestReview() }
+        // A few seconds into the win, and only while this summary is still
+        // the one on screen with no run started over it.
+        .requestsReview(after: goodMoment) {
+            store.state.lastFinished == finished && store.activeRun == nil
+        }
     }
 
     private var headline: String {

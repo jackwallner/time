@@ -42,6 +42,12 @@ Coaching around the learning, for time-blind mornings:
 - "Start getting ready" control (iOS 18 Lock Screen / Control Center /
   Action button): `StartRunIntent`, a `LiveActivityIntent`, starts the run
   without unlocking.
+- Rating ask: Apple's prompt 3 s into the summary of an on-time real
+  departure, or of a practice run with every step done
+  (`ReviewPromptService.isGoodMoment`, `requestsReview(after:isClear:)`). From
+  launch 2, every 30 days, never over a run or sheet, never from a button;
+  Settings' Rate row ends the asks. Offering metadata `rating_prompt: off`
+  pauses it.
 
 The guess is never overwritten. The gap between guess and real time is what
 the home screen, the reveal page and the summary show.
