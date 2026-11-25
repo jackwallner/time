@@ -117,7 +117,12 @@ struct OnboardingView: View {
         ) {
             VStack(spacing: 6) {
                 if isTrialPage {
-                    if let message = purchases.errorMessage {
+                    if purchases.awaitingApproval {
+                        Text(PurchaseFailure.pendingMessage)
+                            .font(.footnote)
+                            .foregroundStyle(Theme.secondary)
+                            .multilineTextAlignment(.center)
+                    } else if let message = purchases.errorMessage {
                         Text(message)
                             .font(.footnote)
                             .foregroundStyle(Theme.late)
