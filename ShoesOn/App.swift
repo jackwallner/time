@@ -25,7 +25,10 @@ struct ShoesOnApp: App {
                 .environmentObject(store)
                 .environmentObject(settings)
                 .environmentObject(purchases)
-                .task { purchases.start() }
+                .task {
+                    ReviewPromptService.shared.recordLaunch()
+                    purchases.start()
+                }
                 .onChange(of: scenePhase) { _, phase in
                     // Plans move as timings arrive and days pass, so the
                     // rolling alert window is rebuilt whenever the app is seen.

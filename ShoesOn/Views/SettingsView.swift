@@ -23,7 +23,10 @@ struct SettingsView: View {
                 alertsSection
                 proSection
                 Section {
-                    Button("Rate Shoes On") { openURL(AppStoreReviewLinks.writeReviewURL) }
+                    Button("Rate Shoes On") {
+                        ReviewPromptService.shared.markOpenedWriteReview()
+                        openURL(AppStoreReviewLinks.writeReviewURL)
+                    }
                     Link("Send feedback", destination: URL(string: "mailto:jackwallner@gmail.com?subject=Shoes%20On")!)
                     Link("Help and support", destination: ShoesOnLinks.support)
                     Link("Privacy Policy", destination: ShoesOnLinks.privacyPolicy)
