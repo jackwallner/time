@@ -180,6 +180,11 @@ final class RoutineStore: ObservableObject {
     func save(_ routine: Routine) {
         mutate { state in
             if let index = state.routines.firstIndex(where: { $0.id == routine.id }) {
+                // The editor never edits one-off days, and its copy is as old
+                // as the sheet: a skip made meanwhile from an alert must
+                // survive its Save.
+                var routine = routine
+                routine.changes = state.routines[index].changes
                 state.routines[index] = routine
             } else {
                 state.routines.append(routine)
