@@ -93,6 +93,8 @@ widget (`RoutineStore.activeRoutines`); the rest stay saved behind a lock, so a
 lapsed trial keeps one. No lifetime (it was dropped before launch, 2026-09-22). Never
 move learning or alerts behind Pro. The trial page promises a day-5 reminder;
 `NotificationService.scheduleTrialReminder` is what keeps that promise.
+Ask to Buy shows "Waiting for approval" (`PurchaseFailure.pending`), never an
+error.
 
 ## Rules that hold everywhere
 
