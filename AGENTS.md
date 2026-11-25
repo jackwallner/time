@@ -42,6 +42,12 @@ Coaching around the learning, for time-blind mornings:
 - "Start getting ready" control (iOS 18 Lock Screen / Control Center /
   Action button): `StartRunIntent`, a `LiveActivityIntent`, starts the run
   without unlocking.
+- Rating ask: Apple's prompt 3 s into the summary of an on-time real
+  departure, or of a practice run with every step done
+  (`ReviewPromptService.isGoodMoment`, `requestsReview(after:isClear:)`). From
+  launch 2, every 30 days, never over a run or sheet, never from a button;
+  Settings' Rate row ends the asks. Offering metadata `rating_prompt: off`
+  pauses it.
 
 The guess is never overwritten. The gap between guess and real time is what
 the home screen, the reveal page and the summary show.
@@ -93,6 +99,10 @@ widget (`RoutineStore.activeRoutines`); the rest stay saved behind a lock, so a
 lapsed trial keeps one. No lifetime (it was dropped before launch, 2026-09-22). Never
 move learning or alerts behind Pro. The trial page promises a day-5 reminder;
 `NotificationService.scheduleTrialReminder` is what keeps that promise.
+Trial button wording tests go through offering metadata `trial_cta`
+(`RemoteConfig.swift`, control "Start 7-day free trial"); a key a switch reads
+must be set the same on every offering. Ask to Buy shows "Waiting for
+approval" (`PurchaseFailure.pending`), never an error.
 
 ## Rules that hold everywhere
 

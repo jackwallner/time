@@ -180,6 +180,11 @@ final class RoutineStore: ObservableObject {
     func save(_ routine: Routine) {
         mutate { state in
             if let index = state.routines.firstIndex(where: { $0.id == routine.id }) {
+                // The editor never edits one-off days, and its copy is as old
+                // as the sheet: a skip made meanwhile from an alert must
+                // survive its Save.
+                var routine = routine
+                routine.changes = state.routines[index].changes
                 state.routines[index] = routine
             } else {
                 state.routines.append(routine)
@@ -411,7 +416,8 @@ final class RoutineStore: ObservableObject {
     func refresh(now: Date = AppClock.now) {
         let stale = state.activeRun?.isAbandoned(now: now) == true
         let oldSummary = state.lastFinished.map { now.timeIntervalSince($0.departure.left) > 12 * 3600 } ?? false
-        let hasPastChanges = state.routines.contains { $0.changes.contains { $0.day < Calendar.current.startOfDay(for: now) } }
+        let today = Calendar.current.startOfDay(for: now)
+        let hasPastChanges = state.routines.contains { $0.changes.contains { $0.start(in: .current) < today } }
         guard stale || oldSummary || hasPastChanges else {
             propagate()
             return

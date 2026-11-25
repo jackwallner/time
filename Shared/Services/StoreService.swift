@@ -24,6 +24,51 @@ enum PurchaseOutcome {
     case failed
 }
 
+/// How a purchase that threw is shown. RevenueCat reports Ask to Buy as an
+/// error, but a request waiting on a parent is not a failure, and a lost
+/// connection is not a reason to try a different card.
+enum PurchaseFailure: Equatable {
+    case cancelled
+    /// Ask to Buy: Apple holds the request until it is approved, then the
+    /// customer-info update unlocks Pro without a relaunch.
+    case pending
+    case offline
+    case failed
+
+    static let pendingMessage = "Waiting for approval. Your purchase unlocks once it is approved."
+    static let offlineMessage = "Purchases aren't available right now. Check your connection and try again."
+
+    /// RevenueCat's errors also arrive bridged to an NSError in this domain.
+    private static let revenueCatDomain = (ErrorCode.unknownError as NSError).domain
+
+    init(_ error: Error) {
+        let bridged = error as NSError
+        let code = (error as? ErrorCode)
+            ?? (bridged.domain == Self.revenueCatDomain ? ErrorCode(rawValue: bridged.code) : nil)
+        guard let code else {
+            self = .failed
+            return
+        }
+        switch code {
+        case .purchaseCancelledError: self = .cancelled
+        case .paymentPendingError: self = .pending
+        case .networkError, .offlineConnectionError: self = .offline
+        default: self = .failed
+        }
+    }
+
+    /// The line under the button. Nil for a cancel, which needs none.
+    func message(startedTrial: Bool) -> String? {
+        switch self {
+        case .cancelled: nil
+        case .pending: Self.pendingMessage
+        case .offline: Self.offlineMessage
+        case .failed:
+            startedTrial ? "Couldn't start your trial. Please try again." : "Couldn't complete the purchase. Please try again."
+        }
+    }
+}
+
 enum PlanKind: Int, Comparable {
     case yearly = 0
     case monthly = 1
@@ -103,10 +148,16 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
     @Published private(set) var hasTriedLoading = false
     @Published private(set) var isPurchasing = false
     @Published private(set) var errorMessage: String?
+    /// An Ask to Buy request is with a parent. Shown as a calm line, never as
+    /// an error, and dropped when the screen that raised it closes.
+    @Published private(set) var awaitingApproval = false
     /// Per-product trial eligibility. Trial copy stays hidden until resolved, so
     /// someone who already used a trial is never promised one (Apple 3.1.2).
     @Published private(set) var introEligibility: [String: Bool] = [:]
     @Published private(set) var introEligibilityResolved = false
+    /// The current offering's metadata (`RemoteConfig`). Nil until offerings
+    /// load, and always on a simulator, which reads as every control.
+    @Published private(set) var remoteMetadata: [String: String]?
 
     private let logger = Logger(subsystem: AppGroup.subsystem, category: "Store")
     private let defaults = AppGroup.defaults
@@ -171,9 +222,10 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
 
     func purchase(_ package: Package) async -> PurchaseOutcome {
         guard isConfigured else {
-            errorMessage = "Purchases aren't available right now. Check your connection and try again."
+            errorMessage = PurchaseFailure.offlineMessage
             return .failed
         }
+        awaitingApproval = false
         isPurchasing = true
         defer { isPurchasing = false }
         let startedTrial = isEligibleForTrial(package)
@@ -197,12 +249,19 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
             errorMessage = "Waiting on Apple to confirm this purchase. Pro turns on by itself once it goes through."
             return .pending
         } catch {
-            let nsError = error as NSError
-            if nsError.code == ErrorCode.purchaseCancelledError.rawValue { return .cancelled }
-            errorMessage = startedTrial
-                ? "Couldn't start your trial. Please try again."
-                : "Couldn't complete the purchase. Please try again."
-            return .failed
+            let failure = PurchaseFailure(error)
+            switch failure {
+            case .cancelled:
+                return .cancelled
+            case .pending:
+                logger.info("Purchase waiting for Ask to Buy approval")
+                errorMessage = nil
+                awaitingApproval = true
+                return .pending
+            case .offline, .failed:
+                errorMessage = failure.message(startedTrial: startedTrial)
+                return .failed
+            }
         }
     }
 
@@ -220,6 +279,14 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
 
     func clearError() {
         errorMessage = nil
+        awaitingApproval = false
+    }
+
+    /// The screen that raised an Ask to Buy closed. Approval still unlocks
+    /// Pro through the customer-info update; only the line goes.
+    func clearPendingApproval() {
+        guard !isPurchasing else { return }
+        awaitingApproval = false
     }
 
     /// Reports a visible paywall to RevenueCat. `oncePerSession` dedupes
@@ -240,9 +307,18 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
     /// RevenueCat was never configured, which is every simulator run.
     func syncConversionAttributes() {
         guard isConfigured else { return }
-        let attributes = ConversionDiagnostics.subscriberAttributes
+        var attributes = ConversionDiagnostics.subscriberAttributes
         guard !attributes.isEmpty else { return }
+        // The wording this customer's trial button showed, so a test reads
+        // by attribute too.
+        attributes[TrialCTA.metadataKey] = trialCTA.rawValue
         Purchases.shared.attribution.setAttributes(attributes)
+    }
+
+    var trialCTA: TrialCTA { TrialCTA.from(metadata: remoteMetadata.map { $0 as [String: Any] }) }
+
+    func isOn(_ remoteSwitch: RemoteSwitch) -> Bool {
+        RemoteConfig.isOn(remoteSwitch, in: remoteMetadata.map { $0 as [String: Any] })
     }
 
     #if DEBUG
@@ -287,6 +363,9 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
         }
         do {
             let offerings = try await Purchases.shared.offerings()
+            // The current offering, so a running Experiment's variant is read.
+            remoteMetadata = (offerings.current?.metadata ?? [:]).compactMapValues { $0 as? String }
+            syncConversionAttributes()
             let offering = offerings.offering(identifier: "default") ?? offerings.current
             let loaded = (offering?.availablePackages ?? [])
                 .filter { $0.plan != .other }
@@ -315,6 +394,7 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
     private func update(customerInfo: CustomerInfo) {
         let pro = customerInfo.entitlements.active[RevenueCatConfig.proEntitlement]
         isPro = pro != nil
+        if isPro { awaitingApproval = false }
         if pro?.willRenew != true { NotificationService.shared.cancelTrialReminder() }
     }
 

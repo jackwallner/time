@@ -117,7 +117,12 @@ struct OnboardingView: View {
         ) {
             VStack(spacing: 6) {
                 if isTrialPage {
-                    if let message = purchases.errorMessage {
+                    if purchases.awaitingApproval {
+                        Text(PurchaseFailure.pendingMessage)
+                            .font(.footnote)
+                            .foregroundStyle(Theme.secondary)
+                            .multilineTextAlignment(.center)
+                    } else if let message = purchases.errorMessage {
                         Text(message)
                             .font(.footnote)
                             .foregroundStyle(Theme.late)
@@ -150,7 +155,7 @@ struct OnboardingView: View {
     private var primaryTitle: String {
         guard isTrialPage else { return "Continue" }
         if purchases.plansUnavailable { return "Try again" }
-        return trialEligible ? "Start 7-day free trial" : "Continue with Pro"
+        return purchases.trialCTA.title(.onboarding, trialEligible: trialEligible)
     }
 
     /// Nil when the plans failed and the error above already says so.

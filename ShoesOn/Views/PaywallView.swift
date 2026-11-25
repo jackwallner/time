@@ -67,6 +67,7 @@ struct PaywallView: View {
             purchases.trackPaywallImpression(id: surface)
             purchases.reloadProducts()
         }
+        .onDisappear { purchases.clearPendingApproval() }
         .onChange(of: purchases.isPro) { _, isPro in
             if isPro { dismiss() }
         }
@@ -117,7 +118,12 @@ struct PaywallView: View {
 
     private var purchaseBar: some View {
         VStack(spacing: 8) {
-            if let message = purchases.errorMessage {
+            if purchases.awaitingApproval {
+                Text(PurchaseFailure.pendingMessage)
+                    .font(.footnote)
+                    .foregroundStyle(Theme.secondary)
+                    .multilineTextAlignment(.center)
+            } else if let message = purchases.errorMessage {
                 Text(message)
                     .font(.footnote)
                     .foregroundStyle(Theme.late)
@@ -138,7 +144,7 @@ struct PaywallView: View {
                 Task { _ = await purchases.purchase(selected) }
             } label: {
                 ZStack {
-                    Text(isTrial ? "Start 7-day free trial" : "Subscribe").opacity(purchases.isPurchasing ? 0 : 1)
+                    Text(purchases.trialCTA.title(.paywall, trialEligible: isTrial)).opacity(purchases.isPurchasing ? 0 : 1)
                     if purchases.isPurchasing { ProgressView().tint(Theme.inkInverse) }
                 }
             }
