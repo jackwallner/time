@@ -144,7 +144,7 @@ struct PaywallView: View {
                 Task { _ = await purchases.purchase(selected) }
             } label: {
                 ZStack {
-                    Text(isTrial ? "Start 7-day free trial" : "Subscribe").opacity(purchases.isPurchasing ? 0 : 1)
+                    Text(purchases.trialCTA.title(.paywall, trialEligible: isTrial)).opacity(purchases.isPurchasing ? 0 : 1)
                     if purchases.isPurchasing { ProgressView().tint(Theme.inkInverse) }
                 }
             }

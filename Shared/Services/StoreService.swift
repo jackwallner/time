@@ -155,6 +155,9 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
     /// someone who already used a trial is never promised one (Apple 3.1.2).
     @Published private(set) var introEligibility: [String: Bool] = [:]
     @Published private(set) var introEligibilityResolved = false
+    /// The current offering's metadata (`RemoteConfig`). Nil until offerings
+    /// load, and always on a simulator, which reads as every control.
+    @Published private(set) var remoteMetadata: [String: String]?
 
     private let logger = Logger(subsystem: AppGroup.subsystem, category: "Store")
     private let defaults = AppGroup.defaults
@@ -304,9 +307,18 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
     /// RevenueCat was never configured, which is every simulator run.
     func syncConversionAttributes() {
         guard isConfigured else { return }
-        let attributes = ConversionDiagnostics.subscriberAttributes
+        var attributes = ConversionDiagnostics.subscriberAttributes
         guard !attributes.isEmpty else { return }
+        // The wording this customer's trial button showed, so a test reads
+        // by attribute too.
+        attributes[TrialCTA.metadataKey] = trialCTA.rawValue
         Purchases.shared.attribution.setAttributes(attributes)
+    }
+
+    var trialCTA: TrialCTA { TrialCTA.from(metadata: remoteMetadata.map { $0 as [String: Any] }) }
+
+    func isOn(_ remoteSwitch: RemoteSwitch) -> Bool {
+        RemoteConfig.isOn(remoteSwitch, in: remoteMetadata.map { $0 as [String: Any] })
     }
 
     #if DEBUG
@@ -351,6 +363,9 @@ final class StoreService: NSObject, ObservableObject, PurchasesDelegate {
         }
         do {
             let offerings = try await Purchases.shared.offerings()
+            // The current offering, so a running Experiment's variant is read.
+            remoteMetadata = (offerings.current?.metadata ?? [:]).compactMapValues { $0 as? String }
+            syncConversionAttributes()
             let offering = offerings.offering(identifier: "default") ?? offerings.current
             let loaded = (offering?.availablePackages ?? [])
                 .filter { $0.plan != .other }

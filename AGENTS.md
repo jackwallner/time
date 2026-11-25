@@ -95,6 +95,9 @@ move learning or alerts behind Pro. The trial page promises a day-5 reminder;
 `NotificationService.scheduleTrialReminder` is what keeps that promise.
 Ask to Buy shows "Waiting for approval" (`PurchaseFailure.pending`), never an
 error.
+Trial button wording tests go through offering metadata `trial_cta`
+(`RemoteConfig.swift`, control "Start 7-day free trial"); a key a switch reads
+must be set the same on every offering.
 
 ## Rules that hold everywhere
 
