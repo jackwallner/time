@@ -100,4 +100,51 @@ final class StateMachineRegressionTests: XCTestCase {
         let reencoded = try JSONDecoder().decode(Routine.self, from: JSONEncoder().encode(decoded))
         XCTAssertEqual(reencoded, decoded)
     }
+
+    // MARK: B2, the routine editor's Save keeps a skip made while it was open
+
+    private func makeStore() -> RoutineStore {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("regression-\(UUID().uuidString).json")
+        let store = RoutineStore(fileURL: url)
+        store.save(routine)
+        return store
+    }
+
+    /// Two days out, so the store's prune of past days never touches it.
+    private var soon: Date {
+        Calendar.current.startOfDay(for: Date.now.addingTimeInterval(2 * 86_400))
+    }
+
+    func testSavingTheEditorKeepsASkipMadeWhileItWasOpen() {
+        let store = makeStore()
+        var editing = store.routine(id: routine.id)!
+        store.setChange(DayChange(day: soon, leaveMinuteOfDay: nil), on: soon, routineID: routine.id)
+        XCTAssertNotNil(store.routine(id: routine.id)?.change(on: soon), "precondition: the skip is saved")
+        XCTAssertTrue(editing.changes.isEmpty, "precondition: the editor's copy predates the skip")
+        editing.name = "School run"
+        editing.leaveMinute = 30
+        store.save(editing)
+        XCTAssertEqual(store.routine(id: routine.id)?.name, "School run")
+        XCTAssertEqual(store.routine(id: routine.id)?.leaveMinute, 30)
+        XCTAssertNotNil(store.routine(id: routine.id)?.change(on: soon))
+    }
+
+    func testSavingTheEditorKeepsAnEarlierSkip() {
+        let store = makeStore()
+        store.setChange(DayChange(day: soon, leaveMinuteOfDay: nil), on: soon, routineID: routine.id)
+        var editing = store.routine(id: routine.id)!
+        editing.name = "School run"
+        store.save(editing)
+        XCTAssertNotNil(store.routine(id: routine.id)?.change(on: soon))
+    }
+
+    func testSavingTheEditorDoesNotBringBackAnUndoneSkip() {
+        let store = makeStore()
+        store.setChange(DayChange(day: soon, leaveMinuteOfDay: nil), on: soon, routineID: routine.id)
+        var editing = store.routine(id: routine.id)!
+        store.setChange(nil, on: soon, routineID: routine.id)
+        editing.name = "School run"
+        store.save(editing)
+        XCTAssertNil(store.routine(id: routine.id)?.change(on: soon))
+    }
 }
