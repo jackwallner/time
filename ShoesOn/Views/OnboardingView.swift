@@ -155,7 +155,7 @@ struct OnboardingView: View {
     private var primaryTitle: String {
         guard isTrialPage else { return "Continue" }
         if purchases.plansUnavailable { return "Try again" }
-        return trialEligible ? "Start 7-day free trial" : "Continue with Pro"
+        return purchases.trialCTA.title(.onboarding, trialEligible: trialEligible)
     }
 
     /// Nil when the plans failed and the error above already says so.
