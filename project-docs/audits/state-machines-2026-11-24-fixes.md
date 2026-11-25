@@ -14,8 +14,9 @@ skeptical review, in ranked order.
 | B2 | Fixed | `fix: saving a routine keeps a day skipped while the editor was open` | `testSavingTheEditorKeepsASkipMadeWhileItWasOpen` (the repro); controls `testSavingTheEditorKeepsAnEarlierSkip`, `testSavingTheEditorDoesNotBringBackAnUndoneSkip` | `RoutineStore.save` keeps the stored `changes` when it replaces an existing routine. The editor never edits one-off days; every change to them goes through `setChange`. |
 
 Both regression tests failed on the starting commit (repro run
-`time@20261125-090750-c093-claude-mbpro8d40-1125-091355-27507`) and pass with
-the fixes (see `rollout-2026-11-24.md` for the run ids).
+`time@20261125-090750-c093-claude-mbpro8d40-1125-091355-27507`) and should pass with
+the fixes once the full suite runs (it did not start on GitHub in this
+session; see `rollout-2026-11-24.md`).
 
 ## Held for Jack
 
