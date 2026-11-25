@@ -411,7 +411,8 @@ final class RoutineStore: ObservableObject {
     func refresh(now: Date = AppClock.now) {
         let stale = state.activeRun?.isAbandoned(now: now) == true
         let oldSummary = state.lastFinished.map { now.timeIntervalSince($0.departure.left) > 12 * 3600 } ?? false
-        let hasPastChanges = state.routines.contains { $0.changes.contains { $0.day < Calendar.current.startOfDay(for: now) } }
+        let today = Calendar.current.startOfDay(for: now)
+        let hasPastChanges = state.routines.contains { $0.changes.contains { $0.start(in: .current) < today } }
         guard stale || oldSummary || hasPastChanges else {
             propagate()
             return
